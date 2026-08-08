@@ -56,7 +56,8 @@ const ChatPage = () => {
   useEffect(() => {
     fetchRooms();
     fetchEmployees();
-    const newSocket = io('/chat');
+    const apiUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
+    const newSocket = io(`${apiUrl}/chat`);
     setSocket(newSocket);
 
     return () => newSocket.close();
