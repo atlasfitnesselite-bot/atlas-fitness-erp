@@ -178,7 +178,7 @@ export default function OwnerDashboard() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => navigate('/members/new')} className="flex flex-col items-center justify-center p-4 bg-card border border-border rounded-xl hover:bg-muted hover:border-primary/50 transition-all group">
           <div className="p-3 bg-primary/10 text-primary rounded-full mb-3 group-hover:scale-110 transition-transform">
             <UserPlus className="w-5 h-5" />

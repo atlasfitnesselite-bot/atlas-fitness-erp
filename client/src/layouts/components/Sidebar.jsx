@@ -183,11 +183,19 @@ export default function Sidebar() {
     }
   ]
 
+  const handleLinkClick = () => {
+    if (window.innerWidth < 1024 && sidebarOpen) {
+      useUIStore.getState().toggleSidebar();
+    }
+  };
+
   return (
     <aside
       className={cn(
-        "bg-card text-card-foreground flex-shrink-0 transition-all duration-300 ease-in-out border-r border-border h-full flex flex-col overflow-hidden",
-        sidebarOpen ? "w-64" : "w-20 hidden md:block"
+        "bg-card text-card-foreground transition-all duration-300 ease-in-out border-r border-border h-full flex flex-col overflow-hidden z-50",
+        sidebarOpen 
+          ? "fixed inset-y-0 left-0 w-64 lg:relative lg:translate-x-0 shadow-2xl lg:shadow-none" 
+          : "hidden md:flex relative w-20 flex-shrink-0"
       )}
     >
       <div className="flex h-16 items-center justify-center border-b border-border px-4 flex-shrink-0">
@@ -244,6 +252,7 @@ export default function Sidebar() {
                     <Link
                       key={item.name}
                       to={item.href}
+                      onClick={handleLinkClick}
                       className={cn(
                         "flex items-center px-3 py-2.5 rounded-md transition-colors group",
                         isActive 
@@ -285,6 +294,7 @@ export default function Sidebar() {
                       <Link
                         key={item.name}
                         to={item.href}
+                        onClick={handleLinkClick}
                         className={cn(
                           "flex items-center px-3 py-2 rounded-md transition-colors text-sm",
                           isActive 
