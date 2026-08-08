@@ -1,0 +1,104 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+export declare class EquipmentService {
+    private readonly prisma;
+    private readonly notificationsService;
+    constructor(prisma: PrismaService, notificationsService: NotificationsService);
+    getEquipment(filters: {
+        category?: string;
+        status?: string;
+        location?: string;
+    }): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        notes: string | null;
+        category: string;
+        location: string | null;
+        equipmentId: string;
+        brand: string | null;
+        model: string | null;
+        purchaseDate: Date | null;
+        purchasePrice: number | null;
+        warrantyExpiry: Date | null;
+        lastServiceDate: Date | null;
+        nextServiceDate: Date | null;
+        qrCode: string | null;
+    }[]>;
+    createEquipment(data: any): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        notes: string | null;
+        category: string;
+        location: string | null;
+        equipmentId: string;
+        brand: string | null;
+        model: string | null;
+        purchaseDate: Date | null;
+        purchasePrice: number | null;
+        warrantyExpiry: Date | null;
+        lastServiceDate: Date | null;
+        nextServiceDate: Date | null;
+        qrCode: string | null;
+    }>;
+    updateEquipment(id: string, data: any): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        notes: string | null;
+        category: string;
+        location: string | null;
+        equipmentId: string;
+        brand: string | null;
+        model: string | null;
+        purchaseDate: Date | null;
+        purchasePrice: number | null;
+        warrantyExpiry: Date | null;
+        lastServiceDate: Date | null;
+        nextServiceDate: Date | null;
+        qrCode: string | null;
+    }>;
+    getFaultReports(equipmentId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        description: string;
+        equipmentId: string;
+        resolvedAt: Date | null;
+        reportedBy: string;
+        severity: string;
+        technicianNotes: string | null;
+    }[]>;
+    reportFault(equipmentId: string, data: any, reportedBy?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        description: string;
+        equipmentId: string;
+        resolvedAt: Date | null;
+        reportedBy: string;
+        severity: string;
+        technicianNotes: string | null;
+    }>;
+    resolveFault(faultId: string, technicianNotes?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        description: string;
+        equipmentId: string;
+        resolvedAt: Date | null;
+        reportedBy: string;
+        severity: string;
+        technicianNotes: string | null;
+    }>;
+}

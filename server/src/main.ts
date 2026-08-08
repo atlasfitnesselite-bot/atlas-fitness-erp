@@ -8,6 +8,7 @@ import { json, urlencoded } from 'express';
 async function bootstrap() {
   console.log('BOOTSTRAP DATABASE_URL:', process.env.DATABASE_URL);
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.setGlobalPrefix('api');
   app.enableCors({ origin: '*' });
   
   app.use(json({ limit: '50mb' }));

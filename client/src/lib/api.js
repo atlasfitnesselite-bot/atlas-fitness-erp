@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 // Create a single Axios instance for the entire app.
 // All API calls should use this instance instead of raw `axios`.
 const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || '',
   headers: {
     'Content-Type': 'application/json',
   },

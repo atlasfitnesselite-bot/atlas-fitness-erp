@@ -1,0 +1,120 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateMembershipPlanDto } from './dto/create-membership-plan.dto';
+import { AssignPlanDto } from './dto/assign-plan.dto';
+export declare class SubscriptionsService {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
+    createPlan(data: CreateMembershipPlanDto): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        price: number;
+        durationInMonths: number;
+    }>;
+    getPlans(): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        price: number;
+        durationInMonths: number;
+    }[]>;
+    getPlanById(id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        price: number;
+        durationInMonths: number;
+    }>;
+    updatePlan(id: string, data: Partial<CreateMembershipPlanDto>): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        price: number;
+        durationInMonths: number;
+    }>;
+    deletePlan(id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        price: number;
+        durationInMonths: number;
+    }>;
+    assignPlan(data: AssignPlanDto): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        endDate: Date;
+        memberId: string;
+        planId: string;
+        isFrozen: boolean;
+        frozenDate: Date | null;
+        frozenUntil: Date | null;
+        agreementUrl: string | null;
+    }>;
+    getSubscriptions(): Promise<({
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            branch: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            aadhaarNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+        };
+        plan: {
+            id: string;
+            name: string;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+            price: number;
+            durationInMonths: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        endDate: Date;
+        memberId: string;
+        planId: string;
+        isFrozen: boolean;
+        frozenDate: Date | null;
+        frozenUntil: Date | null;
+        agreementUrl: string | null;
+    })[]>;
+}
