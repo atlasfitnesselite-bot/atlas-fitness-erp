@@ -1,0 +1,1519 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                    String           @id @default(uuid())
+  email                 String           @unique
+  password              String
+  name                  String
+  isActive              Boolean          @default(true)
+  resetToken            String?
+  resetTokenExpiry      DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  auditLogs             AuditLog[]
+  companySettings       CompanySettings?
+  employee              Employee?
+  loginHistory          LoginHistory[]
+  notifications         Notification[]
+  sessions              Session[]
+  approvedShiftRequests ShiftRequest[]
+  themeSettings         ThemeSettings?
+  userPreferences       UserPreferences?
+  userRoles             UserRole[]
+  expenses              Expense[]
+  assignedTasks         Task[]           @relation(name: "TaskAssigner")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       UserRole[]
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  action      String
+  resource    String
+  description String?
+  createdAt   DateTime         @default(now())
+  roles       RolePermission[]
+
+  @@unique([action, resource])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  ipAddress String?
+  userAgent String?
+  status    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  resource  String
+  details   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   @default("General")
+  status    String   @default("Unread")
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CompanySettings {
+  id             String   @id @default(uuid())
+  companyName    String   @default("Atlas Fitness")
+  companyLogo    String?
+  companyContact String?
+  timezone       String   @default("UTC")
+  dateFormat     String   @default("YYYY-MM-DD")
+  userId         String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ThemeSettings {
+  id             String   @id @default(uuid())
+  primaryColor   String   @default("#DC2626")
+  secondaryColor String   @default("#0F172A")
+  mode           String   @default("light")
+  userId         String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPreferences {
+  id          String   @id @default(uuid())
+  language    String   @default("en")
+  emailAlerts Boolean  @default(true)
+  pushAlerts  Boolean  @default(true)
+  userId      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Employee {
+  id                    String                  @id @default(uuid())
+  employeeId            String                  @unique
+  userId                String?                 @unique
+  firstName             String
+  lastName              String
+  profilePicture        String?
+  gender                String?
+  dateOfBirth           DateTime?
+  bloodGroup            String?
+  maritalStatus         String?
+  nationality           String?
+  mobile                String?
+  email                 String                  @unique
+  departmentId          String?
+  designationId         String?
+  employmentTypeId      String?
+  joiningDate           DateTime
+  probationEnd          DateTime?
+  confirmationDate      DateTime?
+  managerId             String?
+  workLocation          String?
+  status                String                  @default("ACTIVE")
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  hashedPin             String?
+  attendances           Attendance[]
+  corrections           AttendanceCorrection[]
+  attendanceLogs        AttendanceLog[]
+  attendanceSummaries   AttendanceSummary[]
+  breakHistories        BreakHistory[]
+  earlyExits            EarlyExit[]
+  emergencyContacts     EmergencyContact[]
+  department            Department?             @relation(fields: [departmentId], references: [id])
+  designation           Designation?            @relation(fields: [designationId], references: [id])
+  employmentType        EmploymentType?         @relation(fields: [employmentTypeId], references: [id])
+  manager               Employee?               @relation("ManagerHierarchy", fields: [managerId], references: [id])
+  subordinates          Employee[]              @relation("ManagerHierarchy")
+  user                  User?                   @relation(fields: [userId], references: [id])
+  addresses             EmployeeAddress[]
+  documents             EmployeeDocument[]
+  notes                 EmployeeNote[]
+  statusHistory         EmployeeStatusHistory[]
+  timeline              EmployeeTimeline[]
+  govDocs               GovernmentDocument?
+  lateRecords           LateRecord[]
+  managerLeaveApprovals LeaveApproval[]         @relation("ManagerLeaveApprovals")
+  leaveBalances         LeaveBalance[]
+  leaveRequests         LeaveRequest[]
+  overtimes             Overtime[]
+  salaryInfo            SalaryInformation?
+  shiftAssignments      ShiftAssignment[]
+  shiftExceptions       ShiftException[]
+  shiftRequests         ShiftRequest[]          @relation("EmployeeRequests")
+  targetShiftRequests   ShiftRequest[]          @relation("TargetEmployeeRequests")
+  weeklyOffs            WeeklyOff[]
+  ptSessions            PTSession[]
+  fitnessPlans          FitnessPlan[]
+  payrollStructure      PayrollStructure?
+  salarySlips           SalarySlip[]
+  commissions           TrainerCommission[]
+  groupClasses          GroupClass[]
+  memberPtPackages      MemberPTPackage[]
+  cleaningChecklists    CleaningChecklist[]
+  tasks                 Task[]                  @relation(name: "TaskAssignee")
+  progressPhotos        ClientProgressPhoto[]
+}
+
+model Department {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  code        String      @unique
+  description String?
+  status      String      @default("ACTIVE")
+  managerId   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  employees   Employee[]
+  holidays    Holiday[]
+  weeklyOffs  WeeklyOff[]
+}
+
+model Designation {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  level       String?
+  description String?
+  status      String     @default("ACTIVE")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+}
+
+model EmploymentType {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  status      String     @default("ACTIVE")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+}
+
+model EmployeeAddress {
+  id          String   @id @default(uuid())
+  employeeId  String
+  type        String
+  addressLine String
+  city        String
+  state       String
+  country     String
+  postalCode  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyContact {
+  id           String   @id @default(uuid())
+  employeeId   String
+  name         String
+  relationship String
+  mobile       String
+  email        String?
+  address      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model SalaryInformation {
+  id            String   @id @default(uuid())
+  employeeId    String   @unique
+  structure     String
+  basicSalary   Float
+  allowances    Float    @default(0)
+  bankName      String?
+  accountNumber String?
+  ifscCode      String?
+  upi           String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model GovernmentDocument {
+  id             String   @id @default(uuid())
+  employeeId     String   @unique
+  aadhaarNumber  String?
+  panNumber      String?
+  passport       String?
+  drivingLicense String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeDocument {
+  id         String   @id @default(uuid())
+  employeeId String
+  name       String
+  category   String   @default("GENERAL") // CONTRACT, CERTIFICATE, SALARY_SLIP, MEDICAL, GENERAL
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  mimeType   String
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeNote {
+  id         String   @id @default(uuid())
+  employeeId String
+  authorId   String
+  content    String
+  type       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeTimeline {
+  id          String   @id @default(uuid())
+  employeeId  String
+  event       String
+  description String
+  createdAt   DateTime @default(now())
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeStatusHistory {
+  id          String   @id @default(uuid())
+  employeeId  String
+  oldStatus   String?
+  newStatus   String
+  reason      String?
+  changedById String?
+  createdAt   DateTime @default(now())
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Attendance {
+  id              String                 @id @default(uuid())
+  employeeId      String
+  date            DateTime
+  clockIn         DateTime?
+  clockOut        DateTime?
+  breakStart      DateTime?
+  breakEnd        DateTime?
+  workingHours    Float                  @default(0)
+  breakDuration   Float                  @default(0)
+  overtime        Float                  @default(0)
+  lateMinutes     Float                  @default(0)
+  earlyExit       Boolean                @default(false)
+  status          String                 @default("ABSENT")
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  employee        Employee               @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  audits          AttendanceAudit[]
+  corrections     AttendanceCorrection[]
+  logs            AttendanceLog[]
+  breakHistories  BreakHistory[]
+  earlyExits      EarlyExit[]
+  lateRecords     LateRecord[]
+  overtimeRecords Overtime[]
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+}
+
+model AttendanceLog {
+  id           String      @id @default(uuid())
+  employeeId   String
+  attendanceId String?
+  type         String
+  timestamp    DateTime    @default(now())
+  method       String      @default("PIN")
+  device       String?
+  location     String?
+  createdAt    DateTime    @default(now())
+  attendance   Attendance? @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([timestamp])
+}
+
+model AttendanceCorrection {
+  id            String      @id @default(uuid())
+  employeeId    String
+  attendanceId  String?
+  requestedById String
+  approvedById  String?
+  correctedDate DateTime
+  type          String
+  originalTime  DateTime?
+  correctedTime DateTime
+  reason        String
+  status        String      @default("PENDING")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  attendance    Attendance? @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee      Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+model AttendanceSettings {
+  id              String   @id @default(uuid())
+  officeStartTime String   @default("09:00")
+  officeEndTime   String   @default("17:00")
+  graceTime       Int      @default(15)
+  lateThreshold   Int      @default(30)
+  breakDuration   Int      @default(45)
+  minWorkingHours Float    @default(4.0)
+  maxWorkingHours Float    @default(12.0)
+  autoLogoutTime  Int      @default(10)
+  deviceName      String   @default("Reception Tablet")
+  timezone        String   @default("UTC")
+  dateFormat      String   @default("YYYY-MM-DD")
+  timeFormat      String   @default("HH:mm")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AttendanceDevice {
+  id             String         @id @default(uuid())
+  name           String
+  code           String         @unique
+  status         String         @default("ACTIVE")
+  lastActive     DateTime?
+  createdAt      DateTime       @default(now())
+  branch         String?
+  managerExitPin String?
+  sessions       KioskSession[]
+}
+
+model KioskSession {
+  id        String           @id @default(uuid())
+  deviceId  String
+  token     String           @unique
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+  device    AttendanceDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+}
+
+model Shift {
+  id                  String            @id @default(uuid())
+  name                String
+  code                String            @unique
+  color               String            @default("#6366f1")
+  description         String?
+  type                String            @default("MORNING")
+  startTime           String            @default("09:00")
+  endTime             String            @default("17:00")
+  breakDuration       Int               @default(45)
+  gracePeriod         Int               @default(15)
+  lateThreshold       Int               @default(30)
+  earlyExitThreshold  Int               @default(15)
+  minWorkingHours     Float             @default(4.0)
+  maxWorkingHours     Float             @default(12.0)
+  overtimeEligibility Boolean           @default(true)
+  status              String            @default("ACTIVE")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  assignments         ShiftAssignment[]
+  exceptions          ShiftException[]
+  currentShifts       ShiftRequest[]    @relation("CurrentShift")
+  requestedShifts     ShiftRequest[]    @relation("RequestedShift")
+}
+
+model ShiftAssignment {
+  id         String    @id @default(uuid())
+  employeeId String
+  shiftId    String
+  startDate  DateTime
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift      Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([shiftId])
+}
+
+model ShiftRotation {
+  id               String   @id @default(uuid())
+  name             String
+  frequency        String
+  rotationCycle    Int      @default(7)
+  startDate        DateTime
+  nextRotationDate DateTime
+  status           String   @default("ACTIVE")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  employeeIds      String
+  shiftSequence    String
+}
+
+model ShiftRequest {
+  id               String    @id @default(uuid())
+  employeeId       String
+  requestedShiftId String?
+  currentShiftId   String?
+  targetDate       DateTime
+  type             String    @default("CHANGE")
+  targetEmployeeId String?
+  reason           String
+  status           String    @default("PENDING")
+  approvedById     String?
+  managerComment   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  approvedBy       User?     @relation(fields: [approvedById], references: [id])
+  currentShift     Shift?    @relation("CurrentShift", fields: [currentShiftId], references: [id])
+  employee         Employee  @relation("EmployeeRequests", fields: [employeeId], references: [id], onDelete: Cascade)
+  requestedShift   Shift?    @relation("RequestedShift", fields: [requestedShiftId], references: [id])
+  targetEmployee   Employee? @relation("TargetEmployeeRequests", fields: [targetEmployeeId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+model ShiftHistory {
+  id            String   @id @default(uuid())
+  action        String
+  details       String
+  performedById String?
+  createdAt     DateTime @default(now())
+}
+
+model WeeklyOff {
+  id           String      @id @default(uuid())
+  employeeId   String?
+  departmentId String?
+  days         String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  employee     Employee?   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([departmentId])
+}
+
+model ShiftException {
+  id         String    @id @default(uuid())
+  employeeId String?
+  shiftId    String?
+  date       DateTime
+  reason     String
+  type       String    @default("HOLIDAY")
+  createdAt  DateTime  @default(now())
+  employee   Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift      Shift?    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([date])
+}
+
+model LeaveType {
+  id                  String         @id @default(uuid())
+  name                String
+  code                String         @unique
+  description         String?
+  isPaid              Boolean        @default(true)
+  maxDaysPerYear      Float          @default(0)
+  carryForwardAllowed Boolean        @default(false)
+  encashmentAllowed   Boolean        @default(false)
+  requiresApproval    Boolean        @default(true)
+  status              String         @default("ACTIVE")
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  balances            LeaveBalance[]
+  requests            LeaveRequest[]
+}
+
+model LeaveBalance {
+  id             String    @id @default(uuid())
+  employeeId     String
+  leaveTypeId    String
+  year           Int
+  allocated      Float     @default(0)
+  used           Float     @default(0)
+  carriedForward Float     @default(0)
+  balance        Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType      LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@index([employeeId])
+}
+
+model LeaveRequest {
+  id            String          @id @default(uuid())
+  employeeId    String
+  leaveTypeId   String
+  fromDate      DateTime
+  toDate        DateTime
+  isHalfDay     Boolean         @default(false)
+  reason        String
+  attachmentUrl String?
+  status        String          @default("PENDING")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  approvals     LeaveApproval[]
+  history       LeaveHistory[]
+  employee      Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType     LeaveType       @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+model LeaveApproval {
+  id             String       @id @default(uuid())
+  leaveRequestId String
+  managerId      String?
+  status         String
+  comments       String?
+  createdAt      DateTime     @default(now())
+  leaveRequest   LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+  manager        Employee?    @relation("ManagerLeaveApprovals", fields: [managerId], references: [id])
+}
+
+model LeaveHistory {
+  id             String       @id @default(uuid())
+  leaveRequestId String
+  action         String
+  details        String?
+  performedById  String?
+  createdAt      DateTime     @default(now())
+  leaveRequest   LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+}
+
+model Holiday {
+  id           String      @id @default(uuid())
+  name         String
+  date         DateTime
+  description  String?
+  departmentId String?
+  status       String      @default("ACTIVE")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  department   Department? @relation(fields: [departmentId], references: [id])
+}
+
+model AttendanceAnalytics {
+  id             String   @id @default(uuid())
+  date           DateTime @unique
+  totalEmployees Int      @default(0)
+  presentCount   Int      @default(0)
+  absentCount    Int      @default(0)
+  lateCount      Int      @default(0)
+  onLeaveCount   Int      @default(0)
+  holidayCount   Int      @default(0)
+  avgWorkingHrs  Float    @default(0)
+  overtimeCount  Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model AttendanceReport {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  format      String
+  generatedBy String
+  fileUrl     String?
+  status      String   @default("GENERATED")
+  createdAt   DateTime @default(now())
+}
+
+model AttendanceSummary {
+  id              String   @id @default(uuid())
+  employeeId      String
+  month           Int
+  year            Int
+  workingDays     Int      @default(0)
+  presentDays     Int      @default(0)
+  absentDays      Int      @default(0)
+  paidLeave       Int      @default(0)
+  unpaidLeave     Int      @default(0)
+  lateCount       Int      @default(0)
+  lateMinutes     Float    @default(0)
+  overtimeHours   Float    @default(0)
+  holidayWork     Float    @default(0)
+  weeklyOffWork   Float    @default(0)
+  breakHours      Float    @default(0)
+  totalWorkingHrs Float    @default(0)
+  salaryDays      Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, month, year])
+  @@index([employeeId])
+}
+
+model Overtime {
+  id           String     @id @default(uuid())
+  attendanceId String
+  employeeId   String
+  hours        Float
+  status       String     @default("PENDING")
+  approvedById String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee     Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@index([employeeId])
+}
+
+model LateRecord {
+  id             String     @id @default(uuid())
+  attendanceId   String
+  employeeId     String
+  lateMinutes    Int
+  graceApplied   Int        @default(0)
+  penaltyApplied Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  attendance     Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee       Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@index([employeeId])
+}
+
+model EarlyExit {
+  id           String     @id @default(uuid())
+  attendanceId String
+  employeeId   String
+  earlyMinutes Int
+  status       String     @default("PENDING")
+  approvedById String?
+  createdAt    DateTime   @default(now())
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee     Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+  @@index([employeeId])
+}
+
+model BreakHistory {
+  id           String     @id @default(uuid())
+  attendanceId String
+  employeeId   String
+  startTime    DateTime
+  endTime      DateTime?
+  duration     Float      @default(0)
+  exceededBy   Float      @default(0)
+  createdAt    DateTime   @default(now())
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  employee     Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([attendanceId])
+}
+
+model AttendanceAudit {
+  id            String      @id @default(uuid())
+  attendanceId  String?
+  action        String
+  details       String?
+  performedById String?
+  ipAddress     String?
+  device        String?
+  createdAt     DateTime    @default(now())
+  attendance    Attendance? @relation(fields: [attendanceId], references: [id])
+
+  @@index([attendanceId])
+}
+
+model Member {
+  id                   String                   @id @default(uuid())
+  memberId             String                   @unique
+  accessCardId         String?                  @unique
+  firstName            String
+  lastName             String
+  profilePicture       String?
+  gender               String?
+  dateOfBirth          DateTime?
+  bloodGroup           String?
+  nationality          String?
+  occupation           String?
+  mobile               String                   @unique
+  altMobile            String?
+  email                String?                  @unique
+  joiningDate          DateTime                 @default(now())
+  branch               String?                  @default("Main Branch")
+  status               String                   @default("ACTIVE")
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  aadhaarNumber        String?                  @unique
+  maritalStatus        String?
+  passportNumber       String?                  @unique
+  addresses            MemberAddress[]
+  documents            MemberDocument[]
+  emergencyContacts    MemberEmergencyContact[]
+  fitnessAssessment    MemberFitnessAssessment?
+  measurements         MemberMeasurement[]
+  medical              MemberMedical?
+  notes                MemberNote[]
+  references           MemberReference?
+  statusHistory        MemberStatusHistory[]
+  timeline             MemberTimeline[]
+  subscriptions        MemberSubscription[]
+  invoices             Invoice[]
+  ptSessions           PTSession[]
+  fitnessPlans         FitnessPlan[]
+  checkIns             MemberCheckIn[]
+  classBookings        ClassBooking[]
+  progressPhotos       ProgressPhoto[]
+  ptPackages           MemberPTPackage[]
+  cafeOrders           CafeOrder[]
+  feedback             MemberFeedback[]
+  clientProgressPhotos ClientProgressPhoto[]
+}
+
+model MemberAddress {
+  id          String   @id @default(uuid())
+  memberId    String
+  type        String   @default("HOME")
+  addressLine String
+  city        String
+  state       String
+  country     String
+  postalCode  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model ClientProgressPhoto {
+  id        String    @id @default(uuid())
+  memberId  String
+  trainerId String?
+  photoUrl  String
+  type      String    @default("PROGRESS") // BEFORE, AFTER, PROGRESS
+  notes     String?
+  date      DateTime  @default(now())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  trainer   Employee? @relation(fields: [trainerId], references: [id], onDelete: SetNull)
+}
+
+model MemberEmergencyContact {
+  id           String   @id @default(uuid())
+  memberId     String
+  name         String
+  relationship String
+  mobile       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  address      String?
+  altMobile    String?
+  email        String?
+  notes        String?
+  priority     Int      @default(1)
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberReference {
+  id         String   @id @default(uuid())
+  memberId   String   @unique
+  referredBy String?
+  leadSource String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberTimeline {
+  id          String   @id @default(uuid())
+  memberId    String
+  event       String
+  description String
+  createdAt   DateTime @default(now())
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberStatusHistory {
+  id          String   @id @default(uuid())
+  memberId    String
+  oldStatus   String?
+  newStatus   String
+  reason      String?
+  changedById String?
+  createdAt   DateTime @default(now())
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberMedical {
+  id                String   @id @default(uuid())
+  memberId          String   @unique
+  height            Float?
+  weight            Float?
+  bmi               Float?
+  bloodPressure     String?
+  bloodGroup        String?
+  medicalConditions String?
+  allergies         String?
+  asthma            Boolean  @default(false)
+  diabetes          Boolean  @default(false)
+  heartDisease      Boolean  @default(false)
+  recentSurgery     String?
+  injuries          String?
+  medications       String?
+  doctorName        String?
+  doctorContact     String?
+  medicalNotes      String?
+  updatedAt         DateTime @updatedAt
+  member            Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberFitnessAssessment {
+  id                String   @id @default(uuid())
+  memberId          String   @unique
+  fitnessGoal       String?
+  bodyFatPercentage Float?
+  muscleMass        Float?
+  visceralFat       Float?
+  bmr               Float?
+  tdee              Float?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  member            Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberMeasurement {
+  id       String   @id @default(uuid())
+  memberId String
+  chest    Float?
+  waist    Float?
+  hip      Float?
+  neck     Float?
+  biceps   Float?
+  forearm  Float?
+  thigh    Float?
+  calf     Float?
+  date     DateTime @default(now())
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberDocument {
+  id           String   @id @default(uuid())
+  memberId     String
+  type         String
+  category     String   @default("GENERAL") // PT_AGREEMENT, MEDICAL, INVOICE, GENERAL
+  title        String
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberNote {
+  id        String   @id @default(uuid())
+  memberId  String
+  category  String
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// Phase 2: Memberships & Billing
+// ==========================================
+
+model MembershipPlan {
+  id               String               @id @default(uuid())
+  name             String
+  durationInMonths Int
+  price            Float
+  description      String?
+  isActive         Boolean              @default(true)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  subscriptions    MemberSubscription[]
+}
+
+model MemberSubscription {
+  id           String         @id @default(uuid())
+  memberId     String
+  planId       String
+  startDate    DateTime
+  endDate      DateTime
+  status       String // ACTIVE, EXPIRED, CANCELLED, FROZEN
+  isFrozen     Boolean        @default(false)
+  frozenDate   DateTime?
+  frozenUntil  DateTime?
+  agreementUrl String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  member       Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  plan         MembershipPlan @relation(fields: [planId], references: [id])
+  invoices     Invoice[]
+}
+
+model Invoice {
+  id                   String              @id @default(uuid())
+  memberId             String
+  subscriptionId       String?
+  amount               Float
+  dueDate              DateTime
+  status               String // PAID, PENDING, OVERDUE
+  paymentMethod        String?
+  transactionReference String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  member               Member              @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  subscription         MemberSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+}
+
+// ==========================================
+// Phase 2: Personal Training (PT)
+// ==========================================
+
+model PTPackage {
+  id               String            @id @default(uuid())
+  name             String
+  numberOfSessions Int
+  price            Float
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  memberPackages   MemberPTPackage[]
+}
+
+model PTSession {
+  id                 String   @id @default(uuid())
+  trainerId          String
+  memberId           String
+  date               DateTime
+  startTime          String
+  endTime            String
+  status             String // SCHEDULED, COMPLETED, CANCELLED, NO_SHOW
+  notes              String?
+  duration           Int? // Session duration in minutes
+  exercisesCompleted String? // JSON string or comma-separated list
+  intensity          String? // LOW, MEDIUM, HIGH, EXTREME
+  clientFeedback     String?
+  signatureUrl       String? // Optional signature image
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  trainer            Employee @relation(fields: [trainerId], references: [id])
+  member             Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model MemberPTPackage {
+  id                String    @id @default(uuid())
+  memberId          String
+  packageId         String
+  trainerId         String?
+  sessionsTotal     Int
+  sessionsRemaining Int
+  startDate         DateTime
+  expiryDate        DateTime
+  status            String    @default("ACTIVE") // ACTIVE, EXHAUSTED, EXPIRED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  member            Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  package           PTPackage @relation(fields: [packageId], references: [id])
+  trainer           Employee? @relation(fields: [trainerId], references: [id])
+}
+
+model FitnessPlan {
+  id        String   @id @default(uuid())
+  memberId  String
+  trainerId String
+  type      String // WORKOUT, DIET
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  trainer   Employee @relation(fields: [trainerId], references: [id])
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// Phase 2: Payroll & Commissions
+// ==========================================
+
+model PayrollStructure {
+  id                     String  @id @default(uuid())
+  employeeId             String  @unique
+  baseSalary             Float
+  standardAllowances     String?
+  standardDeductions     String?
+  ptCommissionPercentage Float   @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model SalarySlip {
+  id         String @id @default(uuid())
+  employeeId String
+  month      Int
+  year       Int
+
+  // Base components
+  baseSalary Float @default(0)
+
+  // Attendance components
+  workingDays   Int   @default(0)
+  leaveDays     Int   @default(0)
+  lateMinutes   Int   @default(0)
+  overtimeHours Float @default(0)
+
+  // Earnings
+  standardAllowances Float @default(0)
+  overtimePay        Float @default(0)
+  ptCommission       Float @default(0)
+  bonuses            Float @default(0)
+
+  // Deductions
+  standardDeductions Float @default(0)
+  latePenalties      Float @default(0)
+  otherPenalties     Float @default(0)
+
+  // Totals
+  grossPay Float
+  netPay   Float
+
+  status String // DRAFT, PAID, PROCESSING
+
+  // Detailed JSON break-downs
+  breakdown String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model TrainerCommission {
+  id        String   @id @default(uuid())
+  trainerId String
+  sourceId  String
+  amount    Float
+  status    String // PENDING, PAID
+  month     Int? // Added for easy aggregation
+  year      Int? // Added for easy aggregation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  trainer   Employee @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+}
+
+// ==========================================
+// Phase 3: Expenses, Assets, Check-ins
+// ==========================================
+
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  expenses    Expense[]
+}
+
+model Expense {
+  id           String          @id @default(uuid())
+  categoryId   String
+  amount       Float
+  description  String
+  date         DateTime        @default(now())
+  recordedById String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  category     ExpenseCategory @relation(fields: [categoryId], references: [id])
+  recordedBy   User            @relation(fields: [recordedById], references: [id])
+}
+
+model Asset {
+  id                  String    @id @default(uuid())
+  name                String
+  category            String // EQUIPMENT, FURNITURE, IT, OTHER
+  purchaseDate        DateTime
+  purchasePrice       Float
+  status              String // ACTIVE, MAINTENANCE, RETIRED
+  vendor              String?
+  lastMaintenanceDate DateTime?
+  nextMaintenanceDate DateTime?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model MemberCheckIn {
+  id        String   @id @default(uuid())
+  memberId  String
+  timestamp DateTime @default(now())
+  deviceId  String?
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+// --- Cafe Management ---
+model CafeItem {
+  id           String                     @id @default(uuid())
+  name         String
+  description  String?
+  price        Float
+  stock        Int                        @default(0)
+  minStock     Int                        @default(5)
+  category     String                     @default("BEVERAGE")
+  imageUrl     String?
+  isAvailable  Boolean                    @default(true)
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  orderItems   CafeOrderItem[]
+  transactions CafeInventoryTransaction[]
+}
+
+model CafeOrder {
+  id           String          @id @default(uuid())
+  orderNumber  String          @unique
+  totalAmount  Float
+  status       String          @default("PENDING") // PENDING, PREPARING, READY, COMPLETED, CANCELLED
+  customerName String?
+  memberId     String?
+  tableNumber  String?
+  prepTime     Int? // estimated or actual prep time in minutes
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  items        CafeOrderItem[]
+  member       Member?         @relation(fields: [memberId], references: [id])
+}
+
+model CafeOrderItem {
+  id       String    @id @default(uuid())
+  orderId  String
+  itemId   String
+  quantity Int       @default(1)
+  price    Float // Price at time of order
+  notes    String? // Special instructions
+  order    CafeOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item     CafeItem  @relation(fields: [itemId], references: [id])
+}
+
+model Supplier {
+  id          String   @id @default(uuid())
+  name        String
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  category    String? // FOOD, BEVERAGE, EQUIPMENT, etc.
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CafeInventoryTransaction {
+  id         String   @id @default(uuid())
+  itemId     String
+  type       String // IN, OUT, ADJUSTMENT, SPOILAGE
+  quantity   Int
+  notes      String?
+  recordedBy String? // Employee ID
+  createdAt  DateTime @default(now())
+  item       CafeItem @relation(fields: [itemId], references: [id])
+}
+
+// --- Maintenance ---
+model MaintenanceTicket {
+  id         String    @id @default(uuid())
+  equipment  String
+  issue      String
+  priority   String    @default("MEDIUM")
+  status     String    @default("PENDING")
+  reportedBy String
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+// --- Cleaning ---
+model CleaningArea {
+  id          String              @id @default(uuid())
+  name        String              @unique // Gym Floor, Washrooms, etc.
+  description String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  checklists  CleaningChecklist[]
+}
+
+model CleaningChecklist {
+  id         String         @id @default(uuid())
+  areaId     String
+  date       DateTime       @default(now())
+  shift      String         @default("MORNING")
+  assignedTo String? // Employee ID
+  status     String         @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, VERIFIED
+  verifiedBy String? // User/Employee ID
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  area       CleaningArea   @relation(fields: [areaId], references: [id])
+  assignee   Employee?      @relation(fields: [assignedTo], references: [id])
+  tasks      CleaningTask[]
+}
+
+model CleaningTask {
+  id          String            @id @default(uuid())
+  checklistId String
+  taskName    String
+  isCompleted Boolean           @default(false)
+  completedAt DateTime?
+  photoProof  String?
+  remarks     String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  checklist   CleaningChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+}
+
+model VisitorEntry {
+  id        String    @id @default(uuid())
+  name      String
+  phone     String
+  purpose   String?
+  checkIn   DateTime  @default(now())
+  checkOut  DateTime?
+  handledBy String? // Employee ID who handled the visitor
+}
+
+model GroupClass {
+  id           String         @id @default(uuid())
+  name         String
+  instructorId String
+  instructor   Employee       @relation(fields: [instructorId], references: [id])
+  date         DateTime
+  startTime    String
+  endTime      String
+  capacity     Int
+  bookings     ClassBooking[]
+  status       String         @default("SCHEDULED")
+}
+
+model ClassBooking {
+  id        String     @id @default(uuid())
+  classId   String
+  memberId  String
+  class     GroupClass @relation(fields: [classId], references: [id])
+  member    Member     @relation(fields: [memberId], references: [id])
+  status    String     @default("BOOKED")
+  createdAt DateTime   @default(now())
+
+  @@unique([classId, memberId])
+}
+
+model KitchenChecklist {
+  id          String   @id @default(uuid())
+  type        String // 'OPENING' or 'CLOSING'
+  completedBy String
+  items       String // JSON string of checked items
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model FoodPrepLog {
+  id         String    @id @default(uuid())
+  itemName   String
+  quantity   Int
+  preparedBy String
+  expiryDate DateTime?
+  notes      String?
+  createdAt  DateTime  @default(now())
+}
+
+model HygieneLog {
+  id        String   @id @default(uuid())
+  area      String
+  cleanedBy String
+  status    String // 'PASS', 'FAIL'
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  category    String    @default("GENERAL") // CLEANING, MAINTENANCE, INVENTORY, KITCHEN, GENERAL
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+  assignedTo  String? // Employee ID
+  assignedBy  String? // User ID who created
+  dueDate     DateTime?
+  completedAt DateTime?
+  photoProof  String? // File path to photo
+  remarks     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  assignee    Employee? @relation(name: "TaskAssignee", fields: [assignedTo], references: [id])
+  assigner    User?     @relation(name: "TaskAssigner", fields: [assignedBy], references: [id])
+}
+
+model Equipment {
+  id              String        @id @default(uuid())
+  equipmentId     String        @unique
+  name            String
+  category        String        @default("GYM") // GYM, CARDIO, STRENGTH, CROSSFIT, OTHER
+  brand           String?
+  model           String?
+  purchaseDate    DateTime?
+  purchasePrice   Float?
+  warrantyExpiry  DateTime?
+  location        String?
+  status          String        @default("ACTIVE") // ACTIVE, MAINTENANCE, RETIRED, FAULTY
+  lastServiceDate DateTime?
+  nextServiceDate DateTime?
+  qrCode          String? // Generated QR code data
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  faultReports    FaultReport[]
+}
+
+model FaultReport {
+  id              String    @id @default(uuid())
+  equipmentId     String
+  reportedBy      String
+  description     String
+  severity        String    @default("MEDIUM")
+  status          String    @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  resolvedAt      DateTime?
+  technicianNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  equipment       Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+}
+
+model CompanyDocument {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  category    String   @default("GENERAL") // POLICY, TEMPLATE, GENERAL
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProgressPhoto {
+  id       String   @id @default(uuid())
+  memberId String
+  photoUrl String
+  date     DateTime @default(now())
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model ChatRoom {
+  id           String            @id @default(uuid())
+  name         String?
+  type         String            @default("DIRECT") // DIRECT, GROUP
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+}
+
+model ChatParticipant {
+  id       String   @id @default(uuid())
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  roomId    String
+  senderId  String
+  content   String
+  type      String   @default("TEXT") // TEXT, IMAGE, FILE
+  readBy    String   @default("[]")
+  createdAt DateTime @default(now())
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model MemberFeedback {
+  id        String   @id @default(uuid())
+  memberId  String
+  category  String   @default("GENERAL")
+  rating    Int
+  comments  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
