@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { MessageCircle, Send, Plus, Search, Users, ArrowLeft, Check, CheckCheck, ClipboardList } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '../../lib/api';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
+import { toast } from 'sonner';
 
 const timeAgo = (dateStr) => {
   if (!dateStr) return '';
