@@ -49,6 +49,24 @@ async function main() {
       password: 'Password123',
       role: 'TRAINER',
     },
+    {
+      name: 'Reception User',
+      email: 'reception@atlasfitness.com',
+      password: 'Password123',
+      role: 'RECEPTION',
+    },
+    {
+      name: 'Cafe User',
+      email: 'cafe@atlasfitness.com',
+      password: 'Password123',
+      role: 'CAFE',
+    },
+    {
+      name: 'Cleaning User',
+      email: 'cleaning@atlasfitness.com',
+      password: 'Password123',
+      role: 'CLEANING',
+    },
   ];
 
   for (const u of defaultUsers) {
@@ -84,8 +102,11 @@ async function main() {
     let pinCode = '1234';
     if (u.role === 'MANAGER') pinCode = '4321';
     if (u.role === 'OWNER') pinCode = '0000';
+    if (u.role === 'RECEPTION') pinCode = '1111';
+    if (u.role === 'CAFE') pinCode = '2222';
+    if (u.role === 'CLEANING') pinCode = '3333';
 
-    const empId = `EMP-${u.role === 'OWNER' ? '001' : u.role === 'MANAGER' ? '002' : '003'}`;
+    const empId = `EMP-${u.role === 'OWNER' ? '001' : u.role === 'MANAGER' ? '002' : u.role === 'TRAINER' ? '003' : u.role === 'RECEPTION' ? '004' : u.role === 'CAFE' ? '005' : '006'}`;
     const nameParts = u.name.split(' ');
     
     await prisma.employee.create({
