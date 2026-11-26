@@ -22,8 +22,8 @@ export declare class MembersController {
             updatedAt: Date;
             mobile: string;
             notes: string | null;
-            relationship: string;
             address: string | null;
+            relationship: string;
             memberId: string;
             altMobile: string | null;
             priority: number;
@@ -132,12 +132,17 @@ export declare class MembersController {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     findAll(query: any): Promise<{
         data: {
@@ -157,12 +162,17 @@ export declare class MembersController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         }[];
         meta: {
             total: number;
@@ -180,8 +190,8 @@ export declare class MembersController {
             updatedAt: Date;
             mobile: string;
             notes: string | null;
-            relationship: string;
             address: string | null;
+            relationship: string;
             memberId: string;
             altMobile: string | null;
             priority: number;
@@ -282,6 +292,7 @@ export declare class MembersController {
                 updatedAt: Date;
                 description: string | null;
                 price: number;
+                gstRate: number;
                 durationInMonths: number;
             };
         } & {
@@ -328,12 +339,17 @@ export declare class MembersController {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     update(id: string, updateMemberDto: UpdateMemberDto, req: RequestWithUser): Promise<{
         id: string;
@@ -352,12 +368,17 @@ export declare class MembersController {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     remove(id: string, req: RequestWithUser): Promise<{
         id: string;
@@ -376,12 +397,17 @@ export declare class MembersController {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     getTimeline(id: string): Promise<{
         id: string;
@@ -440,12 +466,17 @@ export declare class MembersController {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     addNote(id: string, body: any, req: RequestWithUser): Promise<{
         id: string;
@@ -534,16 +565,34 @@ export declare class MembersController {
         agreementUrl: string | null;
     }>;
     getInvoices(id: string): Promise<{
+        memberAddress: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        notes: string | null;
         memberId: string;
+        planId: string | null;
+        gstRate: number;
+        invoiceNumber: string | null;
         subscriptionId: string | null;
+        memberGstNumber: string | null;
+        memberPanNumber: string | null;
         amount: number;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        lateFee: number;
+        discount: number;
+        discountType: string | null;
+        totalAmount: number;
+        paidAmount: number;
         dueDate: Date;
+        paidDate: Date | null;
         paymentMethod: string | null;
         transactionReference: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }[]>;
     getAttendance(id: string): Promise<{
         id: string;

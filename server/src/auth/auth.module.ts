@@ -4,14 +4,13 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { getJwtSecret } from './jwt.config';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret:
-        process.env.JWT_SECRET ||
-        'super-secret-key-for-atlas-fitness-development-only',
+      secret: getJwtSecret(),
       signOptions: { expiresIn: '1d' },
     }),
   ],

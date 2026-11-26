@@ -53,12 +53,17 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         };
     } & {
         id: string;
@@ -112,12 +117,17 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         };
         trainer: {
             id: string;
@@ -300,12 +310,17 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         };
         ptPackages: ({
             trainer: {
@@ -622,4 +637,250 @@ export declare class PtService {
         revenueGenerated: number;
         clientCount: number;
     }[]>;
+    getTrainers(): Promise<{
+        id: string;
+        employeeId: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        mobile: string | null;
+        status: string;
+        designation: string;
+        baseSalary: number;
+        ptCommissionPercentage: number;
+        activeClients: number;
+        activePackages: number;
+        totalSessions: number;
+        completedSessions: number;
+        totalCommissions: number;
+    }[]>;
+    createTrainer(data: {
+        firstName: string;
+        lastName?: string;
+        email: string;
+        mobile: string;
+        password?: string;
+        baseSalary?: number;
+        ptCommissionPercentage?: number;
+        gender?: string;
+    }): Promise<{
+        id: string;
+        email: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        userId: string | null;
+        employeeId: string;
+        firstName: string;
+        lastName: string;
+        profilePicture: string | null;
+        gender: string | null;
+        dateOfBirth: Date | null;
+        bloodGroup: string | null;
+        maritalStatus: string | null;
+        nationality: string | null;
+        mobile: string | null;
+        departmentId: string | null;
+        designationId: string | null;
+        employmentTypeId: string | null;
+        joiningDate: Date;
+        probationEnd: Date | null;
+        confirmationDate: Date | null;
+        managerId: string | null;
+        workLocation: string | null;
+        hashedPin: string | null;
+    } | null>;
+    updateTrainer(id: string, data: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        mobile?: string;
+        status?: string;
+        baseSalary?: number;
+        ptCommissionPercentage?: number;
+    }): Promise<{
+        id: string;
+        email: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        userId: string | null;
+        employeeId: string;
+        firstName: string;
+        lastName: string;
+        profilePicture: string | null;
+        gender: string | null;
+        dateOfBirth: Date | null;
+        bloodGroup: string | null;
+        maritalStatus: string | null;
+        nationality: string | null;
+        mobile: string | null;
+        departmentId: string | null;
+        designationId: string | null;
+        employmentTypeId: string | null;
+        joiningDate: Date;
+        probationEnd: Date | null;
+        confirmationDate: Date | null;
+        managerId: string | null;
+        workLocation: string | null;
+        hashedPin: string | null;
+    }>;
+    deleteTrainer(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    getPtPackages(): Promise<({
+        _count: {
+            memberPackages: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        price: number;
+        numberOfSessions: number;
+    })[]>;
+    createPtPackage(data: {
+        name: string;
+        numberOfSessions: number;
+        price: number;
+    }): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        price: number;
+        numberOfSessions: number;
+    }>;
+    deletePtPackage(id: string): Promise<{
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        price: number;
+        numberOfSessions: number;
+    }>;
+    getAssignments(): Promise<({
+        member: {
+            id: string;
+            firstName: string;
+            lastName: string;
+            mobile: string;
+            memberId: string;
+        };
+        trainer: {
+            id: string;
+            employeeId: string;
+            firstName: string;
+            lastName: string;
+        } | null;
+        package: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            price: number;
+            numberOfSessions: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        expiryDate: Date;
+    })[]>;
+    assignTrainerToMember(data: {
+        memberId: string;
+        trainerId: string;
+        packageId?: string;
+        sessionsTotal?: number;
+        fee?: number;
+        startDate?: string;
+        expiryDate?: string;
+        createInvoice?: boolean;
+    }): Promise<{
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            branch: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            gstNumber: string | null;
+            aadhaarNumber: string | null;
+            panNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
+        };
+        trainer: {
+            id: string;
+            email: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            userId: string | null;
+            employeeId: string;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string | null;
+            departmentId: string | null;
+            designationId: string | null;
+            employmentTypeId: string | null;
+            joiningDate: Date;
+            probationEnd: Date | null;
+            confirmationDate: Date | null;
+            managerId: string | null;
+            workLocation: string | null;
+            hashedPin: string | null;
+        } | null;
+        package: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            price: number;
+            numberOfSessions: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        expiryDate: Date;
+    }>;
 }

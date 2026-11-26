@@ -5,12 +5,22 @@ export declare class SettingsService {
     constructor(prisma: PrismaService);
     getCompanySettings(): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
+        gstNumber: string | null;
+        address: string | null;
+        emailNotifications: boolean;
+        razorpayKeyId: string | null;
+        razorpayKeySecret: string | null;
+        smtpHost: string | null;
+        smtpPort: number | null;
+        smtpUser: string | null;
+        smtpPass: string | null;
         timezone: string;
         dateFormat: string;
     } | {
@@ -22,12 +32,22 @@ export declare class SettingsService {
     }>;
     updateCompanySettings(userId: string, dto: UpdateCompanySettingsDto): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
+        gstNumber: string | null;
+        address: string | null;
+        emailNotifications: boolean;
+        razorpayKeyId: string | null;
+        razorpayKeySecret: string | null;
+        smtpHost: string | null;
+        smtpPort: number | null;
+        smtpUser: string | null;
+        smtpPass: string | null;
         timezone: string;
         dateFormat: string;
     }>;

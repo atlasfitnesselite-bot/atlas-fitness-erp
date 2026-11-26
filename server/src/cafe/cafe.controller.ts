@@ -66,10 +66,40 @@ export class CafeController {
     return this.cafeService.getOrders();
   }
 
+  @Get('orders/:id')
+  @Roles('OWNER', 'MANAGER', 'CAFE')
+  getOrderById(@Param('id') id: string) {
+    return this.cafeService.getOrderById(id);
+  }
+
   @Post('orders')
   @Roles('OWNER', 'MANAGER', 'CAFE')
   createOrder(@Body() data: any) {
     return this.cafeService.createOrder(data);
+  }
+
+  @Post('orders/:id/pay')
+  @Roles('OWNER', 'MANAGER', 'CAFE')
+  payOrder(
+    @Param('id') id: string,
+    @Body() data: { paymentMethod: string; amount?: number },
+  ) {
+    return this.cafeService.payOrder(id, data);
+  }
+
+  @Post('orders/:id/razorpay/create')
+  @Roles('OWNER', 'MANAGER', 'CAFE')
+  createRazorpayOrder(@Param('id') id: string) {
+    return this.cafeService.createRazorpayOrder(id);
+  }
+
+  @Post('orders/:id/razorpay/verify')
+  @Roles('OWNER', 'MANAGER', 'CAFE')
+  verifyRazorpayPayment(
+    @Param('id') id: string,
+    @Body() body: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+  ) {
+    return this.cafeService.verifyRazorpayPayment(id, body);
   }
 
   @Put('orders/:id/status')

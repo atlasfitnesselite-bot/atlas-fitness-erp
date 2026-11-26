@@ -13,7 +13,10 @@ exports.PayInvoiceDto = void 0;
 const class_validator_1 = require("class-validator");
 class PayInvoiceDto {
     paymentMethod;
+    amount;
     transactionReference;
+    razorpayOrderId;
+    razorpayPaymentId;
 }
 exports.PayInvoiceDto = PayInvoiceDto;
 __decorate([
@@ -23,7 +26,23 @@ __decorate([
 ], PayInvoiceDto.prototype, "paymentMethod", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], PayInvoiceDto.prototype, "amount", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], PayInvoiceDto.prototype, "transactionReference", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PayInvoiceDto.prototype, "razorpayOrderId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], PayInvoiceDto.prototype, "razorpayPaymentId", void 0);
 //# sourceMappingURL=pay-invoice.dto.js.map

@@ -13,13 +13,22 @@ exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
+    keepAliveTimer = null;
     constructor() {
         super();
     }
     async onModuleInit() {
         await this.$connect();
+        this.keepAliveTimer = setInterval(() => {
+            this.$queryRaw `SELECT 1`.catch(() => {
+                this.$connect().catch(() => { });
+            });
+        }, 4 * 60 * 1000);
     }
     async onModuleDestroy() {
+        if (this.keepAliveTimer) {
+            clearInterval(this.keepAliveTimer);
+        }
         await this.$disconnect();
     }
 };

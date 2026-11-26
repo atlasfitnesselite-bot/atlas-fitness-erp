@@ -25,6 +25,7 @@ export declare class ChatService {
         updatedAt: Date;
         type: string;
     })[]>;
+    isParticipant(roomId: string, userId: string): Promise<boolean>;
     getMessages(roomId: string, userId: string): Promise<{
         id: string;
         createdAt: Date;

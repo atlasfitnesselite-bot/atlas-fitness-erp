@@ -33,6 +33,14 @@ let ChatService = class ChatService {
             }
         });
     }
+    async isParticipant(roomId, userId) {
+        if (!roomId || !userId)
+            return false;
+        const participant = await this.prisma.chatParticipant.findUnique({
+            where: { roomId_userId: { roomId, userId } },
+        });
+        return Boolean(participant);
+    }
     async getMessages(roomId, userId) {
         const participant = await this.prisma.chatParticipant.findUnique({
             where: { roomId_userId: { roomId, userId } }

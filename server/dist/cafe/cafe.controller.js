@@ -50,8 +50,20 @@ let CafeController = class CafeController {
     getOrders() {
         return this.cafeService.getOrders();
     }
+    getOrderById(id) {
+        return this.cafeService.getOrderById(id);
+    }
     createOrder(data) {
         return this.cafeService.createOrder(data);
+    }
+    payOrder(id, data) {
+        return this.cafeService.payOrder(id, data);
+    }
+    createRazorpayOrder(id) {
+        return this.cafeService.createRazorpayOrder(id);
+    }
+    verifyRazorpayPayment(id, body) {
+        return this.cafeService.verifyRazorpayPayment(id, body);
     }
     updateOrderStatus(id, data) {
         return this.cafeService.updateOrderStatus(id, data);
@@ -156,6 +168,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], CafeController.prototype, "getOrders", null);
 __decorate([
+    (0, common_1.Get)('orders/:id'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], CafeController.prototype, "getOrderById", null);
+__decorate([
     (0, common_1.Post)('orders'),
     (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),
     __param(0, (0, common_1.Body)()),
@@ -163,6 +183,32 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], CafeController.prototype, "createOrder", null);
+__decorate([
+    (0, common_1.Post)('orders/:id/pay'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], CafeController.prototype, "payOrder", null);
+__decorate([
+    (0, common_1.Post)('orders/:id/razorpay/create'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], CafeController.prototype, "createRazorpayOrder", null);
+__decorate([
+    (0, common_1.Post)('orders/:id/razorpay/verify'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], CafeController.prototype, "verifyRazorpayPayment", null);
 __decorate([
     (0, common_1.Put)('orders/:id/status'),
     (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'CAFE'),

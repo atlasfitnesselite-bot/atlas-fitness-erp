@@ -1,7 +1,9 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { KioskService } from './kiosk.service';
 import { MemberCheckInDto, EmployeeCheckInDto } from './dto/kiosk.dto';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('kiosk')
 export class KioskController {
   constructor(private readonly kioskService: KioskService) {}

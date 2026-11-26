@@ -29,6 +29,32 @@ let ReportsController = class ReportsController {
     getComprehensiveReport(timeframe, date) {
         return this.reportsService.generateComprehensiveReport(timeframe || 'monthly', date || new Date().toISOString());
     }
+    getAuditorReport(timeframe, date, startDate, endDate) {
+        return this.reportsService.getAuditorReport({ timeframe, date, startDate, endDate });
+    }
+    async exportAuditorCsv(res, timeframe, date, startDate, endDate) {
+        const csv = await this.reportsService.exportAuditorCsv({
+            timeframe,
+            date,
+            startDate,
+            endDate,
+        });
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename=CA_Auditor_GST_Report.csv');
+        res.send(csv);
+    }
+    async exportAuditorPdf(res, timeframe, date, startDate, endDate) {
+        const buffer = await this.reportsService.exportAuditorPdf({
+            timeframe,
+            date,
+            startDate,
+            endDate,
+        });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=CA_Auditor_GST_Report.pdf');
+        res.setHeader('Content-Length', buffer.length);
+        res.end(buffer);
+    }
 };
 exports.ReportsController = ReportsController;
 __decorate([
@@ -47,6 +73,41 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], ReportsController.prototype, "getComprehensiveReport", null);
+__decorate([
+    (0, common_1.Get)('auditor'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'ADMIN'),
+    __param(0, (0, common_1.Query)('timeframe')),
+    __param(1, (0, common_1.Query)('date')),
+    __param(2, (0, common_1.Query)('startDate')),
+    __param(3, (0, common_1.Query)('endDate')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:returntype", void 0)
+], ReportsController.prototype, "getAuditorReport", null);
+__decorate([
+    (0, common_1.Get)('auditor/export/csv'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'ADMIN'),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Query)('timeframe')),
+    __param(2, (0, common_1.Query)('date')),
+    __param(3, (0, common_1.Query)('startDate')),
+    __param(4, (0, common_1.Query)('endDate')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "exportAuditorCsv", null);
+__decorate([
+    (0, common_1.Get)('auditor/export/pdf'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'ADMIN'),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Query)('timeframe')),
+    __param(2, (0, common_1.Query)('date')),
+    __param(3, (0, common_1.Query)('startDate')),
+    __param(4, (0, common_1.Query)('endDate')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "exportAuditorPdf", null);
 exports.ReportsController = ReportsController = __decorate([
     (0, common_1.Controller)('reports'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),

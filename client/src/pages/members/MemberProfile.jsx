@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Edit, Mail, Phone, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Mail, Phone, Calendar, Dumbbell } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CustomSelect } from '@/components/ui/custom-select';
 import { useToast } from '@/hooks/use-toast';
 
 // Import Tabs
@@ -27,6 +31,47 @@ const MemberProfile = () => {
   const [member, setMember] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [trainers, setTrainers] = useState([]);
+  const [ptPackages, setPtPackages] = useState([]);
+  const [assignForm, setAssignForm] = useState({
+    trainerId: '',
+    packageId: '',
+    sessionsTotal: '12',
+    fee: '',
+    startDate: new Date().toISOString().split('T')[0],
+    expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+  });
+
+  const openAssignModal = async () => {
+    setIsAssignOpen(true);
+    try {
+      const [tRes, pRes] = await Promise.all([
+        api.get('/api/pt/trainers'),
+        api.get('/api/pt/packages'),
+      ]);
+      setTrainers(tRes.data || []);
+      setPtPackages(pRes.data || []);
+    } catch {}
+  };
+
+  const handleAssignSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/api/pt/assignments', {
+        memberId: id,
+        ...assignForm,
+        sessionsTotal: parseInt(assignForm.sessionsTotal, 10) || 12,
+        fee: parseFloat(assignForm.fee) || 0,
+      });
+      toast({ title: 'Success', description: 'Personal Trainer assigned!' });
+      setIsAssignOpen(false);
+      fetchMember();
+      fetchTimeline();
+    } catch (err) {
+      toast({ title: 'Error', description: err.response?.data?.message || 'Failed to assign trainer', variant: 'destructive' });
+    }
+  };
 
   const fetchMember = async () => {
     try {
@@ -81,6 +126,9 @@ const MemberProfile = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button onClick={openAssignModal} className="bg-red-600 hover:bg-red-700 text-white">
+            <Dumbbell className="mr-2 h-4 w-4" /> Assign Personal Trainer
+          </Button>
           <Button variant="outline" onClick={() => navigate(`/members/${id}/edit`)}>
             <Edit className="mr-2 h-4 w-4" /> Edit Profile
           </Button>
@@ -240,6 +288,64 @@ const MemberProfile = () => {
           </Tabs>
         </div>
       </div>
+      <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Personal Trainer to {member.firstName}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAssignSubmit} className="space-y-3">
+            <div>
+              <Label>Personal Trainer *</Label>
+              <CustomSelect className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm" value={assignForm.trainerId} onChange={(e) => setAssignForm({ ...assignForm, trainerId: e.target.value })} required>
+                <option value="">Select Trainer</option>
+                {trainers.map((t) => (
+                  <option key={t.id} value={t.id}>{t.firstName} {t.lastName !== '-' ? t.lastName : ''} ({t.employeeId})</option>
+                ))}
+              </CustomSelect>
+            </div>
+            <div>
+              <Label>PT Package (Optional)</Label>
+              <CustomSelect
+                className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm"
+                value={assignForm.packageId}
+                onChange={(e) => {
+                  const pkg = ptPackages.find((p) => p.id === e.target.value);
+                  setAssignForm((prev) => ({
+                    ...prev,
+                    packageId: e.target.value,
+                    sessionsTotal: pkg ? String(pkg.numberOfSessions) : prev.sessionsTotal,
+                    fee: pkg ? String(pkg.price) : prev.fee,
+                  }));
+                }}
+              >
+                <option value="">Custom Sessions / Fee</option>
+                {ptPackages.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.numberOfSessions} sessions - ₹{p.price})</option>
+                ))}
+              </CustomSelect>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Sessions</Label>
+                <Input type="number" value={assignForm.sessionsTotal} onChange={(e) => setAssignForm({ ...assignForm, sessionsTotal: e.target.value })} required />
+              </div>
+              <div>
+                <Label>PT Fee (₹)</Label>
+                <Input type="number" step="0.01" value={assignForm.fee} onChange={(e) => setAssignForm({ ...assignForm, fee: e.target.value })} placeholder="0" />
+              </div>
+              <div>
+                <Label>Start Date</Label>
+                <Input type="date" value={assignForm.startDate} onChange={(e) => setAssignForm({ ...assignForm, startDate: e.target.value })} required />
+              </div>
+              <div>
+                <Label>Expiry Date</Label>
+                <Input type="date" value={assignForm.expiryDate} onChange={(e) => setAssignForm({ ...assignForm, expiryDate: e.target.value })} required />
+              </div>
+            </div>
+            <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">Assign Trainer</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -142,6 +142,34 @@ export class CreateMemberDto {
   status?: string;
 
   @IsOptional()
+  @IsString()
+  height?: string;
+
+  @IsOptional()
+  @IsString()
+  weight?: string;
+
+  @IsOptional()
+  @IsString()
+  workoutType?: string;
+
+  @IsOptional()
+  @IsString()
+  gstNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  panNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  planId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  planStartDate?: string;
+
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => AddressDto)
   addresses?: AddressDto[];

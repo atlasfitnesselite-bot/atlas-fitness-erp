@@ -1,9 +1,11 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { EmailService } from '../billing/email.service';
 export declare class MembersService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private emailService;
+    constructor(prisma: PrismaService, emailService: EmailService);
     create(createMemberDto: CreateMemberDto, userId: string): Promise<{
         emergencyContacts: {
             id: string;
@@ -13,8 +15,8 @@ export declare class MembersService {
             updatedAt: Date;
             mobile: string;
             notes: string | null;
-            relationship: string;
             address: string | null;
+            relationship: string;
             memberId: string;
             altMobile: string | null;
             priority: number;
@@ -123,12 +125,17 @@ export declare class MembersService {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     findAll(query?: {
         search?: string;
@@ -157,12 +164,17 @@ export declare class MembersService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         }[];
         meta: {
             total: number;
@@ -180,8 +192,8 @@ export declare class MembersService {
             updatedAt: Date;
             mobile: string;
             notes: string | null;
-            relationship: string;
             address: string | null;
+            relationship: string;
             memberId: string;
             altMobile: string | null;
             priority: number;
@@ -282,6 +294,7 @@ export declare class MembersService {
                 updatedAt: Date;
                 description: string | null;
                 price: number;
+                gstRate: number;
                 durationInMonths: number;
             };
         } & {
@@ -328,12 +341,17 @@ export declare class MembersService {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     update(id: string, updateMemberDto: UpdateMemberDto, userId: string): Promise<{
         id: string;
@@ -352,12 +370,17 @@ export declare class MembersService {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     remove(id: string, _userId?: string): Promise<{
         id: string;
@@ -376,12 +399,17 @@ export declare class MembersService {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     getTimeline(id: string): Promise<{
         id: string;
@@ -484,12 +512,17 @@ export declare class MembersService {
         nationality: string | null;
         mobile: string;
         joiningDate: Date;
+        gstNumber: string | null;
         aadhaarNumber: string | null;
+        panNumber: string | null;
         memberId: string;
         accessCardId: string | null;
         occupation: string | null;
         altMobile: string | null;
         passportNumber: string | null;
+        height: string | null;
+        weight: string | null;
+        workoutType: string | null;
     }>;
     freezeSubscription(memberId: string, subId: string, frozenUntil: Date): Promise<{
         id: string;
@@ -534,16 +567,34 @@ export declare class MembersService {
         agreementUrl: string | null;
     }>;
     getInvoices(memberId: string): Promise<{
+        memberAddress: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        notes: string | null;
         memberId: string;
+        planId: string | null;
+        gstRate: number;
+        invoiceNumber: string | null;
         subscriptionId: string | null;
+        memberGstNumber: string | null;
+        memberPanNumber: string | null;
         amount: number;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        lateFee: number;
+        discount: number;
+        discountType: string | null;
+        totalAmount: number;
+        paidAmount: number;
         dueDate: Date;
+        paidDate: Date | null;
         paymentMethod: string | null;
         transactionReference: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
     }[]>;
     getAttendance(memberId: string): Promise<{
         id: string;

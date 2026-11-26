@@ -12,6 +12,7 @@ export declare class SubscriptionsService {
         updatedAt: Date;
         description: string | null;
         price: number;
+        gstRate: number;
         durationInMonths: number;
     }>;
     getPlans(): Promise<{
@@ -22,6 +23,7 @@ export declare class SubscriptionsService {
         updatedAt: Date;
         description: string | null;
         price: number;
+        gstRate: number;
         durationInMonths: number;
     }[]>;
     getPlanById(id: string): Promise<{
@@ -32,6 +34,7 @@ export declare class SubscriptionsService {
         updatedAt: Date;
         description: string | null;
         price: number;
+        gstRate: number;
         durationInMonths: number;
     }>;
     updatePlan(id: string, data: Partial<CreateMembershipPlanDto>): Promise<{
@@ -42,6 +45,7 @@ export declare class SubscriptionsService {
         updatedAt: Date;
         description: string | null;
         price: number;
+        gstRate: number;
         durationInMonths: number;
     }>;
     deletePlan(id: string): Promise<{
@@ -52,6 +56,7 @@ export declare class SubscriptionsService {
         updatedAt: Date;
         description: string | null;
         price: number;
+        gstRate: number;
         durationInMonths: number;
     }>;
     assignPlan(data: AssignPlanDto): Promise<{
@@ -86,12 +91,17 @@ export declare class SubscriptionsService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         };
         plan: {
             id: string;
@@ -101,6 +111,7 @@ export declare class SubscriptionsService {
             updatedAt: Date;
             description: string | null;
             price: number;
+            gstRate: number;
             durationInMonths: number;
         };
     } & {

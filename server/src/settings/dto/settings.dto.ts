@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsIn, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsArray, IsBoolean, IsNumber } from 'class-validator';
 
 export class UpdateCompanySettingsDto {
   @IsOptional()
@@ -12,6 +12,46 @@ export class UpdateCompanySettingsDto {
   @IsOptional()
   @IsString()
   companyContact?: string;
+
+  @IsOptional()
+  @IsString()
+  gstNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  emailNotifications?: boolean;
+
+  @IsOptional()
+  @IsString()
+  razorpayKeyId?: string;
+
+  @IsOptional()
+  @IsString()
+  razorpayKeySecret?: string;
+
+  @IsOptional()
+  @IsString()
+  smtpHost?: string;
+
+  @IsOptional()
+  @IsNumber()
+  smtpPort?: number;
+
+  @IsOptional()
+  @IsString()
+  smtpUser?: string;
+
+  @IsOptional()
+  @IsString()
+  smtpPass?: string;
 
   @IsOptional()
   @IsString()

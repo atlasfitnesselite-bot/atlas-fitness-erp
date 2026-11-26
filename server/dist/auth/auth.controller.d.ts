@@ -1,11 +1,11 @@
 import { AuthService } from './auth.service';
 declare class LoginDto {
     email: string;
-    password?: string;
+    password: string;
 }
 declare class RegisterDto {
     email: string;
-    password?: string;
+    password: string;
     name?: string;
     role?: string;
 }
@@ -14,6 +14,10 @@ declare class RefreshDto {
 }
 declare class ForgotPasswordDto {
     email: string;
+}
+declare class ResetPasswordDto {
+    token: string;
+    newPassword: string;
 }
 export declare class AuthController {
     private authService;
@@ -66,13 +70,8 @@ export declare class AuthController {
     forgotPassword(body: ForgotPasswordDto): Promise<{
         success: boolean;
         message: string;
-        token?: undefined;
-    } | {
-        success: boolean;
-        message: string;
-        token: any;
     }>;
-    resetPassword(body: Record<string, string>): Promise<{
+    resetPassword(body: ResetPasswordDto): Promise<{
         success: boolean;
         message: string;
     }>;

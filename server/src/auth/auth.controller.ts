@@ -13,24 +13,53 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../rbac/guards/roles.guard';
 import { Roles } from '../rbac/decorators/roles.decorator';
 
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+
 class LoginDto {
+  @IsEmail()
   email: string;
-  password?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }
 
 class RegisterDto {
+  @IsEmail()
   email: string;
-  password?: string;
+
+  @IsString()
+  @MinLength(8)
+  password: string;
+
+  @IsOptional()
+  @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
   role?: string;
 }
 
 class RefreshDto {
+  @IsString()
+  @IsNotEmpty()
   token: string;
 }
 
 class ForgotPasswordDto {
+  @IsEmail()
   email: string;
+}
+
+class ResetPasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  token: string;
+
+  @IsString()
+  @MinLength(8)
+  newPassword: string;
 }
 
 @Controller('auth')
@@ -61,6 +90,8 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('OWNER', 'MANAGER')
   @Post('register')
   async register(@Body() body: RegisterDto) {
     return this.authService.register(body);
@@ -93,7 +124,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
-  resetPassword(@Body() body: Record<string, string>) {
+  resetPassword(@Body() body: ResetPasswordDto) {
     return this.authService.resetPassword(body);
   }
 }

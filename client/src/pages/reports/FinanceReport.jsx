@@ -73,7 +73,7 @@ export default function FinanceReport() {
         <Card className="bg-card border-border">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-muted-foreground mb-1">Gross Profit</p>
-            <h3 className="text-3xl font-bold text-foreground">?{totalRevenue.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold text-foreground">₹{totalRevenue.toLocaleString()}</h3>
             <div className="mt-4 text-sm font-medium text-emerald-600 flex items-center gap-1">
               <ArrowUpRight className="h-4 w-4" /> +12.5% vs last period
             </div>
@@ -83,7 +83,7 @@ export default function FinanceReport() {
         <Card className="bg-card border-border">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-muted-foreground mb-1">Total Expenses</p>
-            <h3 className="text-3xl font-bold text-foreground">?{totalExpenses.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold text-foreground">₹{totalExpenses.toLocaleString()}</h3>
             <div className="mt-4 text-sm font-medium text-rose-600 flex items-center gap-1">
               <ArrowDownRight className="h-4 w-4" /> -2.4% vs last period
             </div>
@@ -93,7 +93,7 @@ export default function FinanceReport() {
         <Card className="bg-gradient-to-br from-slate-900 to-slate-800 text-white border-0">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-foreground mb-1">Net Income</p>
-            <h3 className="text-3xl font-bold text-white">?{netIncome.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold text-white">₹{netIncome.toLocaleString()}</h3>
             <div className="mt-4 text-sm font-medium text-emerald-400 flex items-center gap-1">
               <ArrowUpRight className="h-4 w-4" /> Profit margin: {profitMargin}%
             </div>

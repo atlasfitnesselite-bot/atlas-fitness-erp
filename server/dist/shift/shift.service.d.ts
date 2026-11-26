@@ -24,14 +24,14 @@ export declare class ShiftService {
         code: string;
         type: string;
         breakDuration: number;
-        lateThreshold: number;
-        minWorkingHours: number;
-        maxWorkingHours: number;
+        color: string;
         startTime: string;
         endTime: string;
-        color: string;
         gracePeriod: number;
+        lateThreshold: number;
         earlyExitThreshold: number;
+        minWorkingHours: number;
+        maxWorkingHours: number;
         overtimeEligibility: boolean;
     })[]>;
     findOne(id: string): Promise<{
@@ -61,14 +61,14 @@ export declare class ShiftService {
         code: string;
         type: string;
         breakDuration: number;
-        lateThreshold: number;
-        minWorkingHours: number;
-        maxWorkingHours: number;
+        color: string;
         startTime: string;
         endTime: string;
-        color: string;
         gracePeriod: number;
+        lateThreshold: number;
         earlyExitThreshold: number;
+        minWorkingHours: number;
+        maxWorkingHours: number;
         overtimeEligibility: boolean;
     }>;
     create(dto: CreateShiftDto): Promise<{
@@ -81,14 +81,14 @@ export declare class ShiftService {
         code: string;
         type: string;
         breakDuration: number;
-        lateThreshold: number;
-        minWorkingHours: number;
-        maxWorkingHours: number;
+        color: string;
         startTime: string;
         endTime: string;
-        color: string;
         gracePeriod: number;
+        lateThreshold: number;
         earlyExitThreshold: number;
+        minWorkingHours: number;
+        maxWorkingHours: number;
         overtimeEligibility: boolean;
     }>;
     update(id: string, dto: UpdateShiftDto): Promise<{
@@ -101,14 +101,14 @@ export declare class ShiftService {
         code: string;
         type: string;
         breakDuration: number;
-        lateThreshold: number;
-        minWorkingHours: number;
-        maxWorkingHours: number;
+        color: string;
         startTime: string;
         endTime: string;
-        color: string;
         gracePeriod: number;
+        lateThreshold: number;
         earlyExitThreshold: number;
+        minWorkingHours: number;
+        maxWorkingHours: number;
         overtimeEligibility: boolean;
     }>;
     remove(id: string): Promise<{
@@ -178,14 +178,14 @@ export declare class ShiftService {
             code: string;
             type: string;
             breakDuration: number;
-            lateThreshold: number;
-            minWorkingHours: number;
-            maxWorkingHours: number;
+            color: string;
             startTime: string;
             endTime: string;
-            color: string;
             gracePeriod: number;
+            lateThreshold: number;
             earlyExitThreshold: number;
+            minWorkingHours: number;
+            maxWorkingHours: number;
             overtimeEligibility: boolean;
         };
     } & {
@@ -211,14 +211,14 @@ export declare class ShiftService {
             code: string;
             type: string;
             breakDuration: number;
-            lateThreshold: number;
-            minWorkingHours: number;
-            maxWorkingHours: number;
+            color: string;
             startTime: string;
             endTime: string;
-            color: string;
             gracePeriod: number;
+            lateThreshold: number;
             earlyExitThreshold: number;
+            minWorkingHours: number;
+            maxWorkingHours: number;
             overtimeEligibility: boolean;
         };
     } & {
@@ -396,9 +396,9 @@ export declare class ShiftService {
             id: string;
             name: string;
             type: string;
+            color: string;
             startTime: string;
             endTime: string;
-            color: string;
         };
     } & {
         id: string;

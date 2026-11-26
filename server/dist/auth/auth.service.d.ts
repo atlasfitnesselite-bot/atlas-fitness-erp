@@ -75,11 +75,6 @@ export declare class AuthService {
     forgotPassword(email: string): Promise<{
         success: boolean;
         message: string;
-        token?: undefined;
-    } | {
-        success: boolean;
-        message: string;
-        token: any;
     }>;
     resetPassword(data: any): Promise<{
         success: boolean;

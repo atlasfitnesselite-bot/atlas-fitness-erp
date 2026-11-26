@@ -253,14 +253,14 @@ export declare class EmployeesController {
             code: string;
             type: string;
             breakDuration: number;
-            lateThreshold: number;
-            minWorkingHours: number;
-            maxWorkingHours: number;
+            color: string;
             startTime: string;
             endTime: string;
-            color: string;
             gracePeriod: number;
+            lateThreshold: number;
             earlyExitThreshold: number;
+            minWorkingHours: number;
+            maxWorkingHours: number;
             overtimeEligibility: boolean;
         };
     } & {
@@ -378,8 +378,8 @@ export declare class EmployeesController {
             updatedAt: Date;
             employeeId: string;
             mobile: string;
-            relationship: string;
             address: string | null;
+            relationship: string;
         }[];
         manager: {
             id: string;

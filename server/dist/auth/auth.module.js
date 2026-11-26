@@ -13,6 +13,7 @@ const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./jwt.strategy");
+const jwt_config_1 = require("./jwt.config");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -21,8 +22,7 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [
             passport_1.PassportModule,
             jwt_1.JwtModule.register({
-                secret: process.env.JWT_SECRET ||
-                    'super-secret-key-for-atlas-fitness-development-only',
+                secret: (0, jwt_config_1.getJwtSecret)(),
                 signOptions: { expiresIn: '1d' },
             }),
         ],

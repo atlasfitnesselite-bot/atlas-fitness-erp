@@ -97,6 +97,33 @@ let PtController = class PtController {
     async getLeaderboard() {
         return this.ptService.getLeaderboard();
     }
+    getTrainers() {
+        return this.ptService.getTrainers();
+    }
+    createTrainer(body) {
+        return this.ptService.createTrainer(body);
+    }
+    updateTrainer(id, body) {
+        return this.ptService.updateTrainer(id, body);
+    }
+    deleteTrainer(id) {
+        return this.ptService.deleteTrainer(id);
+    }
+    getPtPackages() {
+        return this.ptService.getPtPackages();
+    }
+    createPtPackage(body) {
+        return this.ptService.createPtPackage(body);
+    }
+    deletePtPackage(id) {
+        return this.ptService.deletePtPackage(id);
+    }
+    getAssignments() {
+        return this.ptService.getAssignments();
+    }
+    assignTrainerToMember(body) {
+        return this.ptService.assignTrainerToMember(body);
+    }
 };
 exports.PtController = PtController;
 __decorate([
@@ -284,6 +311,76 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PtController.prototype, "getLeaderboard", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION'),
+    (0, common_1.Get)('trainers'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "getTrainers", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER'),
+    (0, common_1.Post)('trainers'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "createTrainer", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER'),
+    (0, common_1.Put)('trainers/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "updateTrainer", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER'),
+    (0, common_1.Delete)('trainers/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "deleteTrainer", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER'),
+    (0, common_1.Get)('packages'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "getPtPackages", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER'),
+    (0, common_1.Post)('packages'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "createPtPackage", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER'),
+    (0, common_1.Delete)('packages/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "deletePtPackage", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER'),
+    (0, common_1.Get)('assignments'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "getAssignments", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION'),
+    (0, common_1.Post)('assignments'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "assignTrainerToMember", null);
 exports.PtController = PtController = __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
     (0, common_1.Controller)('pt'),

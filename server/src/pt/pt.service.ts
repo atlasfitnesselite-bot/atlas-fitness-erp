@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookSessionDto, CreateFitnessPlanDto, CreateMeasurementDto, CreateCommissionDto, CompleteSessionDto } from './dto/pt.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PtService {
@@ -502,5 +503,356 @@ export class PtService {
         return b.clientCount - a.clientCount;
       })
       .slice(0, 10);
+  }
+
+  // ==========================================
+  // Dedicated Personal Trainers Hub Endpoints
+  // ==========================================
+
+  async getTrainers() {
+    const employees = await this.prisma.employee.findMany({
+      where: {
+        OR: [
+          { user: { userRoles: { some: { role: { name: 'TRAINER' } } } } },
+          { designation: { name: { contains: 'Trainer', mode: 'insensitive' } } },
+          { memberPtPackages: { some: {} } },
+          { ptSessions: { some: {} } },
+        ],
+      },
+      select: {
+        id: true,
+        employeeId: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        mobile: true,
+        status: true,
+        designation: { select: { name: true } },
+        payrollStructure: { select: { baseSalary: true, ptCommissionPercentage: true } },
+        memberPtPackages: { where: { status: 'ACTIVE' }, select: { memberId: true } },
+        ptSessions: { select: { status: true } },
+        commissions: { select: { amount: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return employees.map((emp) => ({
+      id: emp.id,
+      employeeId: emp.employeeId,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      mobile: emp.mobile,
+      status: emp.status,
+      designation: emp.designation?.name || 'Personal Trainer',
+      baseSalary: emp.payrollStructure?.baseSalary || 0,
+      ptCommissionPercentage: emp.payrollStructure?.ptCommissionPercentage || 0,
+      activeClients: new Set(emp.memberPtPackages.map((p) => p.memberId)).size,
+      activePackages: emp.memberPtPackages.length,
+      totalSessions: emp.ptSessions.length,
+      completedSessions: emp.ptSessions.filter((s) => s.status === 'COMPLETED').length,
+      totalCommissions: emp.commissions.reduce((s, c) => s + Number(c.amount || 0), 0),
+    }));
+  }
+
+  async createTrainer(data: {
+    firstName: string;
+    lastName?: string;
+    email: string;
+    mobile: string;
+    password?: string;
+    baseSalary?: number;
+    ptCommissionPercentage?: number;
+    gender?: string;
+  }) {
+    const [existingUser, existingEmp, existingRole, existingTrainers, hashedPassword] =
+      await Promise.all([
+        this.prisma.user.findUnique({ where: { email: data.email }, select: { id: true } }),
+        this.prisma.employee.findFirst({
+          where: { OR: [{ email: data.email }, { mobile: data.mobile }] },
+          select: { id: true },
+        }),
+        this.prisma.role.findUnique({ where: { name: 'TRAINER' }, select: { id: true } }),
+        this.prisma.employee.findMany({
+          where: { employeeId: { startsWith: 'TRN-' } },
+          select: { employeeId: true },
+        }),
+        bcrypt.hash(data.password || 'Password123', 10),
+      ]);
+
+    if (existingUser) {
+      throw new ConflictException('A user with this email already exists');
+    }
+    if (existingEmp) {
+      throw new ConflictException('An employee with this email or mobile already exists');
+    }
+
+    const trainerRole =
+      existingRole ||
+      (await this.prisma.role.create({
+        data: { name: 'TRAINER', description: 'Personal Trainer role' },
+        select: { id: true },
+      }));
+
+    let maxTrn = 0;
+    for (const t of existingTrainers) {
+      const n = parseInt(t.employeeId.replace('TRN-', ''), 10);
+      if (!Number.isNaN(n) && n > maxTrn) maxTrn = n;
+    }
+    const employeeId = `TRN-${String(maxTrn + 1).padStart(3, '0')}`;
+    const fullName = `${data.firstName} ${data.lastName || ''}`.trim();
+
+    // Single atomic nested write (avoids 5s interactive $transaction timeout on remote Neon DB)
+    const user = await this.prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        name: fullName,
+        userRoles: { create: { roleId: trainerRole.id } },
+        employee: {
+          create: {
+            employeeId,
+            firstName: data.firstName,
+            lastName: data.lastName || '-',
+            email: data.email,
+            mobile: data.mobile,
+            gender: data.gender || null,
+            status: 'ACTIVE',
+            joiningDate: new Date(),
+            payrollStructure: {
+              create: {
+                baseSalary: Number(data.baseSalary || 0),
+                ptCommissionPercentage: Number(data.ptCommissionPercentage || 0),
+              },
+            },
+          },
+        },
+      },
+      include: { employee: true },
+    });
+
+    return user.employee;
+  }
+
+  async updateTrainer(
+    id: string,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      mobile?: string;
+      status?: string;
+      baseSalary?: number;
+      ptCommissionPercentage?: number;
+    },
+  ) {
+    const existing = await this.prisma.employee.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Trainer not found');
+
+    const updated = await this.prisma.employee.update({
+      where: { id },
+      data: {
+        firstName: data.firstName ?? existing.firstName,
+        lastName: data.lastName ?? existing.lastName,
+        email: data.email ?? existing.email,
+        mobile: data.mobile ?? existing.mobile,
+        status: data.status ?? existing.status,
+      },
+    });
+
+    const ops: Promise<any>[] = [];
+    if (existing.userId && (data.firstName || data.lastName || data.email)) {
+      ops.push(
+        this.prisma.user.update({
+          where: { id: existing.userId },
+          data: {
+            name: `${updated.firstName} ${updated.lastName !== '-' ? updated.lastName : ''}`.trim(),
+            email: updated.email,
+          },
+        }),
+      );
+    }
+
+    if (data.baseSalary !== undefined || data.ptCommissionPercentage !== undefined) {
+      ops.push(
+        this.prisma.payrollStructure.upsert({
+          where: { employeeId: id },
+          update: {
+            ...(data.baseSalary !== undefined && { baseSalary: Number(data.baseSalary) }),
+            ...(data.ptCommissionPercentage !== undefined && {
+              ptCommissionPercentage: Number(data.ptCommissionPercentage),
+            }),
+          },
+          create: {
+            employeeId: id,
+            baseSalary: Number(data.baseSalary || 0),
+            ptCommissionPercentage: Number(data.ptCommissionPercentage || 0),
+          },
+        }),
+      );
+    }
+
+    if (ops.length > 0) {
+      await Promise.all(ops);
+    }
+
+    return updated;
+  }
+
+  async deleteTrainer(id: string) {
+    const existing = await this.prisma.employee.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Trainer not found');
+
+    await this.prisma.$transaction([
+      this.prisma.memberPTPackage.updateMany({
+        where: { trainerId: id },
+        data: { trainerId: null },
+      }),
+      this.prisma.pTSession.deleteMany({ where: { trainerId: id } }),
+      this.prisma.employee.delete({ where: { id } }),
+      ...(existing.userId
+        ? [this.prisma.user.deleteMany({ where: { id: existing.userId } })]
+        : []),
+    ]);
+
+    return { success: true, message: 'Trainer deleted successfully' };
+  }
+
+  async getPtPackages() {
+    return this.prisma.pTPackage.findMany({
+      include: { _count: { select: { memberPackages: true } } },
+      orderBy: { price: 'asc' },
+    });
+  }
+
+  async createPtPackage(data: { name: string; numberOfSessions: number; price: number }) {
+    return this.prisma.pTPackage.create({
+      data: {
+        name: data.name,
+        numberOfSessions: Number(data.numberOfSessions),
+        price: Number(data.price),
+      },
+    });
+  }
+
+  async deletePtPackage(id: string) {
+    return this.prisma.pTPackage.delete({ where: { id } });
+  }
+
+  async getAssignments() {
+    return this.prisma.memberPTPackage.findMany({
+      include: {
+        member: { select: { id: true, memberId: true, firstName: true, lastName: true, mobile: true } },
+        package: true,
+        trainer: { select: { id: true, employeeId: true, firstName: true, lastName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async assignTrainerToMember(data: {
+    memberId: string;
+    trainerId: string;
+    packageId?: string;
+    sessionsTotal?: number;
+    fee?: number;
+    startDate?: string;
+    expiryDate?: string;
+    createInvoice?: boolean;
+  }) {
+    let packageId = data.packageId;
+    let sessionsTotal = Number(data.sessionsTotal || 12);
+    let fee = Number(data.fee || 0);
+
+    if (packageId) {
+      const pkg = await this.prisma.pTPackage.findUnique({ where: { id: packageId } });
+      if (!pkg) throw new NotFoundException('PT Package not found');
+      if (!data.sessionsTotal) sessionsTotal = pkg.numberOfSessions;
+      if (data.fee === undefined) fee = pkg.price;
+    } else {
+      // Create or reuse a custom PT package if none selected
+      const pkg = await this.prisma.pTPackage.create({
+        data: {
+          name: `Custom PT (${sessionsTotal} Sessions)`,
+          numberOfSessions: sessionsTotal,
+          price: fee,
+        },
+      });
+      packageId = pkg.id;
+    }
+
+    const start = data.startDate ? new Date(data.startDate) : new Date();
+    const expiry = data.expiryDate
+      ? new Date(data.expiryDate)
+      : new Date(new Date(start).setMonth(start.getMonth() + 1));
+
+    const assignment = await this.prisma.memberPTPackage.create({
+      data: {
+        memberId: data.memberId,
+        trainerId: data.trainerId,
+        packageId,
+        sessionsTotal,
+        sessionsRemaining: sessionsTotal,
+        startDate: start,
+        expiryDate: expiry,
+        status: 'ACTIVE',
+      },
+      include: {
+        member: true,
+        package: true,
+        trainer: true,
+      },
+    });
+
+    if (data.createInvoice !== false && fee > 0) {
+      const year = new Date().getFullYear();
+      const prefix = `INV-${year}-`;
+      const last = await this.prisma.invoice.findFirst({
+        where: { invoiceNumber: { startsWith: prefix } },
+        orderBy: { invoiceNumber: 'desc' },
+        select: { invoiceNumber: true },
+      });
+      const seq = (last?.invoiceNumber ? parseInt(last.invoiceNumber.split('-')[2] || '0', 10) : 0) + 1;
+      const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+      const gstAmount = (fee * 18) / 100;
+
+      await this.prisma.invoice.create({
+        data: {
+          invoiceNumber,
+          memberId: data.memberId,
+          amount: fee,
+          gstRate: 18,
+          gstAmount,
+          cgst: gstAmount / 2,
+          sgst: gstAmount / 2,
+          totalAmount: fee + gstAmount,
+          paidAmount: 0,
+          dueDate: start,
+          status: 'PENDING',
+          notes: `Personal Training: ${assignment.package.name} (${assignment.trainer?.firstName || 'Trainer'})`,
+        },
+      });
+    }
+
+    // Auto-calculate trainer commission if PayrollStructure has ptCommissionPercentage
+    const payroll = await this.prisma.payrollStructure.findUnique({
+      where: { employeeId: data.trainerId },
+    });
+    if (payroll && payroll.ptCommissionPercentage > 0 && fee > 0) {
+      const commissionAmt = (fee * payroll.ptCommissionPercentage) / 100;
+      const now = new Date();
+      await this.prisma.trainerCommission.create({
+        data: {
+          trainerId: data.trainerId,
+          sourceId: assignment.id,
+          amount: commissionAmt,
+          status: 'PENDING',
+          month: now.getMonth() + 1,
+          year: now.getFullYear(),
+        },
+      });
+    }
+
+    return assignment;
   }
 }

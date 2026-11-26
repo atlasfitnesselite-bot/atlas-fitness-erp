@@ -56,7 +56,8 @@ export default function Sidebar() {
     'Billing': false,
     'Operations': false,
     'Training': false,
-    'Facilities': false,
+    'Personal Trainers': true,
+    'Facilities': true,
   })
 
   const toggleGroup = (groupName) => {
@@ -140,6 +141,12 @@ export default function Sidebar() {
       ]
     },
     {
+      name: "Personal Trainers",
+      items: [
+        { name: "Trainers & Assignments", href: "/pt/trainers", icon: Dumbbell, roles: ['OWNER', 'MANAGER', 'RECEPTION'] },
+      ]
+    },
+    {
       name: "Training",
       items: [
         { name: "Trainer Dashboard", href: "/pt/dashboard", icon: LayoutDashboard, roles: ['TRAINER'] },
@@ -168,7 +175,7 @@ export default function Sidebar() {
       name: "Facilities",
       items: [
         { name: "Equipment", href: "/equipment", icon: Wrench, roles: ['OWNER', 'MANAGER'] },
-        { name: "Cafe", href: "/cafe", icon: Coffee, roles: ['OWNER', 'CAFE'] },
+        { name: "Cafeteria & POS", href: "/cafe", icon: Coffee, roles: ['OWNER', 'MANAGER', 'CAFE'] },
         { name: "Cleaning", href: "/cleaning", icon: Sparkles, roles: ['OWNER', 'MANAGER', 'CLEANING'] },
       ]
     },

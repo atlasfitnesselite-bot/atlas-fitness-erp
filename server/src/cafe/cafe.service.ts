@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import Razorpay from 'razorpay';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class CafeService {
@@ -103,35 +105,194 @@ export class CafeService {
     });
   }
 
-  async createOrder(data: { items: any[], customerName?: string, memberId?: string, tableNumber?: string }) {
-    let totalAmount = 0;
-    
-    // Calculate total amount
-    for (const i of data.items) {
-      totalAmount += i.price * i.quantity;
+  async getOrderById(id: string) {
+    const order = await this.prisma.cafeOrder.findUnique({
+      where: { id },
+      include: { items: { include: { item: true } }, member: true },
+    });
+    if (!order) throw new NotFoundException('Cafe order not found');
+    return order;
+  }
+
+  async payOrder(
+    id: string,
+    data: {
+      paymentMethod: string;
+      amount?: number;
+      razorpayOrderId?: string;
+      razorpayPaymentId?: string;
+    },
+  ) {
+    const order = await this.getOrderById(id);
+    if (order.paymentStatus === 'PAID') {
+      throw new BadRequestException('Order is already fully paid');
+    }
+    const remaining = Math.max(0, order.totalAmount - (order.paidAmount || 0));
+    const payAmt =
+      data.amount !== undefined && data.amount > 0
+        ? Math.min(data.amount, remaining)
+        : remaining;
+    const newPaid = (order.paidAmount || 0) + payAmt;
+    const paymentStatus = newPaid >= order.totalAmount - 0.01 ? 'PAID' : 'PARTIAL';
+
+    return this.prisma.cafeOrder.update({
+      where: { id },
+      data: {
+        paidAmount: newPaid,
+        paymentStatus,
+        paymentMethod: data.paymentMethod || order.paymentMethod,
+        razorpayOrderId: data.razorpayOrderId ?? order.razorpayOrderId,
+        razorpayPaymentId: data.razorpayPaymentId ?? order.razorpayPaymentId,
+        status: paymentStatus === 'PAID' && order.status === 'PENDING' ? 'COMPLETED' : order.status,
+      },
+      include: { items: { include: { item: true } }, member: true },
+    });
+  }
+
+  private async getRazorpayConfig() {
+    const settings = await this.prisma.companySettings.findFirst({
+      where: { razorpayKeyId: { not: null }, razorpayKeySecret: { not: null } },
+    });
+    const keyId = settings?.razorpayKeyId || process.env.RAZORPAY_KEY_ID;
+    const keySecret = settings?.razorpayKeySecret || process.env.RAZORPAY_KEY_SECRET;
+    if (!keyId || !keySecret) {
+      throw new BadRequestException('Razorpay keys not configured');
+    }
+    return {
+      keyId,
+      keySecret,
+      instance: new Razorpay({ key_id: keyId, key_secret: keySecret }),
+    };
+  }
+
+  async createRazorpayOrder(orderId: string) {
+    const order = await this.getOrderById(orderId);
+    if (order.paymentStatus === 'PAID') {
+      throw new BadRequestException('Order is already paid');
+    }
+    const balance = Math.max(0, order.totalAmount - (order.paidAmount || 0));
+    if (balance <= 0) {
+      throw new BadRequestException('No balance due on this order');
+    }
+    const { keyId, instance } = await this.getRazorpayConfig();
+    const rzpOrder = await instance.orders.create({
+      amount: Math.round(balance * 100),
+      currency: 'INR',
+      receipt: order.orderNumber,
+      payment_capture: true,
+    });
+    await this.prisma.cafeOrder.update({
+      where: { id: orderId },
+      data: { razorpayOrderId: rzpOrder.id },
+    });
+    return { success: true, order: rzpOrder, key: keyId };
+  }
+
+  async verifyRazorpayPayment(
+    orderId: string,
+    body: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string },
+  ) {
+    const { keySecret } = await this.getRazorpayConfig();
+    const expected = crypto
+      .createHmac('sha256', keySecret)
+      .update(`${body.razorpay_order_id}|${body.razorpay_payment_id}`)
+      .digest('hex');
+    if (expected !== body.razorpay_signature) {
+      throw new BadRequestException('Invalid Razorpay signature');
+    }
+    const updated = await this.payOrder(orderId, {
+      paymentMethod: 'RAZORPAY',
+      razorpayOrderId: body.razorpay_order_id,
+      razorpayPaymentId: body.razorpay_payment_id,
+    });
+    return { success: true, order: updated };
+  }
+
+  async createOrder(data: {
+    items: any[];
+    customerName?: string;
+    customerPhone?: string;
+    memberId?: string;
+    tableNumber?: string;
+    discount?: number;
+    discountType?: string;
+    paymentMethod?: string;
+  }) {
+    if (!data.items || data.items.length === 0) {
+      throw new Error('Order must contain at least one item');
     }
 
-    // Auto-generate order number
     const orderCount = await this.prisma.cafeOrder.count();
     const orderNumber = `CAFE-${1000 + orderCount + 1}`;
 
     return this.prisma.$transaction(async (prisma) => {
+      let subtotal = 0;
+      let totalGst = 0;
+      const preparedItems: any[] = [];
+
+      for (const i of data.items) {
+        const qty = Math.max(1, Number(i.quantity || 1));
+        const dbItem = await prisma.cafeItem.findUnique({ where: { id: i.itemId } });
+        if (!dbItem) {
+          throw new Error(`Cafe item not found: ${i.itemId}`);
+        }
+        const unitPrice = i.price !== undefined ? Number(i.price) : dbItem.price;
+        const itemGstRate = dbItem.gstRate ?? 0;
+        const lineAmount = unitPrice * qty;
+        subtotal += lineAmount;
+        preparedItems.push({
+          itemId: dbItem.id,
+          productName: dbItem.name,
+          quantity: qty,
+          price: unitPrice,
+          gstRate: itemGstRate,
+          amount: lineAmount,
+          notes: i.notes,
+        });
+      }
+
+      const rawDiscount = Number(data.discount || 0);
+      const discountAmount =
+        rawDiscount > 0
+          ? data.discountType === 'PERCENTAGE'
+            ? (subtotal * rawDiscount) / 100
+            : rawDiscount
+          : 0;
+      const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+      const discountRatio = subtotal > 0 ? discountedSubtotal / subtotal : 0;
+
+      for (const p of preparedItems) {
+        totalGst += (p.amount * discountRatio * (p.gstRate ?? 0)) / 100;
+      }
+
+      const cgst = totalGst / 2;
+      const sgst = totalGst / 2;
+      const totalAmount = discountedSubtotal + totalGst;
+      const isCashPaid = data.paymentMethod?.toUpperCase() === 'CASH';
+      const paymentStatus = isCashPaid ? 'PAID' : 'PENDING';
+      const paidAmount = isCashPaid ? totalAmount : 0;
+
       const order = await prisma.cafeOrder.create({
         data: {
           orderNumber,
+          subtotal,
+          gstAmount: totalGst,
+          cgst,
+          sgst,
+          discount: discountAmount,
+          discountType: data.discountType || 'AMOUNT',
           totalAmount,
+          paidAmount,
+          paymentStatus,
+          paymentMethod: data.paymentMethod,
           status: 'PENDING',
           customerName: data.customerName,
+          customerPhone: data.customerPhone,
           memberId: data.memberId,
           tableNumber: data.tableNumber,
           items: {
-            create: data.items.map(item => ({
-              itemId: item.itemId,
-              quantity: item.quantity,
-              price: item.price,
-              notes: item.notes,
-            }))
-          }
+            create: preparedItems,
+          },
         },
         include: { items: true },
       });

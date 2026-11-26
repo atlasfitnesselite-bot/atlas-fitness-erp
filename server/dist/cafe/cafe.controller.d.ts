@@ -8,9 +8,9 @@ export declare class CafeController {
             createdAt: Date;
             notes: string | null;
             type: string;
-            recordedBy: string | null;
-            itemId: string;
             quantity: number;
+            itemId: string;
+            recordedBy: string | null;
         }[];
     } & {
         id: string;
@@ -20,9 +20,11 @@ export declare class CafeController {
         description: string | null;
         category: string;
         price: number;
+        gstRate: number;
         stock: number;
         minStock: number;
         imageUrl: string | null;
+        images: string[];
         isAvailable: boolean;
     })[]>;
     createMenuItem(data: any): Promise<{
@@ -33,9 +35,11 @@ export declare class CafeController {
         description: string | null;
         category: string;
         price: number;
+        gstRate: number;
         stock: number;
         minStock: number;
         imageUrl: string | null;
+        images: string[];
         isAvailable: boolean;
     }>;
     updateMenuItem(id: string, data: any): Promise<{
@@ -46,9 +50,11 @@ export declare class CafeController {
         description: string | null;
         category: string;
         price: number;
+        gstRate: number;
         stock: number;
         minStock: number;
         imageUrl: string | null;
+        images: string[];
         isAvailable: boolean;
     }>;
     getInventoryTransactions(): Promise<({
@@ -60,9 +66,11 @@ export declare class CafeController {
             description: string | null;
             category: string;
             price: number;
+            gstRate: number;
             stock: number;
             minStock: number;
             imageUrl: string | null;
+            images: string[];
             isAvailable: boolean;
         };
     } & {
@@ -70,9 +78,9 @@ export declare class CafeController {
         createdAt: Date;
         notes: string | null;
         type: string;
-        recordedBy: string | null;
-        itemId: string;
         quantity: number;
+        itemId: string;
+        recordedBy: string | null;
     })[]>;
     updateStock(data: {
         itemId: string;
@@ -84,9 +92,9 @@ export declare class CafeController {
         createdAt: Date;
         notes: string | null;
         type: string;
-        recordedBy: string | null;
-        itemId: string;
         quantity: number;
+        itemId: string;
+        recordedBy: string | null;
     }>;
     getSuppliers(): Promise<{
         id: string;
@@ -142,12 +150,17 @@ export declare class CafeController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            gstNumber: string | null;
             aadhaarNumber: string | null;
+            panNumber: string | null;
             memberId: string;
             accessCardId: string | null;
             occupation: string | null;
             altMobile: string | null;
             passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
         } | null;
         items: ({
             item: {
@@ -158,17 +171,22 @@ export declare class CafeController {
                 description: string | null;
                 category: string;
                 price: number;
+                gstRate: number;
                 stock: number;
                 minStock: number;
                 imageUrl: string | null;
+                images: string[];
                 isAvailable: boolean;
             };
         } & {
             id: string;
             notes: string | null;
             price: number;
-            itemId: string;
+            gstRate: number;
+            amount: number;
+            productName: string | null;
             quantity: number;
+            itemId: string;
             orderId: string;
         })[];
     } & {
@@ -177,19 +195,115 @@ export declare class CafeController {
         updatedAt: Date;
         status: string;
         memberId: string | null;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        discount: number;
+        discountType: string | null;
         totalAmount: number;
-        prepTime: number | null;
+        paidAmount: number;
+        paymentMethod: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
         orderNumber: string;
+        subtotal: number;
+        paymentStatus: string;
         customerName: string | null;
+        customerPhone: string | null;
         tableNumber: string | null;
+        prepTime: number | null;
     })[]>;
+    getOrderById(id: string): Promise<{
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            branch: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            gstNumber: string | null;
+            aadhaarNumber: string | null;
+            panNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
+        } | null;
+        items: ({
+            item: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                description: string | null;
+                category: string;
+                price: number;
+                gstRate: number;
+                stock: number;
+                minStock: number;
+                imageUrl: string | null;
+                images: string[];
+                isAvailable: boolean;
+            };
+        } & {
+            id: string;
+            notes: string | null;
+            price: number;
+            gstRate: number;
+            amount: number;
+            productName: string | null;
+            quantity: number;
+            itemId: string;
+            orderId: string;
+        })[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        memberId: string | null;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        discount: number;
+        discountType: string | null;
+        totalAmount: number;
+        paidAmount: number;
+        paymentMethod: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
+        orderNumber: string;
+        subtotal: number;
+        paymentStatus: string;
+        customerName: string | null;
+        customerPhone: string | null;
+        tableNumber: string | null;
+        prepTime: number | null;
+    }>;
     createOrder(data: any): Promise<{
         items: {
             id: string;
             notes: string | null;
             price: number;
-            itemId: string;
+            gstRate: number;
+            amount: number;
+            productName: string | null;
             quantity: number;
+            itemId: string;
             orderId: string;
         }[];
     } & {
@@ -198,11 +312,200 @@ export declare class CafeController {
         updatedAt: Date;
         status: string;
         memberId: string | null;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        discount: number;
+        discountType: string | null;
         totalAmount: number;
-        prepTime: number | null;
+        paidAmount: number;
+        paymentMethod: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
         orderNumber: string;
+        subtotal: number;
+        paymentStatus: string;
         customerName: string | null;
+        customerPhone: string | null;
         tableNumber: string | null;
+        prepTime: number | null;
+    }>;
+    payOrder(id: string, data: {
+        paymentMethod: string;
+        amount?: number;
+    }): Promise<{
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            branch: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            gstNumber: string | null;
+            aadhaarNumber: string | null;
+            panNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
+        } | null;
+        items: ({
+            item: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                description: string | null;
+                category: string;
+                price: number;
+                gstRate: number;
+                stock: number;
+                minStock: number;
+                imageUrl: string | null;
+                images: string[];
+                isAvailable: boolean;
+            };
+        } & {
+            id: string;
+            notes: string | null;
+            price: number;
+            gstRate: number;
+            amount: number;
+            productName: string | null;
+            quantity: number;
+            itemId: string;
+            orderId: string;
+        })[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        memberId: string | null;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        discount: number;
+        discountType: string | null;
+        totalAmount: number;
+        paidAmount: number;
+        paymentMethod: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
+        orderNumber: string;
+        subtotal: number;
+        paymentStatus: string;
+        customerName: string | null;
+        customerPhone: string | null;
+        tableNumber: string | null;
+        prepTime: number | null;
+    }>;
+    createRazorpayOrder(id: string): Promise<{
+        success: boolean;
+        order: import("razorpay/dist/types/orders").Orders.RazorpayOrder;
+        key: string;
+    }>;
+    verifyRazorpayPayment(id: string, body: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+    }): Promise<{
+        success: boolean;
+        order: {
+            member: {
+                id: string;
+                email: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                status: string;
+                branch: string | null;
+                firstName: string;
+                lastName: string;
+                profilePicture: string | null;
+                gender: string | null;
+                dateOfBirth: Date | null;
+                bloodGroup: string | null;
+                maritalStatus: string | null;
+                nationality: string | null;
+                mobile: string;
+                joiningDate: Date;
+                gstNumber: string | null;
+                aadhaarNumber: string | null;
+                panNumber: string | null;
+                memberId: string;
+                accessCardId: string | null;
+                occupation: string | null;
+                altMobile: string | null;
+                passportNumber: string | null;
+                height: string | null;
+                weight: string | null;
+                workoutType: string | null;
+            } | null;
+            items: ({
+                item: {
+                    id: string;
+                    name: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    description: string | null;
+                    category: string;
+                    price: number;
+                    gstRate: number;
+                    stock: number;
+                    minStock: number;
+                    imageUrl: string | null;
+                    images: string[];
+                    isAvailable: boolean;
+                };
+            } & {
+                id: string;
+                notes: string | null;
+                price: number;
+                gstRate: number;
+                amount: number;
+                productName: string | null;
+                quantity: number;
+                itemId: string;
+                orderId: string;
+            })[];
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            memberId: string | null;
+            gstAmount: number;
+            cgst: number;
+            sgst: number;
+            discount: number;
+            discountType: string | null;
+            totalAmount: number;
+            paidAmount: number;
+            paymentMethod: string | null;
+            razorpayOrderId: string | null;
+            razorpayPaymentId: string | null;
+            orderNumber: string;
+            subtotal: number;
+            paymentStatus: string;
+            customerName: string | null;
+            customerPhone: string | null;
+            tableNumber: string | null;
+            prepTime: number | null;
+        };
     }>;
     updateOrderStatus(id: string, data: {
         status: string;
@@ -213,11 +516,23 @@ export declare class CafeController {
         updatedAt: Date;
         status: string;
         memberId: string | null;
+        gstAmount: number;
+        cgst: number;
+        sgst: number;
+        discount: number;
+        discountType: string | null;
         totalAmount: number;
-        prepTime: number | null;
+        paidAmount: number;
+        paymentMethod: string | null;
+        razorpayOrderId: string | null;
+        razorpayPaymentId: string | null;
         orderNumber: string;
+        subtotal: number;
+        paymentStatus: string;
         customerName: string | null;
+        customerPhone: string | null;
         tableNumber: string | null;
+        prepTime: number | null;
     }>;
     getReportsSummary(): Promise<{
         totalSalesToday: number;

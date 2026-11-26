@@ -180,9 +180,9 @@ export declare class AttendanceReportsService {
         id: string;
         createdAt: Date;
         employeeId: string;
-        attendanceId: string;
         startTime: Date;
         endTime: Date | null;
+        attendanceId: string;
         duration: number;
         exceededBy: number;
     })[]>;

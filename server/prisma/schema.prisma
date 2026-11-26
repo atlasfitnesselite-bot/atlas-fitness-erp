@@ -117,16 +117,26 @@ model Notification {
 }
 
 model CompanySettings {
-  id             String   @id @default(uuid())
-  companyName    String   @default("Atlas Fitness")
-  companyLogo    String?
-  companyContact String?
-  timezone       String   @default("UTC")
-  dateFormat     String   @default("YYYY-MM-DD")
-  userId         String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(uuid())
+  companyName        String   @default("Atlas Fitness")
+  companyLogo        String?
+  companyContact     String?
+  gstNumber          String?
+  address            String?
+  email              String?
+  emailNotifications Boolean  @default(true)
+  razorpayKeyId      String?
+  razorpayKeySecret  String?
+  smtpHost           String?
+  smtpPort           Int?
+  smtpUser           String?
+  smtpPass           String?
+  timezone           String   @default("UTC")
+  dateFormat         String   @default("YYYY-MM-DD")
+  userId             String   @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ThemeSettings {
@@ -815,6 +825,11 @@ model Member {
   aadhaarNumber        String?                  @unique
   maritalStatus        String?
   passportNumber       String?                  @unique
+  height               String?
+  weight               String?
+  workoutType          String?
+  gstNumber            String?
+  panNumber            String?
   addresses            MemberAddress[]
   documents            MemberDocument[]
   emergencyContacts    MemberEmergencyContact[]
@@ -998,11 +1013,13 @@ model MembershipPlan {
   name             String
   durationInMonths Int
   price            Float
+  gstRate          Float                @default(18)
   description      String?
   isActive         Boolean              @default(true)
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
   subscriptions    MemberSubscription[]
+  invoices         Invoice[]
 }
 
 model MemberSubscription {
@@ -1025,17 +1042,36 @@ model MemberSubscription {
 
 model Invoice {
   id                   String              @id @default(uuid())
+  invoiceNumber        String?             @unique
   memberId             String
   subscriptionId       String?
+  planId               String?
+  memberGstNumber      String?
+  memberPanNumber      String?
+  memberAddress        String?
   amount               Float
+  gstRate              Float               @default(18)
+  gstAmount            Float               @default(0)
+  cgst                 Float               @default(0)
+  sgst                 Float               @default(0)
+  lateFee              Float               @default(0)
+  discount             Float               @default(0)
+  discountType         String?
+  totalAmount          Float               @default(0)
+  paidAmount           Float               @default(0)
   dueDate              DateTime
-  status               String // PAID, PENDING, OVERDUE
+  paidDate             DateTime?
+  status               String // PAID, PENDING, OVERDUE, PARTIAL
   paymentMethod        String?
   transactionReference String?
+  razorpayOrderId      String?
+  razorpayPaymentId    String?
+  notes                String?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   member               Member              @relation(fields: [memberId], references: [id], onDelete: Cascade)
   subscription         MemberSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  plan                 MembershipPlan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
 }
 
 // ==========================================
@@ -1225,10 +1261,12 @@ model CafeItem {
   name         String
   description  String?
   price        Float
+  gstRate      Float                      @default(0)
   stock        Int                        @default(0)
   minStock     Int                        @default(5)
   category     String                     @default("BEVERAGE")
   imageUrl     String?
+  images       String[]                   @default([])
   isAvailable  Boolean                    @default(true)
   createdAt    DateTime                   @default(now())
   updatedAt    DateTime                   @updatedAt
@@ -1237,29 +1275,44 @@ model CafeItem {
 }
 
 model CafeOrder {
-  id           String          @id @default(uuid())
-  orderNumber  String          @unique
-  totalAmount  Float
-  status       String          @default("PENDING") // PENDING, PREPARING, READY, COMPLETED, CANCELLED
-  customerName String?
-  memberId     String?
-  tableNumber  String?
-  prepTime     Int? // estimated or actual prep time in minutes
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  items        CafeOrderItem[]
-  member       Member?         @relation(fields: [memberId], references: [id])
+  id                String          @id @default(uuid())
+  orderNumber       String          @unique
+  subtotal          Float           @default(0)
+  gstAmount         Float           @default(0)
+  cgst              Float           @default(0)
+  sgst              Float           @default(0)
+  discount          Float           @default(0)
+  discountType      String?
+  totalAmount       Float
+  paidAmount        Float           @default(0)
+  paymentStatus     String          @default("PENDING") // PAID, PENDING, PARTIAL
+  paymentMethod     String?
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  status            String          @default("PENDING") // PENDING, PREPARING, READY, COMPLETED, CANCELLED
+  customerName      String?
+  customerPhone     String?
+  memberId          String?
+  tableNumber       String?
+  prepTime          Int? // estimated or actual prep time in minutes
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  items             CafeOrderItem[]
+  member            Member?         @relation(fields: [memberId], references: [id])
 }
 
 model CafeOrderItem {
-  id       String    @id @default(uuid())
-  orderId  String
-  itemId   String
-  quantity Int       @default(1)
-  price    Float // Price at time of order
-  notes    String? // Special instructions
-  order    CafeOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  item     CafeItem  @relation(fields: [itemId], references: [id])
+  id          String    @id @default(uuid())
+  orderId     String
+  itemId      String
+  productName String?
+  quantity    Int       @default(1)
+  price       Float // Price at time of order
+  gstRate     Float     @default(0)
+  amount      Float     @default(0)
+  notes       String? // Special instructions
+  order       CafeOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item        CafeItem  @relation(fields: [itemId], references: [id])
 }
 
 model Supplier {

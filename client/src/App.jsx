@@ -74,6 +74,7 @@ import MyTasks from './pages/tasks/MyTasks'
 import DocumentCenter from './pages/documents/DocumentCenter'
 import TransformationTimeline from './pages/pt/TransformationTimeline'
 import ClientPhotos from './pages/pt/ClientPhotos'
+import PersonalTrainersHub from './pages/pt/PersonalTrainersHub'
 
 // A simple protected route wrapper
 function ProtectedRoute({ children }) {
@@ -193,7 +194,7 @@ function App() {
 
           {/* Facilities */}
           <Route path="equipment" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER']}><EquipmentDashboard /></RoleProtectedRoute>} />
-          <Route path="cafe" element={<RoleProtectedRoute allowedRoles={['OWNER', 'CAFE']}><CafeDashboard /></RoleProtectedRoute>} />
+          <Route path="cafe" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'CAFE']}><CafeDashboard /></RoleProtectedRoute>} />
           <Route path="cleaning" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'CLEANING']}><CleaningDashboard /></RoleProtectedRoute>} />
 
 
@@ -261,6 +262,7 @@ function App() {
           <Route path="shifts" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER']}><ShiftDashboard /></RoleProtectedRoute>} />
           <Route path="shifts/list" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER']}><ShiftList /></RoleProtectedRoute>} />
           <Route path="pt">
+            <Route path="trainers" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'RECEPTION']}><PersonalTrainersHub /></RoleProtectedRoute>} />
             <Route path="dashboard" element={<RoleProtectedRoute allowedRoles={['TRAINER']}><PTDashboard /></RoleProtectedRoute>} />
             <Route path="calendar" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'TRAINER']}><PTCalendar /></RoleProtectedRoute>} />
             <Route path="fitness" element={<RoleProtectedRoute allowedRoles={['OWNER', 'MANAGER', 'TRAINER']}><MemberFitnessHub /></RoleProtectedRoute>} />

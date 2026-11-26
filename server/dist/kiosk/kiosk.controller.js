@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KioskController = void 0;
 const common_1 = require("@nestjs/common");
+const passport_1 = require("@nestjs/passport");
 const kiosk_service_1 = require("./kiosk.service");
 const kiosk_dto_1 = require("./dto/kiosk.dto");
 let KioskController = class KioskController {
@@ -46,6 +47,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], KioskController.prototype, "employeeCheckIn", null);
 exports.KioskController = KioskController = __decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),
     (0, common_1.Controller)('kiosk'),
     __metadata("design:paramtypes", [kiosk_service_1.KioskService])
 ], KioskController);

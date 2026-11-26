@@ -172,4 +172,59 @@ export class PtController {
   async getLeaderboard() {
     return this.ptService.getLeaderboard();
   }
+
+  // --- Dedicated Personal Trainers Hub ---
+  @Roles('OWNER', 'MANAGER', 'RECEPTION')
+  @Get('trainers')
+  getTrainers() {
+    return this.ptService.getTrainers();
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Post('trainers')
+  createTrainer(@Body() body: any) {
+    return this.ptService.createTrainer(body);
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Put('trainers/:id')
+  updateTrainer(@Param('id') id: string, @Body() body: any) {
+    return this.ptService.updateTrainer(id, body);
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Delete('trainers/:id')
+  deleteTrainer(@Param('id') id: string) {
+    return this.ptService.deleteTrainer(id);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER')
+  @Get('packages')
+  getPtPackages() {
+    return this.ptService.getPtPackages();
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Post('packages')
+  createPtPackage(@Body() body: any) {
+    return this.ptService.createPtPackage(body);
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Delete('packages/:id')
+  deletePtPackage(@Param('id') id: string) {
+    return this.ptService.deletePtPackage(id);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER')
+  @Get('assignments')
+  getAssignments() {
+    return this.ptService.getAssignments();
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION')
+  @Post('assignments')
+  assignTrainerToMember(@Body() body: any) {
+    return this.ptService.assignTrainerToMember(body);
+  }
 }

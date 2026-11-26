@@ -75,12 +75,17 @@ export declare class DocumentsService {
                 nationality: string | null;
                 mobile: string;
                 joiningDate: Date;
+                gstNumber: string | null;
                 aadhaarNumber: string | null;
+                panNumber: string | null;
                 memberId: string;
                 accessCardId: string | null;
                 occupation: string | null;
                 altMobile: string | null;
                 passportNumber: string | null;
+                height: string | null;
+                weight: string | null;
+                workoutType: string | null;
             };
         } & {
             id: string;

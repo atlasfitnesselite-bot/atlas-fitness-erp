@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import POS from './components/POS'
+import CafeOrders from './components/CafeOrders'
 import KitchenDisplay from './components/KitchenDisplay'
 import MenuInventory from './components/MenuInventory'
 import Suppliers from './components/Suppliers'
@@ -16,17 +17,18 @@ export default function CafeDashboard() {
             <Coffee className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Cafe & POS</h1>
-            <p className="text-sm text-muted-foreground mt-1">Manage orders, kitchen, inventory, and suppliers.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Cafe &amp; POS</h1>
+            <p className="text-sm text-muted-foreground mt-1">Manage orders, GST billing, kitchen, inventory, and suppliers.</p>
           </div>
         </div>
       </div>
 
       <Tabs defaultValue="pos" className="w-full">
-        <TabsList className="bg-card border border-border">
+        <TabsList className="bg-card border border-border flex-wrap h-auto">
           <TabsTrigger value="pos">POS</TabsTrigger>
+          <TabsTrigger value="orders">Orders &amp; Billing</TabsTrigger>
           <TabsTrigger value="kitchen">Kitchen Display</TabsTrigger>
-          <TabsTrigger value="menu">Menu & Inventory</TabsTrigger>
+          <TabsTrigger value="menu">Menu &amp; Inventory</TabsTrigger>
           <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
@@ -34,6 +36,9 @@ export default function CafeDashboard() {
 
         <TabsContent value="pos" className="mt-6">
           <POS />
+        </TabsContent>
+        <TabsContent value="orders" className="mt-6">
+          <CafeOrders />
         </TabsContent>
         <TabsContent value="kitchen" className="mt-6">
           <KitchenDisplay />

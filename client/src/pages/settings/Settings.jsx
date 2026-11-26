@@ -216,12 +216,91 @@ export default function Settings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contactEmail">Contact Email</Label>
+                  <Label htmlFor="contactEmail">Company Email</Label>
                   <Input 
                     id="contactEmail" 
                     type="email" 
-                    value={companySettings.contactEmail || ""} 
-                    onChange={e => setCompanySettings({...companySettings, contactEmail: e.target.value})} 
+                    value={companySettings.email || companySettings.contactEmail || ""} 
+                    onChange={e => setCompanySettings({...companySettings, email: e.target.value, contactEmail: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="companyContact">Phone</Label>
+                  <Input 
+                    id="companyContact" 
+                    value={companySettings.companyContact || ""} 
+                    onChange={e => setCompanySettings({...companySettings, companyContact: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gstNumber">Gym GSTIN</Label>
+                  <Input 
+                    id="gstNumber" 
+                    placeholder="e.g. 36AABCU9603R1ZM"
+                    value={companySettings.gstNumber || ""} 
+                    onChange={e => setCompanySettings({...companySettings, gstNumber: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="address">Gym Address</Label>
+                  <Input 
+                    id="address" 
+                    value={companySettings.address || ""} 
+                    onChange={e => setCompanySettings({...companySettings, address: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="razorpayKeyId">Razorpay Key ID</Label>
+                  <Input 
+                    id="razorpayKeyId" 
+                    placeholder="rzp_live_..."
+                    value={companySettings.razorpayKeyId || ""} 
+                    onChange={e => setCompanySettings({...companySettings, razorpayKeyId: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="razorpayKeySecret">Razorpay Key Secret</Label>
+                  <Input 
+                    id="razorpayKeySecret" 
+                    type="password"
+                    value={companySettings.razorpayKeySecret || ""} 
+                    onChange={e => setCompanySettings({...companySettings, razorpayKeySecret: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpHost">SMTP Host</Label>
+                  <Input 
+                    id="smtpHost" 
+                    placeholder="smtp.gmail.com"
+                    value={companySettings.smtpHost || ""} 
+                    onChange={e => setCompanySettings({...companySettings, smtpHost: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPort">SMTP Port</Label>
+                  <Input 
+                    id="smtpPort" 
+                    type="number"
+                    placeholder="587"
+                    value={companySettings.smtpPort || ""} 
+                    onChange={e => setCompanySettings({...companySettings, smtpPort: Number(e.target.value) || undefined})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpUser">SMTP User</Label>
+                  <Input 
+                    id="smtpUser" 
+                    value={companySettings.smtpUser || ""} 
+                    onChange={e => setCompanySettings({...companySettings, smtpUser: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPass">SMTP Password / App Key</Label>
+                  <Input 
+                    id="smtpPass" 
+                    type="password"
+                    value={companySettings.smtpPass || ""} 
+                    onChange={e => setCompanySettings({...companySettings, smtpPass: e.target.value})} 
                   />
                 </div>
                 <div className="space-y-2">

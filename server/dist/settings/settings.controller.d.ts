@@ -5,12 +5,22 @@ export declare class SettingsController {
     constructor(settingsService: SettingsService);
     getCompanySettings(): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
+        gstNumber: string | null;
+        address: string | null;
+        emailNotifications: boolean;
+        razorpayKeyId: string | null;
+        razorpayKeySecret: string | null;
+        smtpHost: string | null;
+        smtpPort: number | null;
+        smtpUser: string | null;
+        smtpPass: string | null;
         timezone: string;
         dateFormat: string;
     } | {
@@ -28,12 +38,22 @@ export declare class SettingsController {
         };
     }, dto: UpdateCompanySettingsDto): Promise<{
         id: string;
+        email: string | null;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
+        gstNumber: string | null;
+        address: string | null;
+        emailNotifications: boolean;
+        razorpayKeyId: string | null;
+        razorpayKeySecret: string | null;
+        smtpHost: string | null;
+        smtpPort: number | null;
+        smtpUser: string | null;
+        smtpPass: string | null;
         timezone: string;
         dateFormat: string;
     }>;

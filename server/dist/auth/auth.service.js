@@ -115,13 +115,11 @@ let AuthService = class AuthService {
         }
         const hashedPassword = await bcrypt.hash(data.password || '', 10);
         const roleName = data.role || 'MEMBER';
-        let roleRecord = await this.prisma.role.findUnique({
+        const roleRecord = await this.prisma.role.findUnique({
             where: { name: roleName },
         });
         if (!roleRecord) {
-            roleRecord = await this.prisma.role.create({
-                data: { name: roleName, description: `Default ${roleName} role` },
-            });
+            throw new common_1.ConflictException(`Invalid role: ${roleName}`);
         }
         const user = await this.prisma.user.create({
             data: {
@@ -203,7 +201,7 @@ let AuthService = class AuthService {
             where: { id: user.id },
             data: { resetToken, resetTokenExpiry },
         });
-        return { success: true, message: 'Reset link sent', token: resetToken };
+        return { success: true, message: 'Reset link sent' };
     }
     async resetPassword(data) {
         const { token, newPassword } = data;

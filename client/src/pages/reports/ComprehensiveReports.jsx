@@ -29,6 +29,7 @@ import {
 import api from '../../lib/api';
 import { format } from 'date-fns';
 import { useAuthStore } from '../../store/useAuthStore';
+import AuditorReportSection from './AuditorReportSection';
 
 export default function ComprehensiveReports() {
   const { token } = useAuthStore();
@@ -315,6 +316,8 @@ export default function ComprehensiveReports() {
           </div>
         </>
       )}
+
+      <AuditorReportSection />
     </div>
   );
 }

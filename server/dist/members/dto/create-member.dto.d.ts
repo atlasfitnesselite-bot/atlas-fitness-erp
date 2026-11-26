@@ -42,6 +42,13 @@ export declare class CreateMemberDto {
     email?: string;
     branch?: string;
     status?: string;
+    height?: string;
+    weight?: string;
+    workoutType?: string;
+    gstNumber?: string;
+    panNumber?: string;
+    planId?: string;
+    planStartDate?: string;
     addresses?: AddressDto[];
     emergencyContacts?: EmergencyContactDto[];
     references?: ReferenceDto[];

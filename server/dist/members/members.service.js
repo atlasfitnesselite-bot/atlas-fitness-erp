@@ -12,10 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MembersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("../billing/email.service");
 let MembersService = class MembersService {
     prisma;
-    constructor(prisma) {
+    emailService;
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
     }
     async create(createMemberDto, userId) {
         const existingMobile = await this.prisma.member.findUnique({
@@ -32,9 +35,20 @@ let MembersService = class MembersService {
                 throw new common_1.ConflictException('A member with this email already exists');
             }
         }
-        const count = await this.prisma.member.count();
-        const memberId = `MEM-${(count + 1).toString().padStart(4, '0')}`;
-        const { addresses, emergencyContacts, references, reference, medical, fitnessAssessment, measurements, documents, notes, ...memberData } = createMemberDto;
+        const afeMembers = await this.prisma.member.findMany({
+            where: { memberId: { startsWith: 'AFE-' } },
+            select: { memberId: true },
+        });
+        let maxNum = 0;
+        for (const m of afeMembers) {
+            const num = parseInt(m.memberId.replace('AFE-', ''), 10);
+            if (!Number.isNaN(num) && num > maxNum) {
+                maxNum = num;
+            }
+        }
+        const nextNum = maxNum + 1;
+        const memberId = `AFE-${nextNum.toString().padStart(3, '0')}`;
+        const { addresses, emergencyContacts, references, reference, medical, fitnessAssessment, measurements, documents, notes, planId, planStartDate, ...memberData } = createMemberDto;
         const refs = references || reference;
         const member = await this.prisma.member.create({
             data: {
@@ -109,20 +123,41 @@ let MembersService = class MembersService {
                 notes: true,
             },
         });
+        if (planId) {
+            const plan = await this.prisma.membershipPlan.findUnique({ where: { id: planId } });
+            if (plan) {
+                const start = planStartDate ? new Date(planStartDate) : new Date();
+                const end = new Date(start);
+                end.setMonth(end.getMonth() + plan.durationInMonths);
+                await this.prisma.memberSubscription.create({
+                    data: {
+                        memberId: member.id,
+                        planId: plan.id,
+                        startDate: start,
+                        endDate: end,
+                        status: 'ACTIVE',
+                    },
+                });
+            }
+        }
+        void this.emailService.sendWelcomeEmail(member);
         return member;
     }
     async findAll(query = {}) {
-        const { search, status, gender, branch, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc', } = query;
+        const { search, status, gender, branch, page = 1, limit = 50, sortBy = 'memberId', sortOrder = 'asc', } = query;
+        const allowedSortFields = new Set(['memberId', 'firstName', 'joiningDate', 'createdAt', 'status']);
+        const safeSortBy = allowedSortFields.has(sortBy) ? sortBy : 'memberId';
+        const safeSortOrder = sortOrder === 'desc' ? 'desc' : 'asc';
         const skip = (Number(page) - 1) * Number(limit);
         const take = Number(limit);
         const where = {};
         if (search) {
             where.OR = [
-                { firstName: { contains: search } },
-                { lastName: { contains: search } },
-                { memberId: { contains: search } },
-                { mobile: { contains: search } },
-                { email: { contains: search } },
+                { firstName: { contains: search, mode: 'insensitive' } },
+                { lastName: { contains: search, mode: 'insensitive' } },
+                { memberId: { contains: search, mode: 'insensitive' } },
+                { mobile: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
             ];
         }
         if (status)
@@ -136,7 +171,7 @@ let MembersService = class MembersService {
                 where,
                 skip,
                 take,
-                orderBy: { [sortBy]: sortOrder },
+                orderBy: { [safeSortBy]: safeSortOrder },
             }),
             this.prisma.member.count({ where }),
         ]);
@@ -175,6 +210,7 @@ let MembersService = class MembersService {
         if (!member) {
             throw new common_1.NotFoundException(`Member with ID ${id} not found`);
         }
+        void this.emailService.sendWelcomeEmail(member);
         return member;
     }
     async update(id, updateMemberDto, userId) {
@@ -347,6 +383,7 @@ let MembersService = class MembersService {
 exports.MembersService = MembersService;
 exports.MembersService = MembersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], MembersService);
 //# sourceMappingURL=members.service.js.map

@@ -6,11 +6,15 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { EmailService } from '../billing/email.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MembersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async create(createMemberDto: CreateMemberDto, userId: string) {
     // 1. Check for duplicate mobile
@@ -33,11 +37,22 @@ export class MembersService {
       }
     }
 
-    // 3. Generate Member ID (MEM-0001)
-    const count = await this.prisma.member.count();
-    const memberId = `MEM-${(count + 1).toString().padStart(4, '0')}`;
+    // 3. Generate unique Member ID continuing from existing AFE-XXX sequence
+    const afeMembers = await this.prisma.member.findMany({
+      where: { memberId: { startsWith: 'AFE-' } },
+      select: { memberId: true },
+    });
+    let maxNum = 0;
+    for (const m of afeMembers) {
+      const num = parseInt(m.memberId.replace('AFE-', ''), 10);
+      if (!Number.isNaN(num) && num > maxNum) {
+        maxNum = num;
+      }
+    }
+    const nextNum = maxNum + 1;
+    const memberId = `AFE-${nextNum.toString().padStart(3, '0')}`;
 
-    // 4. Extract nested relations
+    // 4. Extract nested relations & optional plan assignment
     const {
       addresses,
       emergencyContacts,
@@ -48,6 +63,8 @@ export class MembersService {
       measurements,
       documents,
       notes,
+      planId,
+      planStartDate,
       ...memberData
     } = createMemberDto as any;
 
@@ -136,6 +153,25 @@ export class MembersService {
       },
     });
 
+    if (planId) {
+      const plan = await this.prisma.membershipPlan.findUnique({ where: { id: planId } });
+      if (plan) {
+        const start = planStartDate ? new Date(planStartDate) : new Date();
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + plan.durationInMonths);
+        await this.prisma.memberSubscription.create({
+          data: {
+            memberId: member.id,
+            planId: plan.id,
+            startDate: start,
+            endDate: end,
+            status: 'ACTIVE',
+          },
+        });
+      }
+    }
+
+    void this.emailService.sendWelcomeEmail(member);
     return member;
   }
 
@@ -157,10 +193,14 @@ export class MembersService {
       gender,
       branch,
       page = 1,
-      limit = 10,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
+      limit = 50,
+      sortBy = 'memberId',
+      sortOrder = 'asc',
     } = query;
+
+    const allowedSortFields = new Set(['memberId', 'firstName', 'joiningDate', 'createdAt', 'status']);
+    const safeSortBy = allowedSortFields.has(sortBy) ? sortBy : 'memberId';
+    const safeSortOrder = sortOrder === 'desc' ? 'desc' : 'asc';
 
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
@@ -169,11 +209,11 @@ export class MembersService {
 
     if (search) {
       where.OR = [
-        { firstName: { contains: search } },
-        { lastName: { contains: search } },
-        { memberId: { contains: search } },
-        { mobile: { contains: search } },
-        { email: { contains: search } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { memberId: { contains: search, mode: 'insensitive' } },
+        { mobile: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -186,7 +226,7 @@ export class MembersService {
         where,
         skip,
         take,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: { [safeSortBy]: safeSortOrder },
       }),
       this.prisma.member.count({ where }),
     ]);
@@ -229,6 +269,7 @@ export class MembersService {
       throw new NotFoundException(`Member with ID ${id} not found`);
     }
 
+    void this.emailService.sendWelcomeEmail(member);
     return member;
   }
 

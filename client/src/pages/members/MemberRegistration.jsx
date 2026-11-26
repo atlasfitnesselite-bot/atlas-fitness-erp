@@ -53,6 +53,16 @@ const MemberRegistration = () => {
   });
 
   const [initialLoading, setInitialLoading] = useState(!!id);
+  const [plans, setPlans] = useState([]);
+
+  useEffect(() => {
+    if (!id) {
+      api.get('/api/subscriptions/plans').then((res) => {
+        const list = res.data?.plans || res.data || [];
+        if (Array.isArray(list)) setPlans(list);
+      }).catch(() => {});
+    }
+  }, [id]);
 
   useEffect(() => {
     if (id) {
@@ -367,6 +377,68 @@ const MemberRegistration = () => {
                 <Label htmlFor="em_mob">Mobile Number</Label>
                 <Input id="em_mob" name="mobile" value={formData.emergencyContacts[0].mobile} onChange={handleEmergencyChange} />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Fitness & Tax Details (from legacy form) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" /> Fitness &amp; Tax Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="height">Height</Label>
+                <Input id="height" name="height" placeholder="e.g. 5'10 or 178cm" value={formData.height || ''} onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight</Label>
+                <Input id="weight" name="weight" placeholder="e.g. 75kg" value={formData.weight || ''} onChange={handleChange} />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="workoutType">Workout Type</Label>
+                <Input id="workoutType" name="workoutType" placeholder="e.g. Strength, Cardio, Crossfit" value={formData.workoutType || ''} onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gstNumber">GSTIN (B2B Optional)</Label>
+                <Input id="gstNumber" name="gstNumber" placeholder="Member GSTIN" value={formData.gstNumber || ''} onChange={handleChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="panNumber">PAN (Optional)</Label>
+                <Input id="panNumber" name="panNumber" placeholder="Member PAN" value={formData.panNumber || ''} onChange={handleChange} />
+              </div>
+              {!id && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="planId">Initial Membership Plan (Optional)</Label>
+                    <select
+                      id="planId"
+                      name="planId"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={formData.planId || ''}
+                      onChange={handleChange}
+                    >
+                      <option value="">No Plan / Assign Later</option>
+                      {plans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.durationInMonths}m - ₹{p.price})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="planStartDate">Plan Start Date</Label>
+                    <Input
+                      id="planStartDate"
+                      name="planStartDate"
+                      type="date"
+                      value={formData.planStartDate || new Date().toISOString().split('T')[0]}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
