@@ -86,7 +86,7 @@ export default function Sidebar() {
     {
       name: "Billing",
       items: [
-        { name: "Dashboard", href: "/billing", icon: Wallet, roles: ['OWNER'] },
+        { name: "Invoices & Bills", href: "/billing", icon: Wallet, roles: ['OWNER'] },
       ]
     },
     {
