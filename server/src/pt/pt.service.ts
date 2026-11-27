@@ -1368,18 +1368,17 @@ export class PtService {
       });
       const seq = (last?.invoiceNumber ? parseInt(last.invoiceNumber.split('-')[2] || '0', 10) : 0) + 1;
       const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
-      const gstAmount = (fee * 18) / 100;
 
       await this.prisma.invoice.create({
         data: {
           invoiceNumber,
           memberId: data.memberId,
           amount: fee,
-          gstRate: 18,
-          gstAmount,
-          cgst: gstAmount / 2,
-          sgst: gstAmount / 2,
-          totalAmount: fee + gstAmount,
+          gstRate: 0,
+          gstAmount: 0,
+          cgst: 0,
+          sgst: 0,
+          totalAmount: fee,
           paidAmount: 0,
           dueDate: start,
           status: 'PENDING',

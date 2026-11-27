@@ -30,7 +30,7 @@ export class BillingService {
     lateFee?: number;
   }) {
     const amount = Number(params.amount || 0);
-    const gstRate = params.gstRate ?? 18;
+    const gstRate = params.gstRate ?? 5;
     const discount = Number(params.discount || 0);
     const lateFee = Number(params.lateFee || 0);
 

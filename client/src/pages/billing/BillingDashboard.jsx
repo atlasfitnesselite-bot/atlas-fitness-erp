@@ -43,6 +43,7 @@ export default function BillingDashboard() {
   const [invoices, setInvoices] = useState([]);
   const [members, setMembers] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [ptPackages, setPtPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -58,10 +59,12 @@ export default function BillingDashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
+    billType: 'MEMBERSHIP',
     memberId: '',
     planId: '',
+    ptPackageId: '',
     amount: '',
-    gstRate: '18',
+    gstRate: '5',
     discount: '0',
     discountType: 'AMOUNT',
     lateFee: '0',
@@ -112,22 +115,27 @@ export default function BillingDashboard() {
   const fetchAll = async () => {
     try {
       setLoading(true);
-      const [invRes, memRes, planRes] = await Promise.allSettled([
+      const [invRes, memRes, planRes, ptPkgRes] = await Promise.allSettled([
         api.get('/api/billing/invoices'),
         api.get('/api/members?limit=500'),
         api.get('/api/subscriptions/plans'),
+        api.get('/api/pt/packages'),
       ]);
 
       if (invRes.status === 'fulfilled') {
         setInvoices(invRes.value.data?.invoices || invRes.value.data || []);
       }
       if (memRes.status === 'fulfilled') {
-        const list = memRes.value.data?.members || memRes.value.data || [];
+        const list = memRes.value.data?.data || memRes.value.data?.members || memRes.value.data || [];
         setMembers(Array.isArray(list) ? list : []);
       }
       if (planRes.status === 'fulfilled') {
-        const list = planRes.value.data?.plans || planRes.value.data || [];
+        const list = planRes.value.data?.plans || planRes.value.data?.data || planRes.value.data || [];
         setPlans(Array.isArray(list) ? list : []);
+      }
+      if (ptPkgRes.status === 'fulfilled') {
+        const list = ptPkgRes.value.data?.data || ptPkgRes.value.data || [];
+        setPtPackages(Array.isArray(list) ? list : []);
       }
     } catch (error) {
       toast({
@@ -142,7 +150,7 @@ export default function BillingDashboard() {
 
   const previewTotals = useMemo(() => {
     const base = parseFloat(form.amount) || 0;
-    const gstRate = form.gstRate === '' ? 18 : parseFloat(form.gstRate) || 0;
+    const gstRate = form.gstRate === '' ? (form.billType === 'PT' ? 0 : 5) : parseFloat(form.gstRate) || 0;
     const discount = parseFloat(form.discount) || 0;
     const lateFee = parseFloat(form.lateFee) || 0;
     const discountVal =
@@ -157,13 +165,35 @@ export default function BillingDashboard() {
     return { taxable, gstAmount, cgst: gstAmount / 2, sgst: gstAmount / 2, total };
   }, [form]);
 
+  const handleBillTypeChange = (billType) => {
+    setForm((prev) => ({
+      ...prev,
+      billType,
+      planId: billType === 'PT' ? '' : prev.planId,
+      ptPackageId: billType === 'MEMBERSHIP' ? '' : prev.ptPackageId,
+      gstRate: billType === 'PT' ? '0' : '5',
+      notes: billType === 'PT' ? (prev.notes || 'Personal Training Fee (No GST)') : '',
+    }));
+  };
+
+  const handlePtPackageChange = (ptPackageId) => {
+    const pkg = ptPackages.find((p) => p.id === ptPackageId);
+    setForm((prev) => ({
+      ...prev,
+      ptPackageId,
+      amount: pkg ? String(pkg.price) : prev.amount,
+      gstRate: '0',
+      notes: pkg ? `Personal Training: ${pkg.name}` : prev.notes,
+    }));
+  };
+
   const handlePlanChange = (planId) => {
     const plan = plans.find((p) => p.id === planId);
     setForm((prev) => ({
       ...prev,
       planId,
       amount: plan ? String(plan.price) : prev.amount,
-      gstRate: plan && plan.gstRate !== undefined ? String(plan.gstRate) : prev.gstRate,
+      gstRate: '5',
     }));
   };
 
@@ -177,9 +207,9 @@ export default function BillingDashboard() {
       setCreating(true);
       await api.post('/api/billing/invoices', {
         memberId: form.memberId,
-        planId: form.planId || undefined,
+        planId: form.billType === 'MEMBERSHIP' ? form.planId || undefined : undefined,
         amount: parseFloat(form.amount),
-        gstRate: form.gstRate === '' ? 18 : parseFloat(form.gstRate),
+        gstRate: form.gstRate === '' ? (form.billType === 'PT' ? 0 : 5) : parseFloat(form.gstRate),
         discount: parseFloat(form.discount) || 0,
         discountType: form.discountType,
         lateFee: parseFloat(form.lateFee) || 0,
@@ -189,10 +219,30 @@ export default function BillingDashboard() {
         memberGstNumber: form.memberGstNumber || undefined,
         memberPanNumber: form.memberPanNumber || undefined,
         memberAddress: form.memberAddress || undefined,
-        notes: form.notes || undefined,
+        notes:
+          form.notes ||
+          (form.billType === 'PT' ? 'Personal Training Fee (No GST)' : undefined),
       });
       toast({ title: 'Success', description: 'Invoice generated successfully' });
       setIsCreateOpen(false);
+      setForm({
+        billType: 'MEMBERSHIP',
+        memberId: '',
+        planId: '',
+        ptPackageId: '',
+        amount: '',
+        gstRate: '5',
+        discount: '0',
+        discountType: 'AMOUNT',
+        lateFee: '0',
+        dueDate: new Date().toISOString().split('T')[0],
+        status: 'PENDING',
+        paymentMethod: 'CASH',
+        memberGstNumber: '',
+        memberPanNumber: '',
+        memberAddress: '',
+        notes: '',
+      });
       fetchAll();
     } catch (error) {
       toast({
@@ -694,6 +744,27 @@ export default function BillingDashboard() {
             <DialogTitle>Generate GST Invoice</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleCreateInvoice} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Bill Type *</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={form.billType === 'MEMBERSHIP' ? 'default' : 'outline'}
+                  onClick={() => handleBillTypeChange('MEMBERSHIP')}
+                  className={form.billType === 'MEMBERSHIP' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}
+                >
+                  Membership (5% GST)
+                </Button>
+                <Button
+                  type="button"
+                  variant={form.billType === 'PT' ? 'default' : 'outline'}
+                  onClick={() => handleBillTypeChange('PT')}
+                  className={form.billType === 'PT' ? 'bg-red-600 hover:bg-red-700 text-white' : ''}
+                >
+                  Personal Training (No GST)
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Member *</Label>
@@ -706,26 +777,44 @@ export default function BillingDashboard() {
                   <option value="">Select Member</option>
                   {members.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.firstName} {m.lastName} ({m.memberId})
+                      {m.firstName} {m.lastName !== '-' ? m.lastName : ''} ({m.memberId})
                     </option>
                   ))}
                 </CustomSelect>
               </div>
-              <div className="space-y-2">
-                <Label>Membership Plan (Optional)</Label>
-                <CustomSelect
-                  className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
-                  value={form.planId}
-                  onChange={(e) => handlePlanChange(e.target.value)}
-                >
-                  <option value="">Custom / No Plan</option>
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} - ₹{p.price}
-                    </option>
-                  ))}
-                </CustomSelect>
-              </div>
+              {form.billType === 'MEMBERSHIP' ? (
+                <div className="space-y-2">
+                  <Label>Membership Plan (Optional)</Label>
+                  <CustomSelect
+                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    value={form.planId}
+                    onChange={(e) => handlePlanChange(e.target.value)}
+                  >
+                    <option value="">Custom / No Plan</option>
+                    {plans.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} - ₹{p.price}
+                      </option>
+                    ))}
+                  </CustomSelect>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>PT Package / Custom Amount</Label>
+                  <CustomSelect
+                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    value={form.ptPackageId}
+                    onChange={(e) => handlePtPackageChange(e.target.value)}
+                  >
+                    <option value="">Custom PT Fee</option>
+                    {ptPackages.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.numberOfSessions} sessions - ₹{p.price})
+                      </option>
+                    ))}
+                  </CustomSelect>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -863,7 +952,7 @@ export default function BillingDashboard() {
                 <span>₹{Number(detailsInvoice.amount || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">CGST / SGST ({detailsInvoice.gstRate ?? 18}%):</span>
+                <span className="text-muted-foreground">CGST / SGST ({detailsInvoice.gstRate ?? 5}%):</span>
                 <span>
                   ₹{Number(detailsInvoice.cgst || 0).toFixed(2)} + ₹{Number(detailsInvoice.sgst || 0).toFixed(2)}
                 </span>
