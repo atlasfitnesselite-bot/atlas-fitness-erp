@@ -401,10 +401,13 @@ export default function BillingDashboard() {
   const filteredInvoices = invoices.filter((i) => {
     const matchesStatus = statusFilter === 'ALL' || i.status?.toUpperCase() === statusFilter;
     const memberName = getMemberFullName(i).toLowerCase();
+    const memberCode = i.member?.memberId?.toLowerCase() || '';
+    const q = search.toLowerCase();
     const matchesSearch =
       !search ||
-      i.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) ||
-      memberName.includes(search.toLowerCase()) ||
+      i.invoiceNumber?.toLowerCase().includes(q) ||
+      memberName.includes(q) ||
+      memberCode.includes(q) ||
       i.member?.mobile?.includes(search);
     return matchesStatus && matchesSearch;
   });
@@ -413,7 +416,7 @@ export default function BillingDashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Billing Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Invoices &amp; Bills</h1>
           <p className="text-muted-foreground">GST invoices, partial &amp; Razorpay payments, PDF &amp; email receipts</p>
         </div>
         <div className="flex gap-2">
@@ -471,7 +474,7 @@ export default function BillingDashboard() {
             <div className="relative w-full max-w-sm">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search invoice #, member, or phone..."
+                placeholder="Search invoice #, member name, ID, or phone..."
                 className="pl-8"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -528,7 +531,12 @@ export default function BillingDashboard() {
                         <TableCell className="font-medium">
                           {invoice.invoiceNumber || invoice.id.slice(0, 8).toUpperCase()}
                         </TableCell>
-                        <TableCell>{getMemberFullName(invoice)}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{getMemberFullName(invoice)}</div>
+                          {invoice.member?.memberId && (
+                            <div className="text-xs text-muted-foreground font-mono">ID: {invoice.member.memberId}</div>
+                          )}
+                        </TableCell>
                         <TableCell>{invoice.plan?.name || '-'}</TableCell>
                         <TableCell>₹{total.toFixed(2)}</TableCell>
                         <TableCell>₹{(invoice.paidAmount || 0).toFixed(2)}</TableCell>
