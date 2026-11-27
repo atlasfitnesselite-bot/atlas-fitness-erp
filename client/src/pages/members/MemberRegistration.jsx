@@ -315,8 +315,8 @@ const MemberRegistration = () => {
               <Input id="mobile" name="mobile" required value={formData.mobile} onChange={handleChange} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="altMobile">Alternate Mobile</Label>
-              <Input id="altMobile" name="altMobile" value={formData.altMobile} onChange={handleChange} />
+              <Label htmlFor="altMobile">Alternate Mobile (Optional)</Label>
+              <Input id="altMobile" name="altMobile" placeholder="Optional" value={formData.altMobile} onChange={handleChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
