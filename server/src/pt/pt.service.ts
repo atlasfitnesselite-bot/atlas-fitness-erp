@@ -247,55 +247,459 @@ export class PtService {
     };
   }
 
-  async getTrainerDashboard(userId: string) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId }, include: { payrollStructure: true } });
-    if (!employee) throw new NotFoundException('Employee not found');
+  private readonly PT_SLOT_MINUTES = 85; // 1 hour 25 minutes per session
 
+  private toMinutes(hhmm: string): number {
+    const [h, m] = (hhmm || '00:00').split(':').map((n) => parseInt(n, 10) || 0);
+    return h * 60 + m;
+  }
+
+  private addMinutesToTime(hhmm: string, mins = this.PT_SLOT_MINUTES): string {
+    const total = (this.toMinutes(hhmm) + mins) % (24 * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+
+  private slotsOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
+    const a1 = this.toMinutes(aStart);
+    const a2 = this.toMinutes(aEnd);
+    const b1 = this.toMinutes(bStart);
+    const b2 = this.toMinutes(bEnd);
+    return a1 < b2 && b1 < a2;
+  }
+
+  private getDayRange(date = new Date()) {
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+    return { startOfDay, endOfDay };
+  }
+
+  private getMonthRange(monthStr?: string) {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    let year = now.getFullYear();
+    let month = now.getMonth() + 1;
+    if (monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
+      const [y, m] = monthStr.split('-').map((n) => parseInt(n, 10));
+      if (y > 2000 && m >= 1 && m <= 12) {
+        year = y;
+        month = m;
+      }
+    }
+    const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+    return {
+      year,
+      month,
+      monthKey: `${year}-${String(month).padStart(2, '0')}`,
+      startOfMonth,
+      endOfMonth,
+    };
+  }
 
-    const sessions = await this.prisma.pTSession.findMany({
-      where: {
-        trainerId: employee.id,
-        date: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        }
-      },
+  async getTrainerDashboard(userId: string, query?: { trainerId?: string; month?: string }) {
+    const employee = query?.trainerId
+      ? await this.prisma.employee.findUnique({ where: { id: query.trainerId }, include: { payrollStructure: true } })
+      : await this.prisma.employee.findUnique({ where: { userId }, include: { payrollStructure: true } });
+    if (!employee) throw new NotFoundException('Trainer employee profile not found');
+
+    const { startOfDay, endOfDay } = this.getDayRange();
+    const { year, month, monthKey, startOfMonth, endOfMonth } = this.getMonthRange(query?.month);
+
+    const [todayAttendance, activeAssignments, todaySessions, monthSessions, monthAttendance, commissions] =
+      await Promise.all([
+        this.prisma.attendance.findFirst({
+          where: {
+            employeeId: employee.id,
+            date: { gte: startOfDay, lte: endOfDay },
+          },
+        }),
+        this.prisma.memberPTPackage.findMany({
+          where: { trainerId: employee.id, status: 'ACTIVE' },
+          include: { member: true, package: true },
+          orderBy: [{ preferredSlotStart: 'asc' }, { createdAt: 'desc' }],
+        }),
+        this.prisma.pTSession.findMany({
+          where: {
+            trainerId: employee.id,
+            date: { gte: startOfDay, lte: endOfDay },
+            status: 'COMPLETED',
+          },
+        }),
+        this.prisma.pTSession.findMany({
+          where: {
+            trainerId: employee.id,
+            date: { gte: startOfMonth, lte: endOfMonth },
+          },
+          include: { member: true },
+          orderBy: { date: 'desc' },
+        }),
+        this.prisma.attendance.findMany({
+          where: {
+            employeeId: employee.id,
+            date: { gte: startOfMonth, lte: endOfMonth },
+          },
+          orderBy: { date: 'desc' },
+        }),
+        this.prisma.trainerCommission.findMany({
+          where: {
+            trainerId: employee.id,
+            month,
+            year,
+          },
+        }),
+      ]);
+
+    const todaySessionByMember = new Map<string, (typeof todaySessions)[number]>();
+    for (const s of todaySessions) {
+      if (!todaySessionByMember.has(s.memberId)) {
+        todaySessionByMember.set(s.memberId, s);
+      }
+    }
+
+    const assignedClients = activeAssignments.map((a) => {
+      const doneSession = todaySessionByMember.get(a.memberId);
+      const slotStart = a.preferredSlotStart || doneSession?.startTime || null;
+      const slotEnd = a.preferredSlotEnd || (slotStart ? this.addMinutesToTime(slotStart) : null);
+      return {
+        assignmentId: a.id,
+        memberId: a.memberId,
+        memberCode: a.member.memberId,
+        memberName: `${a.member.firstName} ${a.member.lastName}`.trim(),
+        mobile: a.member.mobile,
+        packageName: a.package.name,
+        sessionsTotal: a.sessionsTotal,
+        sessionsRemaining: a.sessionsRemaining,
+        slotStart,
+        slotEnd,
+        todayDone: Boolean(doneSession),
+        todaySessionId: doneSession?.id || null,
+      };
     });
 
-    const completedSessions = sessions.filter(s => s.status === 'COMPLETED');
-    const missedSessions = sessions.filter(s => s.status === 'CANCELLED' || s.status === 'NO_SHOW');
+    const completedSessions = monthSessions.filter((s) => s.status === 'COMPLETED');
+    const missedSessions = monthSessions.filter((s) => s.status === 'CANCELLED' || s.status === 'NO_SHOW');
 
     let revenueGenerated = 0;
+    const clientMap = new Map<
+      string,
+      { memberId: string; memberCode: string; memberName: string; sessionsCount: number; totalMinutes: number; dates: string[] }
+    >();
+
     for (const session of completedSessions) {
+      const dur = session.duration || this.PT_SLOT_MINUTES;
+      const existing = clientMap.get(session.memberId);
+      const dateStr = new Date(session.date).toISOString().split('T')[0];
+      if (existing) {
+        existing.sessionsCount += 1;
+        existing.totalMinutes += dur;
+        existing.dates.push(dateStr);
+      } else {
+        clientMap.set(session.memberId, {
+          memberId: session.memberId,
+          memberCode: session.member?.memberId || '',
+          memberName: session.member
+            ? `${session.member.firstName} ${session.member.lastName}`.trim()
+            : 'Unknown',
+          sessionsCount: 1,
+          totalMinutes: dur,
+          dates: [dateStr],
+        });
+      }
+
       const activePackage = await this.prisma.memberPTPackage.findFirst({
         where: { memberId: session.memberId },
         include: { package: true },
         orderBy: { createdAt: 'desc' },
       });
       if (activePackage && activePackage.sessionsTotal > 0) {
-        revenueGenerated += (activePackage.package.price / activePackage.sessionsTotal);
+        revenueGenerated += activePackage.package.price / activePackage.sessionsTotal;
       }
     }
 
-    const commissions = await this.prisma.trainerCommission.findMany({
-      where: {
-        trainerId: employee.id,
-        month: now.getMonth() + 1,
-        year: now.getFullYear(),
-      },
-    });
-
     const commissionEarned = commissions.reduce((sum, c) => sum + c.amount, 0);
+    const daysPresent = monthAttendance.filter(
+      (a) => a.clockIn !== null || a.status === 'PRESENT' || a.status === 'HALF_DAY',
+    ).length;
+    const totalWorkedHours = Number(
+      monthAttendance.reduce((sum, a) => sum + (a.workingHours || 0), 0).toFixed(2),
+    );
+    const totalTrainingMinutes = completedSessions.reduce(
+      (sum, s) => sum + (s.duration || this.PT_SLOT_MINUTES),
+      0,
+    );
 
     return {
+      trainer: {
+        id: employee.id,
+        employeeId: employee.employeeId,
+        name: `${employee.firstName} ${employee.lastName}`.trim(),
+        email: employee.email,
+      },
+      todayAttendance: todayAttendance
+        ? {
+            id: todayAttendance.id,
+            date: todayAttendance.date,
+            clockIn: todayAttendance.clockIn,
+            clockOut: todayAttendance.clockOut,
+            workingHours: todayAttendance.workingHours,
+            status: todayAttendance.status,
+          }
+        : null,
+      assignedClients,
       completedSessions: completedSessions.length,
       missedSessions: missedSessions.length,
       revenueGenerated,
       commissionEarned,
+      monthlyReport: {
+        month: monthKey,
+        daysPresent,
+        totalWorkedHours,
+        completedSessions: completedSessions.length,
+        totalTrainingMinutes,
+        totalTrainingHours: Number((totalTrainingMinutes / 60).toFixed(2)),
+        clientBreakdown: Array.from(clientMap.values()),
+        attendanceLog: monthAttendance.map((a) => ({
+          id: a.id,
+          date: a.date,
+          clockIn: a.clockIn,
+          clockOut: a.clockOut,
+          workingHours: a.workingHours,
+          status: a.status,
+        })),
+      },
     };
+  }
+
+  async toggleTodayDone(
+    userId: string,
+    body: { memberId: string; done: boolean; startTime?: string; notes?: string; trainerId?: string },
+  ) {
+    const employee = body.trainerId
+      ? await this.prisma.employee.findUnique({ where: { id: body.trainerId } })
+      : await this.prisma.employee.findUnique({ where: { userId } });
+    if (!employee) throw new NotFoundException('Trainer employee profile not found');
+
+    const { startOfDay, endOfDay } = this.getDayRange();
+
+    const activePkg = await this.prisma.memberPTPackage.findFirst({
+      where: { memberId: body.memberId, trainerId: employee.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (body.done) {
+      const existing = await this.prisma.pTSession.findFirst({
+        where: {
+          trainerId: employee.id,
+          memberId: body.memberId,
+          date: { gte: startOfDay, lte: endOfDay },
+          status: 'COMPLETED',
+        },
+      });
+      if (existing) {
+        return { done: true, alreadyDone: true, session: existing };
+      }
+
+      const now = new Date();
+      const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const startTime = body.startTime || activePkg?.preferredSlotStart || currentHHMM;
+      const endTime = this.addMinutesToTime(startTime, this.PT_SLOT_MINUTES);
+
+      const session = await this.prisma.pTSession.create({
+        data: {
+          trainerId: employee.id,
+          memberId: body.memberId,
+          date: now,
+          startTime,
+          endTime,
+          duration: this.PT_SLOT_MINUTES,
+          status: 'COMPLETED',
+          notes: body.notes || 'Daily PT session completed (1h 25m)',
+        },
+      });
+
+      if (activePkg && activePkg.sessionsRemaining > 0) {
+        const remaining = activePkg.sessionsRemaining - 1;
+        await this.prisma.memberPTPackage.update({
+          where: { id: activePkg.id },
+          data: {
+            sessionsRemaining: remaining,
+            status: remaining <= 0 ? 'EXHAUSTED' : 'ACTIVE',
+          },
+        });
+      }
+
+      return { done: true, session };
+    } else {
+      const existing = await this.prisma.pTSession.findFirst({
+        where: {
+          trainerId: employee.id,
+          memberId: body.memberId,
+          date: { gte: startOfDay, lte: endOfDay },
+          status: 'COMPLETED',
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (existing) {
+        await this.prisma.pTSession.delete({ where: { id: existing.id } });
+        const pkgToRestore =
+          activePkg ||
+          (await this.prisma.memberPTPackage.findFirst({
+            where: { memberId: body.memberId, trainerId: employee.id },
+            orderBy: { createdAt: 'desc' },
+          }));
+        if (pkgToRestore && pkgToRestore.sessionsRemaining < pkgToRestore.sessionsTotal) {
+          await this.prisma.memberPTPackage.update({
+            where: { id: pkgToRestore.id },
+            data: {
+              sessionsRemaining: pkgToRestore.sessionsRemaining + 1,
+              status: 'ACTIVE',
+            },
+          });
+        }
+      }
+
+      return { done: false };
+    }
+  }
+
+  async updateAssignmentSlot(assignmentId: string, preferredSlotStart: string | null) {
+    const existing = await this.prisma.memberPTPackage.findUnique({ where: { id: assignmentId } });
+    if (!existing) throw new NotFoundException('PT assignment not found');
+
+    if (!preferredSlotStart) {
+      return this.prisma.memberPTPackage.update({
+        where: { id: assignmentId },
+        data: { preferredSlotStart: null, preferredSlotEnd: null },
+      });
+    }
+
+    const preferredSlotEnd = this.addMinutesToTime(preferredSlotStart, this.PT_SLOT_MINUTES);
+
+    if (existing.trainerId) {
+      const siblings = await this.prisma.memberPTPackage.findMany({
+        where: {
+          trainerId: existing.trainerId,
+          status: 'ACTIVE',
+          id: { not: assignmentId },
+          preferredSlotStart: { not: null },
+        },
+        include: { member: true },
+      });
+      for (const s of siblings) {
+        const sEnd = s.preferredSlotEnd || this.addMinutesToTime(s.preferredSlotStart!);
+        if (this.slotsOverlap(preferredSlotStart, preferredSlotEnd, s.preferredSlotStart!, sEnd)) {
+          throw new ConflictException(
+            `Time slot ${preferredSlotStart} - ${preferredSlotEnd} overlaps with ${s.member.firstName} (${s.preferredSlotStart} - ${sEnd})`,
+          );
+        }
+      }
+    }
+
+    return this.prisma.memberPTPackage.update({
+      where: { id: assignmentId },
+      data: { preferredSlotStart, preferredSlotEnd },
+      include: { member: true, package: true, trainer: true },
+    });
+  }
+
+  async getMonthlyPtReport(userId: string, roles: string[], query: { month?: string; trainerId?: string }) {
+    const { year, month, monthKey, startOfMonth, endOfMonth } = this.getMonthRange(query.month);
+    const isOwnerOrManager = roles.includes('OWNER') || roles.includes('MANAGER');
+
+    let trainers: any[] = [];
+    if (!isOwnerOrManager) {
+      const emp = await this.prisma.employee.findUnique({ where: { userId } });
+      if (!emp) throw new NotFoundException('Trainer employee profile not found');
+      trainers = [emp];
+    } else if (query.trainerId) {
+      const emp = await this.prisma.employee.findUnique({ where: { id: query.trainerId } });
+      if (!emp) throw new NotFoundException('Trainer not found');
+      trainers = [emp];
+    } else {
+      trainers = await this.getTrainers();
+    }
+
+    const reports = await Promise.all(
+      trainers.map(async (t) => {
+        const [activeClientsCount, sessions, attendance, commissions] = await Promise.all([
+          this.prisma.memberPTPackage.count({ where: { trainerId: t.id, status: 'ACTIVE' } }),
+          this.prisma.pTSession.findMany({
+            where: {
+              trainerId: t.id,
+              status: 'COMPLETED',
+              date: { gte: startOfMonth, lte: endOfMonth },
+            },
+            include: { member: true },
+            orderBy: { date: 'desc' },
+          }),
+          this.prisma.attendance.findMany({
+            where: {
+              employeeId: t.id,
+              date: { gte: startOfMonth, lte: endOfMonth },
+            },
+            orderBy: { date: 'desc' },
+          }),
+          this.prisma.trainerCommission.findMany({
+            where: { trainerId: t.id, month, year },
+          }),
+        ]);
+
+        const clientMap = new Map<
+          string,
+          { memberId: string; memberCode: string; memberName: string; sessionsCount: number; totalMinutes: number; dates: string[] }
+        >();
+        for (const s of sessions) {
+          const dur = s.duration || this.PT_SLOT_MINUTES;
+          const dateStr = new Date(s.date).toISOString().split('T')[0];
+          const prev = clientMap.get(s.memberId);
+          if (prev) {
+            prev.sessionsCount += 1;
+            prev.totalMinutes += dur;
+            prev.dates.push(dateStr);
+          } else {
+            clientMap.set(s.memberId, {
+              memberId: s.memberId,
+              memberCode: s.member?.memberId || '',
+              memberName: s.member ? `${s.member.firstName} ${s.member.lastName}`.trim() : 'Unknown',
+              sessionsCount: 1,
+              totalMinutes: dur,
+              dates: [dateStr],
+            });
+          }
+        }
+
+        const daysPresent = attendance.filter(
+          (a) => a.clockIn !== null || a.status === 'PRESENT' || a.status === 'HALF_DAY',
+        ).length;
+        const totalWorkedHours = Number(
+          attendance.reduce((sum, a) => sum + (a.workingHours || 0), 0).toFixed(2),
+        );
+        const totalTrainingMinutes = sessions.reduce(
+          (sum, s) => sum + (s.duration || this.PT_SLOT_MINUTES),
+          0,
+        );
+
+        return {
+          trainerId: t.id,
+          employeeCode: t.employeeId,
+          trainerName: `${t.firstName} ${t.lastName}`.trim(),
+          email: t.email,
+          mobile: t.mobile,
+          assignedClientsCount: activeClientsCount,
+          daysPresent,
+          totalWorkedHours,
+          completedSessions: sessions.length,
+          totalTrainingMinutes,
+          totalTrainingHours: Number((totalTrainingMinutes / 60).toFixed(2)),
+          commissionEarned: commissions.reduce((sum, c) => sum + c.amount, 0),
+          clientBreakdown: Array.from(clientMap.values()),
+        };
+      }),
+    );
+
+    return { month: monthKey, reports };
   }
 
   async getMemberProfile(memberId: string) {
@@ -759,10 +1163,35 @@ export class PtService {
     startDate?: string;
     expiryDate?: string;
     createInvoice?: boolean;
+    preferredSlotStart?: string;
   }) {
     let packageId = data.packageId;
     let sessionsTotal = Number(data.sessionsTotal || 12);
     let fee = Number(data.fee || 0);
+
+    let preferredSlotStart: string | null = data.preferredSlotStart || null;
+    let preferredSlotEnd: string | null = preferredSlotStart
+      ? this.addMinutesToTime(preferredSlotStart, this.PT_SLOT_MINUTES)
+      : null;
+
+    if (preferredSlotStart && preferredSlotEnd) {
+      const existingSlots = await this.prisma.memberPTPackage.findMany({
+        where: {
+          trainerId: data.trainerId,
+          status: 'ACTIVE',
+          preferredSlotStart: { not: null },
+        },
+        include: { member: true },
+      });
+      for (const s of existingSlots) {
+        const sEnd = s.preferredSlotEnd || this.addMinutesToTime(s.preferredSlotStart!);
+        if (this.slotsOverlap(preferredSlotStart, preferredSlotEnd, s.preferredSlotStart!, sEnd)) {
+          throw new ConflictException(
+            `Time slot ${preferredSlotStart} - ${preferredSlotEnd} overlaps with ${s.member.firstName} (${s.preferredSlotStart} - ${sEnd})`,
+          );
+        }
+      }
+    }
 
     if (packageId) {
       const pkg = await this.prisma.pTPackage.findUnique({ where: { id: packageId } });
@@ -793,6 +1222,8 @@ export class PtService {
         packageId,
         sessionsTotal,
         sessionsRemaining: sessionsTotal,
+        preferredSlotStart,
+        preferredSlotEnd,
         startDate: start,
         expiryDate: expiry,
         status: 'ACTIVE',

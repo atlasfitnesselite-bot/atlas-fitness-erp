@@ -1109,15 +1109,17 @@ model PTSession {
 }
 
 model MemberPTPackage {
-  id                String    @id @default(uuid())
-  memberId          String
-  packageId         String
-  trainerId         String?
-  sessionsTotal     Int
-  sessionsRemaining Int
-  startDate         DateTime
-  expiryDate        DateTime
-  status            String    @default("ACTIVE") // ACTIVE, EXHAUSTED, EXPIRED
+  id                 String    @id @default(uuid())
+  memberId           String
+  packageId          String
+  trainerId          String?
+  sessionsTotal      Int
+  sessionsRemaining  Int
+  preferredSlotStart String?
+  preferredSlotEnd   String?
+  startDate          DateTime
+  expiryDate         DateTime
+  status             String    @default("ACTIVE") // ACTIVE, EXHAUSTED, EXPIRED
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   member            Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)

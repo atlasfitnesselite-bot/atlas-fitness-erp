@@ -103,9 +103,36 @@ export class PtController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('TRAINER', 'MANAGER', 'OWNER')
   @Get('trainer/dashboard')
-  async getTrainerDashboard(@Req() req: { user?: { id?: string } }) {
+  async getTrainerDashboard(
+    @Req() req: { user?: { id?: string } },
+    @Query('trainerId') trainerId?: string,
+    @Query('month') month?: string,
+  ) {
     if (!req.user || !req.user.id) throw new UnauthorizedException();
-    return this.ptService.getTrainerDashboard(req.user.id);
+    return this.ptService.getTrainerDashboard(req.user.id, { trainerId, month });
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('TRAINER', 'MANAGER', 'OWNER')
+  @Post('trainer/today-done')
+  async toggleTodayDone(
+    @Req() req: { user?: { id?: string } },
+    @Body() body: { memberId: string; done: boolean; startTime?: string; notes?: string; trainerId?: string },
+  ) {
+    if (!req.user || !req.user.id) throw new UnauthorizedException();
+    return this.ptService.toggleTodayDone(req.user.id, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('OWNER', 'MANAGER', 'TRAINER')
+  @Get('reports/monthly')
+  async getMonthlyPtReport(
+    @Req() req: { user?: { id?: string; roles?: string[] } },
+    @Query('month') month?: string,
+    @Query('trainerId') trainerId?: string,
+  ) {
+    if (!req.user || !req.user.id) throw new UnauthorizedException();
+    return this.ptService.getMonthlyPtReport(req.user.id, req.user.roles || [], { month, trainerId });
   }
 
   @Roles('OWNER', 'MANAGER', 'TRAINER')
@@ -226,5 +253,14 @@ export class PtController {
   @Post('assignments')
   assignTrainerToMember(@Body() body: any) {
     return this.ptService.assignTrainerToMember(body);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER')
+  @Put('assignments/:id/slot')
+  updateAssignmentSlot(
+    @Param('id') id: string,
+    @Body('preferredSlotStart') preferredSlotStart: string | null,
+  ) {
+    return this.ptService.updateAssignmentSlot(id, preferredSlotStart);
   }
 }

@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CustomSelect } from '@/components/ui/custom-select';
 import { useToast } from '@/hooks/use-toast';
-import { Dumbbell, UserPlus, Users, Package, Calendar, Trash2, Link2, Pencil, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Dumbbell, UserPlus, Users, Package, Calendar, Trash2, Link2, Pencil, CheckCircle2, AlertTriangle, Loader2, FileSpreadsheet, Download, Clock } from 'lucide-react';
+import { PT_PRESET_SLOTS, formatSlotRange } from '../../lib/ptSlots';
 
 export default function PersonalTrainersHub() {
   const { toast } = useToast();
@@ -39,10 +40,19 @@ export default function PersonalTrainersHub() {
     packageId: '',
     sessionsTotal: '12',
     fee: '',
+    preferredSlotStart: '',
     startDate: new Date().toISOString().split('T')[0],
     expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
     createInvoice: true,
   });
+
+  const [reportMonth, setReportMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [reportTrainerId, setReportTrainerId] = useState('');
+  const [monthlyReports, setMonthlyReports] = useState([]);
+  const [loadingReport, setLoadingReport] = useState(false);
 
   const [isPkgOpen, setIsPkgOpen] = useState(false);
   const [pkgForm, setPkgForm] = useState({ name: '', numberOfSessions: '12', price: '' });
@@ -89,6 +99,64 @@ export default function PersonalTrainersHub() {
   useEffect(() => {
     fetchAll();
   }, []);
+
+  const fetchMonthlyReport = async (m = reportMonth, tId = reportTrainerId) => {
+    setLoadingReport(true);
+    try {
+      const params = new URLSearchParams({ month: m });
+      if (tId) params.set('trainerId', tId);
+      const res = await api.get(`/api/pt/reports/monthly?${params.toString()}`);
+      setMonthlyReports(res.data?.reports || []);
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load monthly PT report' });
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMonthlyReport(reportMonth, reportTrainerId);
+  }, [reportMonth, reportTrainerId]);
+
+  const handleUpdateSlot = async (assignmentId, slotStart) => {
+    try {
+      await api.put(`/api/pt/assignments/${assignmentId}/slot`, {
+        preferredSlotStart: slotStart || null,
+      });
+      toast({ title: 'Updated', description: '1h 25m time slot updated' });
+      fetchAll();
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Slot Conflict',
+        description: err.response?.data?.message || 'Failed to update slot',
+      });
+    }
+  };
+
+  const handleExportReportCsv = () => {
+    const headers = ['Month', 'Trainer ID', 'Trainer Name', 'Assigned Clients', 'Days Checked In', 'Gym Hours', 'Completed Sessions (1h 25m)', 'Training Hours', 'Commission (INR)', 'Client Breakdown'];
+    const rows = monthlyReports.map((r) => [
+      reportMonth,
+      r.employeeCode,
+      r.trainerName,
+      r.assignedClientsCount,
+      r.daysPresent,
+      r.totalWorkedHours,
+      r.completedSessions,
+      r.totalTrainingHours,
+      r.commissionEarned,
+      r.clientBreakdown.map((c) => `${c.memberName} (${c.memberCode}): ${c.sessionsCount}`).join(' | '),
+    ]);
+    const csv = [headers, ...rows].map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pt-monthly-report-${reportMonth}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleUpdateTrainer = async (e) => {
     e.preventDefault();
@@ -307,9 +375,10 @@ export default function PersonalTrainersHub() {
       </div>
 
       <Tabs defaultValue="trainers" className="w-full">
-        <TabsList className="bg-card border">
+        <TabsList className="bg-card border flex-wrap h-auto">
           <TabsTrigger value="trainers" className="gap-1.5"><Users className="h-4 w-4" /> Trainers</TabsTrigger>
           <TabsTrigger value="assignments" className="gap-1.5"><Link2 className="h-4 w-4" /> Assigned Members</TabsTrigger>
+          <TabsTrigger value="monthly-report" className="gap-1.5"><FileSpreadsheet className="h-4 w-4" /> Monthly Report (Payroll)</TabsTrigger>
           <TabsTrigger value="packages" className="gap-1.5"><Package className="h-4 w-4" /> PT Packages</TabsTrigger>
           <TabsTrigger value="sessions" className="gap-1.5"><Calendar className="h-4 w-4" /> Sessions Tracking</TabsTrigger>
         </TabsList>
@@ -386,6 +455,7 @@ export default function PersonalTrainersHub() {
                   <TableRow>
                     <TableHead>Member</TableHead>
                     <TableHead>Trainer</TableHead>
+                    <TableHead>Daily Slot (1h 25m)</TableHead>
                     <TableHead>Package</TableHead>
                     <TableHead>Sessions Left</TableHead>
                     <TableHead>Expiry</TableHead>
@@ -394,7 +464,7 @@ export default function PersonalTrainersHub() {
                 </TableHeader>
                 <TableBody>
                   {assignments.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">No assignments yet</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">No assignments yet</TableCell></TableRow>
                   ) : (
                     assignments.map((a) => (
                       <TableRow key={a.id}>
@@ -403,6 +473,18 @@ export default function PersonalTrainersHub() {
                         </TableCell>
                         <TableCell>
                           {a.trainer ? `${a.trainer.firstName} (${a.trainer.employeeId})` : 'Unassigned'}
+                        </TableCell>
+                        <TableCell>
+                          <CustomSelect
+                            value={a.preferredSlotStart || ''}
+                            onChange={(e) => handleUpdateSlot(a.id, e.target.value)}
+                            className="flex h-8 w-44 rounded-md border border-border bg-card px-2 text-xs"
+                          >
+                            <option value="">Not Set</option>
+                            {PT_PRESET_SLOTS.map((s) => (
+                              <option key={s} value={s}>{formatSlotRange(s)}</option>
+                            ))}
+                          </CustomSelect>
                         </TableCell>
                         <TableCell>{a.package?.name}</TableCell>
                         <TableCell>{a.sessionsRemaining} / {a.sessionsTotal}</TableCell>
@@ -496,6 +578,98 @@ export default function PersonalTrainersHub() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="monthly-report" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle>Monthly PT Report (Attendance, Sessions &amp; Payroll)</CardTitle>
+                <CardDescription>
+                  Track each PT&apos;s daily Check-In attendance and completed 1h 25m sessions for monthly payout
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="month"
+                  value={reportMonth}
+                  onChange={(e) => setReportMonth(e.target.value)}
+                  className="w-40"
+                />
+                <CustomSelect
+                  value={reportTrainerId}
+                  onChange={(e) => setReportTrainerId(e.target.value)}
+                  className="flex h-10 w-48 rounded-md border border-border bg-card px-3 text-sm"
+                >
+                  <option value="">All Trainers</option>
+                  {trainers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.firstName} {t.lastName !== '-' ? t.lastName : ''} ({t.employeeId})
+                    </option>
+                  ))}
+                </CustomSelect>
+                <Button variant="outline" size="sm" onClick={handleExportReportCsv} className="gap-1.5">
+                  <Download className="h-4 w-4" /> Export CSV
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Trainer</TableHead>
+                    <TableHead>Active Clients</TableHead>
+                    <TableHead>Days Checked In</TableHead>
+                    <TableHead>Gym Hours</TableHead>
+                    <TableHead>Sessions Done (1h 25m)</TableHead>
+                    <TableHead>Training Hours</TableHead>
+                    <TableHead>Commission</TableHead>
+                    <TableHead>Trained Members Breakdown</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingReport ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6">Loading monthly report...</TableCell>
+                    </TableRow>
+                  ) : monthlyReports.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No trainer report data for {reportMonth}</TableCell>
+                    </TableRow>
+                  ) : (
+                    monthlyReports.map((r) => (
+                      <TableRow key={r.trainerId}>
+                        <TableCell>
+                          <div className="font-medium">{r.trainerName}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{r.employeeCode}</div>
+                        </TableCell>
+                        <TableCell>{r.assignedClientsCount}</TableCell>
+                        <TableCell className="font-semibold">{r.daysPresent}</TableCell>
+                        <TableCell>{r.totalWorkedHours} hrs</TableCell>
+                        <TableCell className="font-semibold text-emerald-500">{r.completedSessions}</TableCell>
+                        <TableCell>{r.totalTrainingHours} hrs</TableCell>
+                        <TableCell>₹{Number(r.commissionEarned || 0).toFixed(2)}</TableCell>
+                        <TableCell className="text-xs max-w-xs">
+                          {r.clientBreakdown?.length ? (
+                            <div className="space-y-1">
+                              {r.clientBreakdown.map((c) => (
+                                <div key={c.memberId}>
+                                  <span className="font-medium">{c.memberName}</span> ({c.memberCode}):{' '}
+                                  <span className="font-semibold">{c.sessionsCount}</span> sessions
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">No sessions this month</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Add Personal Trainer Dialog */}
@@ -577,6 +751,19 @@ export default function PersonalTrainersHub() {
                 <option value="">Custom Sessions / Fee</option>
                 {packages.map((p) => (
                   <option key={p.id} value={p.id}>{p.name} ({p.numberOfSessions} sessions - ₹{p.price})</option>
+                ))}
+              </CustomSelect>
+            </div>
+            <div>
+              <Label>Daily Time Slot (1 hr 25 min)</Label>
+              <CustomSelect
+                className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm"
+                value={assignForm.preferredSlotStart}
+                onChange={(e) => setAssignForm({ ...assignForm, preferredSlotStart: e.target.value })}
+              >
+                <option value="">Assign Slot Later</option>
+                {PT_PRESET_SLOTS.map((s) => (
+                  <option key={s} value={s}>{formatSlotRange(s)}</option>
                 ))}
               </CustomSelect>
             </div>
