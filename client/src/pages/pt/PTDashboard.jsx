@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CustomSelect } from '@/components/ui/custom-select';
 import {
@@ -15,6 +17,8 @@ import {
   CalendarDays,
   Loader2,
   IndianRupee,
+  KeyRound,
+  Lock,
 } from 'lucide-react';
 import api from '../../lib/api';
 import { toast } from 'sonner';
@@ -30,6 +34,35 @@ export default function PTDashboard() {
   const [clockLoading, setClockLoading] = useState(false);
   const [togglingMemberId, setTogglingMemberId] = useState(null);
   const [updatingSlotId, setUpdatingSlotId] = useState(null);
+  const [isPwdOpen, setIsPwdOpen] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [savingPwd, setSavingPwd] = useState(false);
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (pwdForm.newPassword.length < 6) {
+      toast.error('New password must be at least 6 characters');
+      return;
+    }
+    if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+      toast.error('New password and confirm password do not match');
+      return;
+    }
+    setSavingPwd(true);
+    try {
+      await api.put('/api/profile/password', {
+        currentPassword: pwdForm.currentPassword,
+        newPassword: pwdForm.newPassword,
+      });
+      toast.success('Password updated successfully');
+      setIsPwdOpen(false);
+      setPwdForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update password');
+    } finally {
+      setSavingPwd(false);
+    }
+  };
 
   const fetchDashboardData = async (selectedMonth = month) => {
     setLoading(true);
@@ -143,7 +176,7 @@ export default function PTDashboard() {
             {trainer ? `${trainer.name} (${trainer.employeeId})` : 'Daily Check-In, 1h 25m Slots & Monthly Report'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
           <Input
             type="month"
@@ -151,6 +184,9 @@ export default function PTDashboard() {
             onChange={(e) => setMonth(e.target.value)}
             className="w-44"
           />
+          <Button variant="outline" size="sm" onClick={() => setIsPwdOpen(true)} className="gap-1.5">
+            <KeyRound className="h-4 w-4" /> Change Password
+          </Button>
         </div>
       </div>
 
@@ -302,20 +338,26 @@ export default function PTDashboard() {
                         {client.sessionsRemaining} / {client.sessionsTotal} left
                       </div>
                     </TableCell>
-                    <TableCell className="w-48">
-                      <CustomSelect
-                        value={client.slotStart || ''}
-                        disabled={updatingSlotId === client.assignmentId}
-                        onChange={(e) => handleSlotChange(client.assignmentId, e.target.value)}
-                        className="flex h-9 w-full rounded-md border border-border bg-card px-2 text-xs"
-                      >
-                        <option value="">-- Select 1h 25m Slot --</option>
-                        {PT_PRESET_SLOTS.map((s) => (
-                          <option key={s} value={s}>
-                            {formatSlotRange(s)}
-                          </option>
-                        ))}
-                      </CustomSelect>
+                    <TableCell className="w-52">
+                      {client.slotLocked ? (
+                        <Badge variant="secondary" className="gap-1 text-xs">
+                          <Lock className="h-3 w-3" /> Locked by Admin
+                        </Badge>
+                      ) : (
+                        <CustomSelect
+                          value={client.slotStart || ''}
+                          disabled={updatingSlotId === client.assignmentId}
+                          onChange={(e) => handleSlotChange(client.assignmentId, e.target.value)}
+                          className="flex h-9 w-full rounded-md border border-border bg-card px-2 text-xs"
+                        >
+                          <option value="">-- Select 1h 25m Slot --</option>
+                          {PT_PRESET_SLOTS.map((s) => (
+                            <option key={s} value={s}>
+                              {formatSlotRange(s)}
+                            </option>
+                          ))}
+                        </CustomSelect>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -396,6 +438,50 @@ export default function PTDashboard() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isPwdOpen} onOpenChange={setIsPwdOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change PT Account Password</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleChangePassword} className="space-y-3">
+            <div>
+              <Label>Current Password *</Label>
+              <Input
+                type="password"
+                required
+                value={pwdForm.currentPassword}
+                onChange={(e) => setPwdForm({ ...pwdForm, currentPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>New Password (min 6 chars) *</Label>
+              <Input
+                type="password"
+                required
+                minLength={6}
+                value={pwdForm.newPassword}
+                onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Confirm New Password *</Label>
+              <Input
+                type="password"
+                required
+                minLength={6}
+                value={pwdForm.confirmPassword}
+                onChange={(e) => setPwdForm({ ...pwdForm, confirmPassword: e.target.value })}
+              />
+            </div>
+            <Button type="submit" disabled={savingPwd} className="w-full gap-2">
+              {savingPwd ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+              Update Password
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

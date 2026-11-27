@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CustomSelect } from '@/components/ui/custom-select';
 import { useToast } from '@/hooks/use-toast';
-import { Dumbbell, UserPlus, Users, Package, Calendar, Trash2, Link2, Pencil, CheckCircle2, AlertTriangle, Loader2, FileSpreadsheet, Download, Clock } from 'lucide-react';
+import { Dumbbell, UserPlus, Users, Package, Calendar, Trash2, Link2, Pencil, CheckCircle2, AlertTriangle, Loader2, FileSpreadsheet, Download, Clock, Lock, Unlock } from 'lucide-react';
 import { PT_PRESET_SLOTS, formatSlotRange } from '../../lib/ptSlots';
 
 export default function PersonalTrainersHub() {
@@ -41,6 +41,7 @@ export default function PersonalTrainersHub() {
     sessionsTotal: '12',
     fee: '',
     preferredSlotStart: '',
+    slotLocked: false,
     startDate: new Date().toISOString().split('T')[0],
     expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
     createInvoice: true,
@@ -53,6 +54,11 @@ export default function PersonalTrainersHub() {
   const [reportTrainerId, setReportTrainerId] = useState('');
   const [monthlyReports, setMonthlyReports] = useState([]);
   const [loadingReport, setLoadingReport] = useState(false);
+
+  const [dailyDate, setDailyDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dailyTrainerId, setDailyTrainerId] = useState('');
+  const [dailyData, setDailyData] = useState({ trainerSummary: [], activityLogs: [] });
+  const [loadingDaily, setLoadingDaily] = useState(false);
 
   const [isPkgOpen, setIsPkgOpen] = useState(false);
   const [pkgForm, setPkgForm] = useState({ name: '', numberOfSessions: '12', price: '' });
@@ -117,6 +123,65 @@ export default function PersonalTrainersHub() {
   useEffect(() => {
     fetchMonthlyReport(reportMonth, reportTrainerId);
   }, [reportMonth, reportTrainerId]);
+
+  const fetchDailyActivities = async (d = dailyDate, tId = dailyTrainerId) => {
+    setLoadingDaily(true);
+    try {
+      const params = new URLSearchParams({ date: d });
+      if (tId) params.set('trainerId', tId);
+      const res = await api.get(`/api/pt/admin/daily-activities?${params.toString()}`);
+      setDailyData(res.data || { trainerSummary: [], activityLogs: [] });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to load daily PT activities' });
+    } finally {
+      setLoadingDaily(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDailyActivities(dailyDate, dailyTrainerId);
+  }, [dailyDate, dailyTrainerId]);
+
+  const handleToggleSlotLock = async (assignment) => {
+    try {
+      await api.put(`/api/pt/assignments/${assignment.id}/lock`, {
+        slotLocked: !assignment.slotLocked,
+      });
+      toast({
+        title: !assignment.slotLocked ? 'Slot Locked' : 'Slot Unlocked',
+        description: !assignment.slotLocked
+          ? 'PT cannot change this time slot now.'
+          : 'PT can now update this time slot.',
+      });
+      fetchAll();
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update slot lock' });
+    }
+  };
+
+  const handleExportDailyCsv = () => {
+    const headers = ['Date', 'Trainer Code', 'Trainer Name', 'Member Code', 'Member Name', 'Start Time', 'End Time', 'Duration (mins)', 'Status', 'Notes'];
+    const rows = (dailyData.activityLogs || []).map((log) => [
+      dailyDate,
+      log.trainerCode,
+      log.trainerName,
+      log.memberCode,
+      log.memberName,
+      log.startTime,
+      log.endTime,
+      log.duration,
+      log.status,
+      log.notes || '',
+    ]);
+    const csv = [headers, ...rows].map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pt-daily-activities-${dailyDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleUpdateSlot = async (assignmentId, slotStart) => {
     try {
@@ -269,15 +334,20 @@ export default function PersonalTrainersHub() {
     if (isAssigning) return;
     setIsAssigning(true);
     try {
-      await api.post('/api/pt/assignments', {
+      const res = await api.post('/api/pt/assignments', {
         ...assignForm,
         sessionsTotal: parseInt(assignForm.sessionsTotal, 10) || 12,
         fee: parseFloat(assignForm.fee) || 0,
       });
       setIsAssignOpen(false);
+      const emailInfo = res.data?.emailResult?.sent
+        ? ' Email notification has been sent to the member.'
+        : res.data?.emailResult?.reason
+          ? ` (Email not sent: ${res.data.emailResult.reason})`
+          : '';
       setSuccessPopup({
         title: 'Trainer Assigned Successfully!',
-        message: 'The Personal Trainer has been linked to the member.',
+        message: `The Personal Trainer has been linked to the member.${emailInfo}`,
       });
       fetchAll();
     } catch (err) {
@@ -378,6 +448,7 @@ export default function PersonalTrainersHub() {
         <TabsList className="bg-card border flex-wrap h-auto">
           <TabsTrigger value="trainers" className="gap-1.5"><Users className="h-4 w-4" /> Trainers</TabsTrigger>
           <TabsTrigger value="assignments" className="gap-1.5"><Link2 className="h-4 w-4" /> Assigned Members</TabsTrigger>
+          <TabsTrigger value="daily-activities" className="gap-1.5"><Clock className="h-4 w-4" /> Daily PT Activities</TabsTrigger>
           <TabsTrigger value="monthly-report" className="gap-1.5"><FileSpreadsheet className="h-4 w-4" /> Monthly Report (Payroll)</TabsTrigger>
           <TabsTrigger value="packages" className="gap-1.5"><Package className="h-4 w-4" /> PT Packages</TabsTrigger>
           <TabsTrigger value="sessions" className="gap-1.5"><Calendar className="h-4 w-4" /> Sessions Tracking</TabsTrigger>
@@ -475,16 +546,27 @@ export default function PersonalTrainersHub() {
                           {a.trainer ? `${a.trainer.firstName} (${a.trainer.employeeId})` : 'Unassigned'}
                         </TableCell>
                         <TableCell>
-                          <CustomSelect
-                            value={a.preferredSlotStart || ''}
-                            onChange={(e) => handleUpdateSlot(a.id, e.target.value)}
-                            className="flex h-8 w-44 rounded-md border border-border bg-card px-2 text-xs"
-                          >
-                            <option value="">Not Set</option>
-                            {PT_PRESET_SLOTS.map((s) => (
-                              <option key={s} value={s}>{formatSlotRange(s)}</option>
-                            ))}
-                          </CustomSelect>
+                          <div className="flex items-center gap-1.5">
+                            <CustomSelect
+                              value={a.preferredSlotStart || ''}
+                              onChange={(e) => handleUpdateSlot(a.id, e.target.value)}
+                              className="flex h-8 w-44 rounded-md border border-border bg-card px-2 text-xs"
+                            >
+                              <option value="">Not Set</option>
+                              {PT_PRESET_SLOTS.map((s) => (
+                                <option key={s} value={s}>{formatSlotRange(s)}</option>
+                              ))}
+                            </CustomSelect>
+                            <Button
+                              variant={a.slotLocked ? 'secondary' : 'ghost'}
+                              size="icon"
+                              className="h-8 w-8"
+                              title={a.slotLocked ? 'Unlock Slot' : 'Lock Slot'}
+                              onClick={() => handleToggleSlotLock(a)}
+                            >
+                              {a.slotLocked ? <Lock className="h-3.5 w-3.5 text-amber-500" /> : <Unlock className="h-3.5 w-3.5 text-muted-foreground" />}
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell>{a.package?.name}</TableCell>
                         <TableCell>{a.sessionsRemaining} / {a.sessionsTotal}</TableCell>
@@ -575,6 +657,116 @@ export default function PersonalTrainersHub() {
                   )}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="daily-activities" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle>Daily PT Attendance &amp; Training Activities ({dailyDate})</CardTitle>
+                <CardDescription>
+                  Live view of PT Check-In / Check-Out and completed 1h 25m member sessions
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  type="date"
+                  value={dailyDate}
+                  onChange={(e) => setDailyDate(e.target.value)}
+                  className="w-40"
+                />
+                <CustomSelect
+                  value={dailyTrainerId}
+                  onChange={(e) => setDailyTrainerId(e.target.value)}
+                  className="flex h-10 w-48 rounded-md border border-border bg-card px-3 text-sm"
+                >
+                  <option value="">All Trainers</option>
+                  {trainers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.firstName} {t.lastName !== '-' ? t.lastName : ''} ({t.employeeId})
+                    </option>
+                  ))}
+                </CustomSelect>
+                <Button variant="outline" size="sm" onClick={handleExportDailyCsv} className="gap-1.5">
+                  <Download className="h-4 w-4" /> Export Daily CSV
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Trainer Check-In / Check-Out Status</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Trainer</TableHead>
+                      <TableHead>Active Clients</TableHead>
+                      <TableHead>Check-In</TableHead>
+                      <TableHead>Check-Out</TableHead>
+                      <TableHead>Gym Hours</TableHead>
+                      <TableHead>Sessions Done</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loadingDaily ? (
+                      <TableRow><TableCell colSpan={7} className="text-center py-4">Loading...</TableCell></TableRow>
+                    ) : (dailyData.trainerSummary || []).length === 0 ? (
+                      <TableRow><TableCell colSpan={7} className="text-center py-4 text-muted-foreground">No trainers found</TableCell></TableRow>
+                    ) : (
+                      (dailyData.trainerSummary || []).map((t) => (
+                        <TableRow key={t.trainerId}>
+                          <TableCell>
+                            <div className="font-medium">{t.trainerName}</div>
+                            <div className="text-xs text-muted-foreground font-mono">{t.employeeCode}</div>
+                          </TableCell>
+                          <TableCell>{t.activeClients}</TableCell>
+                          <TableCell>{t.clockIn ? new Date(t.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</TableCell>
+                          <TableCell>{t.clockOut ? new Date(t.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</TableCell>
+                          <TableCell>{t.workingHours || 0} hrs</TableCell>
+                          <TableCell className="font-semibold text-emerald-500">{t.sessionsCompletedToday}</TableCell>
+                          <TableCell>
+                            <Badge variant={t.attendanceStatus === 'CHECKED_IN' ? 'default' : 'secondary'}>
+                              {t.attendanceStatus.replace(/_/g, ' ')}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Completed &amp; Logged Member Sessions</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Time Slot (1h 25m)</TableHead>
+                      <TableHead>Trainer</TableHead>
+                      <TableHead>Member</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(dailyData.activityLogs || []).length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No PT sessions logged on {dailyDate}</TableCell></TableRow>
+                    ) : (
+                      (dailyData.activityLogs || []).map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell className="font-mono text-xs">{log.startTime} - {log.endTime} ({log.duration}m)</TableCell>
+                          <TableCell>{log.trainerName} ({log.trainerCode})</TableCell>
+                          <TableCell>{log.memberName} ({log.memberCode})</TableCell>
+                          <TableCell><Badge variant="outline">{log.status}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{log.notes || '-'}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -766,6 +958,15 @@ export default function PersonalTrainersHub() {
                   <option key={s} value={s}>{formatSlotRange(s)}</option>
                 ))}
               </CustomSelect>
+              <label className="flex items-center gap-2 mt-2 text-xs text-muted-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={assignForm.slotLocked}
+                  onChange={(e) => setAssignForm({ ...assignForm, slotLocked: e.target.checked })}
+                  className="h-4 w-4 accent-red-600"
+                />
+                Lock Time Slot (PT cannot change this slot from PT Dashboard)
+              </label>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../billing/email.service';
 import { BookSessionDto, CreateFitnessPlanDto, CreateMeasurementDto, CreateCommissionDto, CompleteSessionDto } from './dto/pt.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PtService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async getSessions() {
     return this.prisma.pTSession.findMany({
@@ -372,6 +376,7 @@ export class PtService {
         sessionsRemaining: a.sessionsRemaining,
         slotStart,
         slotEnd,
+        slotLocked: Boolean(a.slotLocked),
         todayDone: Boolean(doneSession),
         todaySessionId: doneSession?.id || null,
       };
@@ -564,9 +569,19 @@ export class PtService {
     }
   }
 
-  async updateAssignmentSlot(assignmentId: string, preferredSlotStart: string | null) {
+  async updateAssignmentSlot(
+    assignmentId: string,
+    preferredSlotStart: string | null,
+    roles: string[] = [],
+  ) {
     const existing = await this.prisma.memberPTPackage.findUnique({ where: { id: assignmentId } });
     if (!existing) throw new NotFoundException('PT assignment not found');
+
+    const canOverrideLock =
+      roles.includes('OWNER') || roles.includes('MANAGER') || roles.includes('RECEPTION');
+    if (existing.slotLocked && !canOverrideLock) {
+      throw new ForbiddenException('This time slot is locked by Admin and cannot be modified by Trainer');
+    }
 
     if (!preferredSlotStart) {
       return this.prisma.memberPTPackage.update({
@@ -700,6 +715,112 @@ export class PtService {
     );
 
     return { month: monthKey, reports };
+  }
+
+  async toggleSlotLock(assignmentId: string, slotLocked: boolean) {
+    const existing = await this.prisma.memberPTPackage.findUnique({ where: { id: assignmentId } });
+    if (!existing) throw new NotFoundException('PT assignment not found');
+    return this.prisma.memberPTPackage.update({
+      where: { id: assignmentId },
+      data: { slotLocked: Boolean(slotLocked) },
+      include: { member: true, package: true, trainer: true },
+    });
+  }
+
+  async getAdminDailyActivities(query: { date?: string; trainerId?: string }) {
+    const targetDate = query.date ? new Date(`${query.date}T12:00:00`) : new Date();
+    const { startOfDay, endOfDay } = this.getDayRange(targetDate);
+    const dateKey = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+
+    const trainers = query.trainerId
+      ? await this.prisma.employee.findMany({ where: { id: query.trainerId } })
+      : await this.getTrainers();
+
+    const trainerIds = trainers.map((t) => t.id);
+
+    const [attendances, sessions, activeAssignments] = await Promise.all([
+      this.prisma.attendance.findMany({
+        where: {
+          employeeId: { in: trainerIds },
+          date: { gte: startOfDay, lte: endOfDay },
+        },
+        include: { employee: true },
+      }),
+      this.prisma.pTSession.findMany({
+        where: {
+          trainerId: { in: trainerIds },
+          date: { gte: startOfDay, lte: endOfDay },
+        },
+        include: {
+          trainer: true,
+          member: true,
+        },
+        orderBy: [{ startTime: 'asc' }, { createdAt: 'desc' }],
+      }),
+      this.prisma.memberPTPackage.findMany({
+        where: {
+          trainerId: { in: trainerIds },
+          status: 'ACTIVE',
+        },
+      }),
+    ]);
+
+    const attByTrainer = new Map(attendances.map((a) => [a.employeeId, a]));
+    const clientsCountByTrainer = new Map<string, number>();
+    for (const a of activeAssignments) {
+      if (a.trainerId) {
+        clientsCountByTrainer.set(a.trainerId, (clientsCountByTrainer.get(a.trainerId) || 0) + 1);
+      }
+    }
+
+    const sessionsByTrainer = new Map<string, number>();
+    for (const s of sessions) {
+      if (s.status === 'COMPLETED') {
+        sessionsByTrainer.set(s.trainerId, (sessionsByTrainer.get(s.trainerId) || 0) + 1);
+      }
+    }
+
+    const trainerSummary = trainers.map((t) => {
+      const att = attByTrainer.get(t.id);
+      return {
+        trainerId: t.id,
+        employeeCode: t.employeeId,
+        trainerName: `${t.firstName} ${t.lastName}`.trim(),
+        mobile: t.mobile,
+        activeClients: clientsCountByTrainer.get(t.id) || 0,
+        sessionsCompletedToday: sessionsByTrainer.get(t.id) || 0,
+        clockIn: att?.clockIn || null,
+        clockOut: att?.clockOut || null,
+        workingHours: att?.workingHours || 0,
+        attendanceStatus: att?.clockOut
+          ? 'CHECKED_OUT'
+          : att?.clockIn
+            ? 'CHECKED_IN'
+            : 'NOT_CHECKED_IN',
+      };
+    });
+
+    const activityLogs = sessions.map((s) => ({
+      id: s.id,
+      date: s.date,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      duration: s.duration || this.PT_SLOT_MINUTES,
+      status: s.status,
+      notes: s.notes,
+      trainerId: s.trainerId,
+      trainerName: s.trainer ? `${s.trainer.firstName} ${s.trainer.lastName}`.trim() : 'Unknown',
+      trainerCode: s.trainer?.employeeId || '',
+      memberId: s.memberId,
+      memberName: s.member ? `${s.member.firstName} ${s.member.lastName}`.trim() : 'Unknown',
+      memberCode: s.member?.memberId || '',
+    }));
+
+    return {
+      date: dateKey,
+      trainerSummary,
+      activityLogs,
+    };
   }
 
   async getMemberProfile(memberId: string) {
@@ -1164,6 +1285,7 @@ export class PtService {
     expiryDate?: string;
     createInvoice?: boolean;
     preferredSlotStart?: string;
+    slotLocked?: boolean;
   }) {
     let packageId = data.packageId;
     let sessionsTotal = Number(data.sessionsTotal || 12);
@@ -1224,6 +1346,7 @@ export class PtService {
         sessionsRemaining: sessionsTotal,
         preferredSlotStart,
         preferredSlotEnd,
+        slotLocked: Boolean(data.slotLocked),
         startDate: start,
         expiryDate: expiry,
         status: 'ACTIVE',
@@ -1284,6 +1407,24 @@ export class PtService {
       });
     }
 
-    return assignment;
+    const emailResult = await this.emailService.sendPtAssignmentEmail({
+      memberName: `${assignment.member.firstName} ${assignment.member.lastName !== '-' ? assignment.member.lastName : ''}`.trim(),
+      memberEmail: assignment.member.email,
+      memberCode: assignment.member.memberId,
+      trainerName: assignment.trainer
+        ? `${assignment.trainer.firstName} ${assignment.trainer.lastName !== '-' ? assignment.trainer.lastName : ''}`.trim()
+        : 'Personal Trainer',
+      trainerEmail: assignment.trainer?.email,
+      trainerMobile: assignment.trainer?.mobile,
+      packageName: assignment.package.name,
+      sessionsTotal,
+      slotStart: preferredSlotStart,
+      slotEnd: preferredSlotEnd,
+      slotLocked: Boolean(data.slotLocked),
+      startDate: start,
+      expiryDate: expiry,
+    });
+
+    return { ...assignment, emailResult };
   }
 }

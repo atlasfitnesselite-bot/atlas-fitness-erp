@@ -1117,6 +1117,7 @@ model MemberPTPackage {
   sessionsRemaining  Int
   preferredSlotStart String?
   preferredSlotEnd   String?
+  slotLocked         Boolean   @default(false)
   startDate          DateTime
   expiryDate         DateTime
   status             String    @default("ACTIVE") // ACTIVE, EXHAUSTED, EXPIRED

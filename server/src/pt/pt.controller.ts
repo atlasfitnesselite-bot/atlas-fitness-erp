@@ -258,9 +258,28 @@ export class PtController {
   @Roles('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER')
   @Put('assignments/:id/slot')
   updateAssignmentSlot(
+    @Req() req: { user?: { roles?: string[] } },
     @Param('id') id: string,
     @Body('preferredSlotStart') preferredSlotStart: string | null,
   ) {
-    return this.ptService.updateAssignmentSlot(id, preferredSlotStart);
+    return this.ptService.updateAssignmentSlot(id, preferredSlotStart, req.user?.roles || []);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION')
+  @Put('assignments/:id/lock')
+  toggleSlotLock(
+    @Param('id') id: string,
+    @Body('slotLocked') slotLocked: boolean,
+  ) {
+    return this.ptService.toggleSlotLock(id, slotLocked);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'RECEPTION')
+  @Get('admin/daily-activities')
+  getAdminDailyActivities(
+    @Query('date') date?: string,
+    @Query('trainerId') trainerId?: string,
+  ) {
+    return this.ptService.getAdminDailyActivities({ date, trainerId });
   }
 }

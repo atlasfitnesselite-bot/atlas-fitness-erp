@@ -96,4 +96,64 @@ export class EmailService {
       console.error('Expiry reminder email failed:', err);
     }
   }
+
+  async sendPtAssignmentEmail(params: {
+    memberName: string;
+    memberEmail?: string | null;
+    memberCode?: string;
+    trainerName: string;
+    trainerEmail?: string | null;
+    trainerMobile?: string | null;
+    packageName: string;
+    sessionsTotal: number;
+    slotStart?: string | null;
+    slotEnd?: string | null;
+    slotLocked?: boolean;
+    startDate: Date;
+    expiryDate: Date;
+  }): Promise<{ sent: boolean; reason?: string }> {
+    if (!params.memberEmail) {
+      return { sent: false, reason: 'Member has no email address' };
+    }
+    const config = await this.getTransporterAndSender();
+    if (!config) {
+      return { sent: false, reason: 'SMTP settings not configured' };
+    }
+
+    const slotText =
+      params.slotStart && params.slotEnd
+        ? `${params.slotStart} - ${params.slotEnd} (1 hr 25 mins daily)${params.slotLocked ? ' [Locked by Admin]' : ''}`
+        : 'To be scheduled with your trainer (1 hr 25 mins daily)';
+
+    const text = [
+      `Hello ${params.memberName}${params.memberCode ? ` (${params.memberCode})` : ''},`,
+      '',
+      `Your Personal Trainer has been assigned at ${config.companyName}!`,
+      '',
+      `Personal Trainer: ${params.trainerName}`,
+      params.trainerMobile ? `Trainer Contact: ${params.trainerMobile}` : null,
+      params.trainerEmail ? `Trainer Email: ${params.trainerEmail}` : null,
+      `Package: ${params.packageName} (${params.sessionsTotal} sessions)`,
+      `Daily Time Slot: ${slotText}`,
+      `Start Date: ${new Date(params.startDate).toLocaleDateString()}`,
+      `Expiry Date: ${new Date(params.expiryDate).toLocaleDateString()}`,
+      '',
+      `Thank you,\n${config.companyName}`,
+    ]
+      .filter((line) => line !== null)
+      .join('\n');
+
+    try {
+      await config.transporter.sendMail({
+        from: config.from,
+        to: params.memberEmail,
+        subject: `Personal Trainer Assigned - ${config.companyName}`,
+        text,
+      });
+      return { sent: true };
+    } catch (err: any) {
+      console.error('PT assignment email failed:', err);
+      return { sent: false, reason: err?.message || 'Failed to send email' };
+    }
+  }
 }
