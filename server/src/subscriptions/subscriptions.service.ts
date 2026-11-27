@@ -13,7 +13,9 @@ export class SubscriptionsService {
   }
 
   async getPlans() {
-    return this.prisma.membershipPlan.findMany();
+    return this.prisma.membershipPlan.findMany({
+      orderBy: [{ durationInMonths: 'asc' }, { price: 'asc' }],
+    });
   }
 
   async getPlanById(id: string) {

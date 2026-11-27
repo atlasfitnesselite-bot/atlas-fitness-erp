@@ -131,7 +131,10 @@ export default function BillingDashboard() {
       }
       if (planRes.status === 'fulfilled') {
         const list = planRes.value.data?.plans || planRes.value.data?.data || planRes.value.data || [];
-        setPlans(Array.isArray(list) ? list : []);
+        const sorted = Array.isArray(list)
+          ? [...list].sort((a, b) => (a.durationInMonths ?? 999) - (b.durationInMonths ?? 999) || (a.price ?? 0) - (b.price ?? 0))
+          : [];
+        setPlans(sorted);
       }
       if (ptPkgRes.status === 'fulfilled') {
         const list = ptPkgRes.value.data?.data || ptPkgRes.value.data || [];
