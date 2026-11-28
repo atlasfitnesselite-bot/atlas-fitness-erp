@@ -230,12 +230,12 @@ export declare class AttendanceService {
             employeeId: string;
             status: string;
             type: string;
+            correctedDate: Date;
+            correctedTime: Date;
             attendanceId: string | null;
             requestedById: string;
             approvedById: string | null;
-            correctedDate: Date;
             originalTime: Date | null;
-            correctedTime: Date;
         }[];
         logs: {
             id: string;
@@ -243,9 +243,9 @@ export declare class AttendanceService {
             employeeId: string;
             device: string | null;
             type: string;
-            timestamp: Date;
             method: string;
             location: string | null;
+            timestamp: Date;
             attendanceId: string | null;
         }[];
     } & {
@@ -476,12 +476,12 @@ export declare class AttendanceService {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     })[]>;
     createCorrection(requestedById: string, data: CreateCorrectionDto): Promise<{
         id: string;
@@ -491,12 +491,12 @@ export declare class AttendanceService {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     }>;
     handleCorrectionApproval(id: string, approvedById: string, data: UpdateCorrectionDto): Promise<{
         id: string;
@@ -506,11 +506,11 @@ export declare class AttendanceService {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     }>;
 }

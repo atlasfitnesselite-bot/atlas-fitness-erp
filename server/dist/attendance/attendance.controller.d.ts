@@ -334,9 +334,9 @@ export declare class AttendanceController {
         employeeId: string;
         device: string | null;
         type: string;
-        timestamp: Date;
         method: string;
         location: string | null;
+        timestamp: Date;
         attendanceId: string | null;
     })[]>;
     getKioskEmployees(): Promise<{
@@ -765,12 +765,12 @@ export declare class AttendanceController {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     })[]>;
     requestCorrection(req: {
         user?: {
@@ -784,12 +784,12 @@ export declare class AttendanceController {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     }>;
     handleCorrection(id: string, req: {
         user?: {
@@ -803,12 +803,12 @@ export declare class AttendanceController {
         employeeId: string;
         status: string;
         type: string;
+        correctedDate: Date;
+        correctedTime: Date;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
-        correctedDate: Date;
         originalTime: Date | null;
-        correctedTime: Date;
     }>;
     getEmployeeAttendance(employeeId: string): Promise<({
         corrections: {
@@ -819,12 +819,12 @@ export declare class AttendanceController {
             employeeId: string;
             status: string;
             type: string;
+            correctedDate: Date;
+            correctedTime: Date;
             attendanceId: string | null;
             requestedById: string;
             approvedById: string | null;
-            correctedDate: Date;
             originalTime: Date | null;
-            correctedTime: Date;
         }[];
         logs: {
             id: string;
@@ -832,9 +832,9 @@ export declare class AttendanceController {
             employeeId: string;
             device: string | null;
             type: string;
-            timestamp: Date;
             method: string;
             location: string | null;
+            timestamp: Date;
             attendanceId: string | null;
         }[];
     } & {

@@ -216,8 +216,8 @@ export declare class LeaveService {
             createdAt: Date;
             managerId: string | null;
             status: string;
-            leaveRequestId: string;
             comments: string | null;
+            leaveRequestId: string;
         })[];
     } & {
         id: string;

@@ -89,6 +89,11 @@ let PtController = class PtController {
     async addMeasurement(memberId, dto) {
         return this.ptService.addMeasurement(memberId, dto);
     }
+    async addProgressPhotoUrl(memberId, photoUrl) {
+        if (!photoUrl)
+            throw new Error('photoUrl is required');
+        return this.ptService.addProgressPhoto(memberId, photoUrl);
+    }
     async uploadProgressPhoto(memberId, file) {
         if (!file)
             throw new Error('Photo file is required');
@@ -146,14 +151,14 @@ let PtController = class PtController {
 };
 exports.PtController = PtController;
 __decorate([
-    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION'),
     (0, common_1.Get)('sessions'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PtController.prototype, "getSessions", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION'),
     (0, common_1.Post)('sessions'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -161,7 +166,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PtController.prototype, "createSession", null);
 __decorate([
-    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK'),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION'),
     (0, common_1.Post)('sessions/book'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -304,6 +309,15 @@ __decorate([
     __metadata("design:paramtypes", [String, pt_dto_1.CreateMeasurementDto]),
     __metadata("design:returntype", Promise)
 ], PtController.prototype, "addMeasurement", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER'),
+    (0, common_1.Post)('members/:memberId/progress-photos/url'),
+    __param(0, (0, common_1.Param)('memberId')),
+    __param(1, (0, common_1.Body)('photoUrl')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], PtController.prototype, "addProgressPhotoUrl", null);
 __decorate([
     (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER'),
     (0, common_1.Post)('members/:memberId/progress-photos'),

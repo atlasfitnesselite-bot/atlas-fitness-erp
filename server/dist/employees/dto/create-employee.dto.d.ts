@@ -11,6 +11,7 @@ export declare class CreateEmployeeDto {
     profilePicture?: string;
     gender?: string;
     dateOfBirth?: string;
+    dob?: string;
     bloodGroup?: string;
     maritalStatus?: string;
     nationality?: string;

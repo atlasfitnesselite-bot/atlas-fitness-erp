@@ -217,13 +217,18 @@ export class LeaveService {
   }
 
   async createLeaveRequest(dto: CreateLeaveRequestDto) {
+    const employeeId = dto.employeeId;
+    if (!employeeId) {
+      throw new BadRequestException('Employee profile not found for this user');
+    }
+
     // 1. Validation (overlapping requests)
     const fromDate = new Date(dto.fromDate);
     const toDate = new Date(dto.toDate);
 
     const overlap = await this.prisma.leaveRequest.findFirst({
       where: {
-        employeeId: dto.employeeId,
+        employeeId,
         status: { notIn: ['REJECTED', 'CANCELLED'] },
         OR: [{ fromDate: { lte: toDate }, toDate: { gte: fromDate } }],
       },
@@ -237,7 +242,7 @@ export class LeaveService {
     // 2. Create the request
     const req = await this.prisma.leaveRequest.create({
       data: {
-        employeeId: dto.employeeId,
+        employeeId,
         leaveTypeId: dto.leaveTypeId,
         fromDate,
         toDate,

@@ -139,7 +139,7 @@ export declare class LeaveController {
         carriedForward: number;
         balance: number;
     }>;
-    getLeaveRequests(status?: string, employeeId?: string): Promise<({
+    getLeaveRequests(req: any, status?: string, employeeId?: string): Promise<({
         employee: {
             id: string;
             email: string;
@@ -214,8 +214,8 @@ export declare class LeaveController {
             createdAt: Date;
             managerId: string | null;
             status: string;
-            leaveRequestId: string;
             comments: string | null;
+            leaveRequestId: string;
         })[];
     } & {
         id: string;
@@ -230,7 +230,7 @@ export declare class LeaveController {
         isHalfDay: boolean;
         attachmentUrl: string | null;
     })[]>;
-    createLeaveRequest(dto: CreateLeaveRequestDto): Promise<{
+    createLeaveRequest(req: any, dto: CreateLeaveRequestDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;

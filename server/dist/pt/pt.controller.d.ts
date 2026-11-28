@@ -689,6 +689,17 @@ export declare class PtController {
         thigh: number | null;
         calf: number | null;
     }>;
+    addProgressPhotoUrl(memberId: string, photoUrl: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        notes: string | null;
+        type: string;
+        date: Date;
+        memberId: string;
+        trainerId: string | null;
+        photoUrl: string;
+    }>;
     uploadProgressPhoto(memberId: string, file: Express.Multer.File): Promise<{
         id: string;
         createdAt: Date;

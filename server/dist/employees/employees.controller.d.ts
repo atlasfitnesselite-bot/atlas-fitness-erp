@@ -366,9 +366,9 @@ export declare class EmployeesController {
             updatedAt: Date;
             employeeId: string;
             baseSalary: number;
+            ptCommissionPercentage: number;
             standardAllowances: string | null;
             standardDeductions: string | null;
-            ptCommissionPercentage: number;
         } | null;
         emergencyContacts: {
             id: string;

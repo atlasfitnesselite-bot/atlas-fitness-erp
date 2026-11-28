@@ -249,11 +249,11 @@ export declare class ShiftController {
         name: string;
         status: string;
         startDate: Date;
+        employeeIds: string;
         frequency: string;
         rotationCycle: number;
-        nextRotationDate: Date;
-        employeeIds: string;
         shiftSequence: string;
+        nextRotationDate: Date;
     }[]>;
     createRotation(dto: CreateShiftRotationDto): Promise<{
         id: string;
@@ -262,11 +262,11 @@ export declare class ShiftController {
         name: string;
         status: string;
         startDate: Date;
+        employeeIds: string;
         frequency: string;
         rotationCycle: number;
-        nextRotationDate: Date;
-        employeeIds: string;
         shiftSequence: string;
+        nextRotationDate: Date;
     }>;
     getRequests(status?: string, employeeId?: string, req?: any): Promise<({
         employee: {

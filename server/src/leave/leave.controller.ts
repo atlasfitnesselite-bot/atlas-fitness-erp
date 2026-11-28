@@ -78,16 +78,35 @@ export class LeaveController {
 
   // --- LEAVE REQUESTS ---
   @Get('requests')
-  getLeaveRequests(
+  async getLeaveRequests(
+    @Req() req: any,
     @Query('status') status?: string,
     @Query('employeeId') employeeId?: string,
   ) {
-    return this.leaveService.getLeaveRequests(status, employeeId);
+    const roles: string[] = req.user?.roles || [];
+    const isAdmin = roles.includes('OWNER') || roles.includes('MANAGER');
+    let targetEmpId = employeeId;
+    if (!isAdmin) {
+      const emp = await this.leaveService['prisma'].employee.findUnique({
+        where: { userId: req.user?.id },
+        select: { id: true },
+      });
+      if (!emp) return [];
+      targetEmpId = emp.id;
+    }
+    return this.leaveService.getLeaveRequests(status, targetEmpId);
   }
 
   @Post('requests')
-  createLeaveRequest(@Body() dto: CreateLeaveRequestDto) {
-    return this.leaveService.createLeaveRequest(dto);
+  async createLeaveRequest(@Req() req: any, @Body() dto: CreateLeaveRequestDto) {
+    if (!dto.employeeId) {
+      const emp = await this.leaveService['prisma'].employee.findUnique({
+        where: { userId: req.user?.id },
+        select: { id: true },
+      });
+      if (emp) dto.employeeId = emp.id;
+    }
+    return this.leaveService.createLeaveRequest(dto as any);
   }
 
   @Put('requests/:id/approve')

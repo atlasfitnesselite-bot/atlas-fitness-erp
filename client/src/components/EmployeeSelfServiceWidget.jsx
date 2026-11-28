@@ -203,17 +203,16 @@ export default function EmployeeSelfServiceWidget() {
       {/* My Salary Slip */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <IndianRupee className="h-4 w-4 text-emerald-500" /> My Salary Slip
-            </CardTitle>
-            <CardDescription>
-              {latestSlip ? `${latestSlip.month}/${latestSlip.year}` : 'Monthly payroll summary'}
-            </CardDescription>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <IndianRupee className="h-4 w-4 text-emerald-500" /> My Salary Slip
+              </CardTitle>
+              <CardDescription>
+                {latestSlip ? `${latestSlip.month}/${latestSlip.year}` : 'Monthly payroll summary'}
+              </CardDescription>
+            </div>
           </div>
-          <Link to="/payroll" className="text-xs text-primary hover:underline">
-            Payroll
-          </Link>
         </CardHeader>
         <CardContent>
           {loading ? (

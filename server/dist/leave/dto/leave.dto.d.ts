@@ -21,7 +21,7 @@ export declare class UpdateLeaveTypeDto {
     status?: string;
 }
 export declare class CreateLeaveRequestDto {
-    employeeId: string;
+    employeeId?: string;
     leaveTypeId: string;
     fromDate: string;
     toDate: string;
@@ -30,7 +30,7 @@ export declare class CreateLeaveRequestDto {
     attachmentUrl?: string;
 }
 export declare class ApproveLeaveRequestDto {
-    managerId: string;
+    managerId?: string;
     status: string;
     comments?: string;
 }

@@ -13,19 +13,19 @@ import { BookSessionDto, CreateFitnessPlanDto, CreateMeasurementDto, CreateCommi
 export class PtController {
   constructor(private readonly ptService: PtService) {}
 
-  @Roles('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK')
+  @Roles('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION')
   @Get('sessions')
   async getSessions() {
     return this.ptService.getSessions();
   }
 
-  @Roles('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK')
+  @Roles('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION')
   @Post('sessions')
   async createSession(@Body() dto: BookSessionDto) {
     return this.ptService.bookSession(dto);
   }
 
-  @Roles('OWNER', 'MANAGER', 'TRAINER', 'FRONT_DESK')
+  @Roles('OWNER', 'MANAGER', 'TRAINER', 'RECEPTION')
   @Post('sessions/book')
   async bookSession(@Body() dto: BookSessionDto) {
     return this.ptService.bookSession(dto);
@@ -154,6 +154,16 @@ export class PtController {
     @Body() dto: CreateMeasurementDto
   ) {
     return this.ptService.addMeasurement(memberId, dto);
+  }
+
+  @Roles('OWNER', 'MANAGER', 'TRAINER')
+  @Post('members/:memberId/progress-photos/url')
+  async addProgressPhotoUrl(
+    @Param('memberId') memberId: string,
+    @Body('photoUrl') photoUrl: string,
+  ) {
+    if (!photoUrl) throw new Error('photoUrl is required');
+    return this.ptService.addProgressPhoto(memberId, photoUrl);
   }
 
   @Roles('OWNER', 'MANAGER', 'TRAINER')

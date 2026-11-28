@@ -45,10 +45,30 @@ let LeaveController = class LeaveController {
     adjustLeaveBalance(dto) {
         return this.leaveService.adjustLeaveBalance(dto);
     }
-    getLeaveRequests(status, employeeId) {
-        return this.leaveService.getLeaveRequests(status, employeeId);
+    async getLeaveRequests(req, status, employeeId) {
+        const roles = req.user?.roles || [];
+        const isAdmin = roles.includes('OWNER') || roles.includes('MANAGER');
+        let targetEmpId = employeeId;
+        if (!isAdmin) {
+            const emp = await this.leaveService['prisma'].employee.findUnique({
+                where: { userId: req.user?.id },
+                select: { id: true },
+            });
+            if (!emp)
+                return [];
+            targetEmpId = emp.id;
+        }
+        return this.leaveService.getLeaveRequests(status, targetEmpId);
     }
-    createLeaveRequest(dto) {
+    async createLeaveRequest(req, dto) {
+        if (!dto.employeeId) {
+            const emp = await this.leaveService['prisma'].employee.findUnique({
+                where: { userId: req.user?.id },
+                select: { id: true },
+            });
+            if (emp)
+                dto.employeeId = emp.id;
+        }
         return this.leaveService.createLeaveRequest(dto);
     }
     async approveLeaveRequest(id, dto, req) {
@@ -136,18 +156,20 @@ __decorate([
 ], LeaveController.prototype, "adjustLeaveBalance", null);
 __decorate([
     (0, common_1.Get)('requests'),
-    __param(0, (0, common_1.Query)('status')),
-    __param(1, (0, common_1.Query)('employeeId')),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('status')),
+    __param(2, (0, common_1.Query)('employeeId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", Promise)
 ], LeaveController.prototype, "getLeaveRequests", null);
 __decorate([
     (0, common_1.Post)('requests'),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [leave_dto_1.CreateLeaveRequestDto]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Object, leave_dto_1.CreateLeaveRequestDto]),
+    __metadata("design:returntype", Promise)
 ], LeaveController.prototype, "createLeaveRequest", null);
 __decorate([
     (0, common_1.Put)('requests/:id/approve'),

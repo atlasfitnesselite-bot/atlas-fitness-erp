@@ -9,9 +9,9 @@ export declare class PayrollController {
         updatedAt: Date;
         employeeId: string;
         baseSalary: number;
+        ptCommissionPercentage: number;
         standardAllowances: string | null;
         standardDeductions: string | null;
-        ptCommissionPercentage: number;
     } | {
         employeeId: string;
         baseSalary: number;
@@ -24,9 +24,9 @@ export declare class PayrollController {
         updatedAt: Date;
         employeeId: string;
         baseSalary: number;
+        ptCommissionPercentage: number;
         standardAllowances: string | null;
         standardDeductions: string | null;
-        ptCommissionPercentage: number;
     }>;
     generateSlips(dto: GenerateSalarySlipDto): Promise<{
         id: string;

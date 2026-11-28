@@ -210,9 +210,9 @@ export declare class AttendanceReportsService {
         employeeId: string;
         device: string | null;
         type: string;
-        timestamp: Date;
         method: string;
         location: string | null;
+        timestamp: Date;
         attendanceId: string | null;
     })[]>;
 }
