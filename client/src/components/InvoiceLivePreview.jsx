@@ -1,6 +1,7 @@
 import React from 'react';
 
 export default function InvoiceLivePreview({
+  companySettings = null,
   invoiceNumber = 'INV-PREVIEW',
   billType = 'MEMBERSHIP',
   member = null,
@@ -54,13 +55,43 @@ export default function InvoiceLivePreview({
     return Number.isNaN(parsed.getTime()) ? d : parsed.toLocaleDateString('en-IN');
   };
 
+  const companyName = companySettings?.companyName || 'Atlas Fitness Elite';
+  const companyAddress = companySettings?.address || '123 Fitness Ave, Gym City';
+  const companyContact = companySettings?.companyContact || '9876543210';
+  const companyEmail = companySettings?.email || 'info@atlasfitness.com';
+  const companyGst = companySettings?.gstNumber || '29ABCDE1234F1Z5';
+  const apiBase = import.meta.env.VITE_API_URL || '';
+  const logoSrc = companySettings?.companyLogo
+    ? companySettings.companyLogo.startsWith('http')
+      ? companySettings.companyLogo
+      : `${apiBase}${companySettings.companyLogo}`
+    : '/atlas-logo.jpg';
+
   return (
     <div className="bg-white text-slate-900 rounded-md border border-slate-200 shadow-sm p-5 text-xs leading-relaxed">
       {/* Header */}
-      <div className="flex justify-between items-start border-b border-slate-200 pb-3">
-        <div>
-          <h3 className="text-base font-bold text-red-600 tracking-tight">Atlas Fitness</h3>
-          <p className="text-[11px] text-slate-500">Atlas Fitness Elite ERP</p>
+      <div className="flex justify-between items-start border-b border-slate-200 pb-3 gap-3">
+        <div className="flex items-start gap-2.5">
+          <img
+            src={logoSrc}
+            alt={companyName}
+            className="h-11 w-11 object-contain rounded shrink-0"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div>
+            <h3 className="text-base font-bold text-red-600 tracking-tight">{companyName}</h3>
+            {companyAddress && <p className="text-[11px] text-slate-600">{companyAddress}</p>}
+            {(companyContact || companyEmail) && (
+              <p className="text-[10.5px] text-slate-500">
+                {[companyContact, companyEmail].filter(Boolean).join(' | ')}
+              </p>
+            )}
+            {companyGst && (
+              <p className="text-[10.5px] text-slate-600 font-mono">GSTIN: {companyGst}</p>
+            )}
+          </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-slate-900">

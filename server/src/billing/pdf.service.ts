@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PdfService {
@@ -16,38 +18,70 @@ export class PdfService {
         doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
 
-        const companyName = companySettings?.companyName || 'Atlas Fitness';
-        const companyAddress = companySettings?.address || '';
-        const companyContact = companySettings?.companyContact || '';
-        const companyEmail = companySettings?.email || '';
-        const companyGst = companySettings?.gstNumber || '';
+        const companyName = companySettings?.companyName || 'Atlas Fitness Elite';
+        const companyAddress = companySettings?.address || '123 Fitness Ave, Gym City';
+        const companyContact = companySettings?.companyContact || '9876543210';
+        const companyEmail = companySettings?.email || 'info@atlasfitness.com';
+        const companyGst = companySettings?.gstNumber || '29ABCDE1234F1Z5';
 
-        // Header
-        doc.fontSize(20).fillColor('#DC2626').text(companyName, { align: 'left' });
-        doc.fontSize(9).fillColor('#475569');
-        if (companyAddress) doc.text(companyAddress);
-        if (companyContact || companyEmail) {
-          doc.text([companyContact, companyEmail].filter(Boolean).join(' | '));
+        // Resolve Logo (uploaded companyLogo or bundled atlas-logo.png)
+        const candidatePaths = [
+          companySettings?.companyLogo
+            ? path.join(process.cwd(), companySettings.companyLogo.replace(/^\//, ''))
+            : null,
+          path.join(process.cwd(), 'assets', 'atlas-logo.jpg'),
+        ].filter(Boolean) as string[];
+        const logoPath = candidatePaths.find((p) => fs.existsSync(p));
+
+        const headerTop = 45;
+        const textX = logoPath ? 100 : 45;
+        if (logoPath) {
+          try {
+            doc.image(logoPath, 45, headerTop, { fit: [46, 46] });
+          } catch {
+            // ignore invalid image
+          }
         }
-        if (companyGst) doc.text(`GSTIN: ${companyGst}`);
 
-        doc.moveUp(2.5);
-        doc.fontSize(18).fillColor('#0F172A').text('TAX INVOICE', { align: 'right' });
+        // Left: Company Info
+        doc.fontSize(18).fillColor('#DC2626').text(companyName, textX, headerTop, { width: 250 });
+        doc.fontSize(9).fillColor('#475569');
+        if (companyAddress) doc.text(companyAddress, textX, doc.y + 2, { width: 250 });
+        if (companyContact || companyEmail) {
+          doc.text([companyContact, companyEmail].filter(Boolean).join(' | '), textX, doc.y + 1, {
+            width: 250,
+          });
+        }
+        if (companyGst) doc.text(`GSTIN: ${companyGst}`, textX, doc.y + 1, { width: 250 });
+        const leftBottomY = doc.y;
+
+        // Right: Invoice Meta
+        const isTaxInvoice = Number(invoice.gstRate ?? 0) > 0;
         doc
-          .fontSize(10)
+          .fontSize(16)
+          .fillColor('#0F172A')
+          .text(isTaxInvoice ? 'TAX INVOICE' : 'PAYMENT RECEIPT', 320, headerTop, {
+            width: 230,
+            align: 'right',
+          });
+        doc
+          .fontSize(9.5)
           .fillColor('#334155')
-          .text(`Invoice #: ${invoice.invoiceNumber || invoice.id.slice(0, 8).toUpperCase()}`, {
+          .text(`Invoice #: ${invoice.invoiceNumber || invoice.id.slice(0, 8).toUpperCase()}`, 320, doc.y + 2, {
+            width: 230,
             align: 'right',
           })
-          .text(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, {
+          .text(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, 320, doc.y + 1, {
+            width: 230,
             align: 'right',
           })
-          .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, {
+          .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, 320, doc.y + 1, {
+            width: 230,
             align: 'right',
           })
-          .text(`Status: ${invoice.status}`, { align: 'right' });
+          .text(`Status: ${invoice.status}`, 320, doc.y + 1, { width: 230, align: 'right' });
 
-        doc.moveDown(1.5);
+        doc.y = Math.max(leftBottomY, doc.y, headerTop + 55) + 12;
         doc.moveTo(45, doc.y).lineTo(550, doc.y).strokeColor('#CBD5E1').stroke();
         doc.moveDown(1);
 

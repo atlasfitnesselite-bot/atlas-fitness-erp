@@ -48,6 +48,7 @@ export default function BillingDashboard() {
   const [plans, setPlans] = useState([]);
   const [ptPackages, setPtPackages] = useState([]);
   const [trainers, setTrainers] = useState([]);
+  const [companySettings, setCompanySettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -160,12 +161,13 @@ export default function BillingDashboard() {
   const fetchAll = async () => {
     try {
       setLoading(true);
-      const [invRes, memRes, planRes, ptPkgRes, trRes] = await Promise.allSettled([
+      const [invRes, memRes, planRes, ptPkgRes, trRes, compRes] = await Promise.allSettled([
         api.get('/api/billing/invoices'),
         api.get('/api/members?limit=500'),
         api.get('/api/subscriptions/plans'),
         api.get('/api/pt/packages'),
         api.get('/api/pt/trainers'),
+        api.get('/api/settings/company'),
       ]);
 
       if (invRes.status === 'fulfilled') {
@@ -189,6 +191,9 @@ export default function BillingDashboard() {
       if (trRes.status === 'fulfilled') {
         const list = trRes.value.data?.data || trRes.value.data || [];
         setTrainers(Array.isArray(list) ? list : []);
+      }
+      if (compRes.status === 'fulfilled') {
+        setCompanySettings(compRes.value.data || null);
       }
     } catch (error) {
       toast({
@@ -1071,6 +1076,7 @@ export default function BillingDashboard() {
                 Live PDF Preview
               </p>
               <InvoiceLivePreview
+                companySettings={companySettings}
                 billType={form.billType}
                 member={members.find((m) => m.id === form.memberId) || null}
                 planName={plans.find((p) => p.id === form.planId)?.name || ''}
