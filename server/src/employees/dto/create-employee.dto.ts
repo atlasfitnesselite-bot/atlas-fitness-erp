@@ -1,6 +1,11 @@
 export class CreateEmployeeDto {
   employeeId: string;
   userId?: string;
+  password?: string;
+  roleName?: string;
+  baseSalary?: number;
+  ptCommissionPercentage?: number;
+  pin?: string;
   firstName: string;
   lastName: string;
   profilePicture?: string;

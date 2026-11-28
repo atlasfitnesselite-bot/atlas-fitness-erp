@@ -12,6 +12,7 @@ import {
   Clock4, LogIn, LogOut, Check
 } from "lucide-react"
 import MyUpcomingShifts from "./MyUpcomingShifts"
+import EmployeeSelfServiceWidget from "@/components/EmployeeSelfServiceWidget"
 
 export default function CleaningDashboard() {
   const { user, token } = useAuthStore()
@@ -294,6 +295,7 @@ export default function CleaningDashboard() {
             })}
           </div>
         )}
+        <EmployeeSelfServiceWidget />
         <MyUpcomingShifts />
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
   Users, UserPlus, CreditCard, Clock, Activity, AlertCircle, Calendar, MessageSquare, LogIn, LogOut, Check, Fingerprint, IndianRupee, Loader2
 } from "lucide-react"
 import MyUpcomingShifts from "./MyUpcomingShifts"
+import EmployeeSelfServiceWidget from "@/components/EmployeeSelfServiceWidget"
 import { Badge } from "@/components/ui/badge"
 
 export default function ReceptionDashboard() {
@@ -387,6 +388,7 @@ export default function ReceptionDashboard() {
         </TabsContent>
 
       </Tabs>
+      <EmployeeSelfServiceWidget />
       <MyUpcomingShifts />
     </div>
   )

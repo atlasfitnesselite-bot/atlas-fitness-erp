@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Post, Get, Put, Body, Param, UseGuards, Query, Req } from '@nestjs/common';
 import { PayrollService } from './payroll.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../rbac/guards/roles.guard';
@@ -68,6 +68,14 @@ export class PayrollController {
     @Body() body: { bonuses?: number; otherPenalties?: number }
   ) {
     return this.payrollService.updateSlip(id, body.bonuses || 0, body.otherPenalties || 0);
+  }
+
+  @Get('slips/me')
+  async getMySlips(
+    @Req() req: { user: { id: string } },
+    @Query('year') year?: string,
+  ) {
+    return this.payrollService.getMySlips(req.user.id, year ? parseInt(year, 10) : undefined);
   }
 
   @Get('slips/employee/:employeeId')

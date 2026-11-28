@@ -1,4 +1,4 @@
-import { CustomSelect } from '@/components/ui/custom-select';
+ï»¿import { CustomSelect } from '@/components/ui/custom-select';
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '../../lib/api';
 import { useEffect, useState } from "react"
@@ -63,6 +63,9 @@ export default function EmployeeList() {
   const [gender, setGender] = useState("MALE")
   const [joiningDate, setJoiningDate] = useState("")
   const [statusForm, setStatusForm] = useState("ACTIVE")
+  const [roleName, setRoleName] = useState("RECEPTION")
+  const [empPassword, setEmpPassword] = useState("Password123")
+  const [baseSalary, setBaseSalary] = useState("")
   
   // Extra Models
   const [departments, setDepartments] = useState([])
@@ -223,6 +226,9 @@ export default function EmployeeList() {
       designationId: selectedDesig || undefined,
       employmentTypeId: selectedType || undefined,
       managerId: selectedManager || undefined,
+      roleName,
+      password: empPassword || undefined,
+      baseSalary: baseSalary ? parseFloat(baseSalary) : undefined,
     }
 
     try {
@@ -364,9 +370,9 @@ export default function EmployeeList() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{emp.department?.name || "—"}</TableCell>
-                    <TableCell>{emp.designation?.name || "—"}</TableCell>
-                    <TableCell>{emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : "—"}</TableCell>
+                    <TableCell>{emp.department?.name || "ï¿½"}</TableCell>
+                    <TableCell>{emp.designation?.name || "ï¿½"}</TableCell>
+                    <TableCell>{emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : "ï¿½"}</TableCell>
                     <TableCell>
                       <Badge className={emp.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
                         {emp.status}
@@ -458,6 +464,24 @@ export default function EmployeeList() {
               </div>
 
               <div className="grid gap-2">
+                <Label htmlFor="roleName">Login Role *</Label>
+                <CustomSelect id="roleName" value={roleName} onChange={(e) => setRoleName(e.target.value)} className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none">
+                  <option value="RECEPTION">RECEPTION</option>
+                  <option value="MANAGER">MANAGER</option>
+                  <option value="TRAINER">TRAINER</option>
+                  <option value="CAFE">CAFE</option>
+                  <option value="CLEANING">CLEANING</option>
+                </CustomSelect>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="empPassword">Login Password</Label>
+                <Input id="empPassword" type="text" value={empPassword} onChange={(e) => setEmpPassword(e.target.value)} placeholder="Password123" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="baseSalary">Monthly Base Salary (â‚¹)</Label>
+                <Input id="baseSalary" type="number" step="0.01" value={baseSalary} onChange={(e) => setBaseSalary(e.target.value)} placeholder="e.g. 15000" />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="selectedDept">Department</Label>
                 <CustomSelect
                   id="selectedDept"
@@ -524,3 +548,4 @@ export default function EmployeeList() {
     </div>
   )
 }
+

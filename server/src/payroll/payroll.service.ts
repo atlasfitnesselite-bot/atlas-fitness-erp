@@ -86,34 +86,40 @@ export class PayrollService {
       const presentDays = summary?.presentDays || 0;
       const lateMinutes = summary?.lateMinutes || 0;
       const overtimeHours = summary?.overtimeHours || 0;
-      
-      const lateDeduction = lateMinutes * (baseSalary / 30 / 480);
-      const overtimePay = overtimeHours * (baseSalary / 30 / 8) * 1.5;
-      
+      const unpaidLeaveDays = summary?.unpaidLeave || 0;
+      const absentDays = summary?.absentDays || 0;
+
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const perDaySalary = baseSalary / daysInMonth;
+      const lopDays = unpaidLeaveDays + absentDays;
+      const lopDeduction = Number((lopDays * perDaySalary).toFixed(2));
+      const lateDeduction = Number((lateMinutes * (baseSalary / daysInMonth / 480)).toFixed(2));
+      const overtimePay = Number((overtimeHours * (baseSalary / daysInMonth / 8) * 1.5).toFixed(2));
+
       let allowancesTotal = 0;
-      let parsedAllowances = typeof struct.standardAllowances === 'string' ? JSON.parse(struct.standardAllowances) : struct.standardAllowances;
+      const parsedAllowances = typeof struct.standardAllowances === 'string' ? JSON.parse(struct.standardAllowances) : struct.standardAllowances;
       if (parsedAllowances && typeof parsedAllowances === 'object' && !Array.isArray(parsedAllowances)) {
-         allowancesTotal = Object.values(parsedAllowances as Record<string, any>).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0);
+        allowancesTotal = Object.values(parsedAllowances as Record<string, any>).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0);
       }
-      
+
       let deductionsTotal = 0;
-      let parsedDeductions = typeof struct.standardDeductions === 'string' ? JSON.parse(struct.standardDeductions) : struct.standardDeductions;
+      const parsedDeductions = typeof struct.standardDeductions === 'string' ? JSON.parse(struct.standardDeductions) : struct.standardDeductions;
       if (parsedDeductions && typeof parsedDeductions === 'object' && !Array.isArray(parsedDeductions)) {
-         deductionsTotal = Object.values(parsedDeductions as Record<string, any>).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0);
+        deductionsTotal = Object.values(parsedDeductions as Record<string, any>).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0);
       }
 
       const ptCommission = emp.commissions?.reduce((sum, comm) => sum + (comm.amount || 0), 0) || 0;
 
-      const grossPay = baseSalary + allowancesTotal + overtimePay + ptCommission;
-      const netPay = grossPay - deductionsTotal - lateDeduction;
+      const grossPay = Number((baseSalary + allowancesTotal + overtimePay + ptCommission).toFixed(2));
+      const netPay = Number(Math.max(0, grossPay - deductionsTotal - lateDeduction - lopDeduction).toFixed(2));
 
       const slipData = {
         employeeId: emp.id,
         month,
         year,
         baseSalary,
-        workingDays,
-        leaveDays: (summary?.paidLeave || 0) + (summary?.unpaidLeave || 0),
+        workingDays: presentDays || workingDays,
+        leaveDays: Math.round((summary?.paidLeave || 0) + unpaidLeaveDays),
         lateMinutes,
         overtimeHours,
         standardAllowances: allowancesTotal,
@@ -121,9 +127,10 @@ export class PayrollService {
         ptCommission,
         standardDeductions: deductionsTotal,
         latePenalties: lateDeduction,
+        otherPenalties: lopDeduction,
         grossPay,
         netPay,
-        status: 'DRAFT'
+        status: 'DRAFT',
       };
 
       const existingSlip = await this.prisma.salarySlip.findFirst({
@@ -176,6 +183,12 @@ export class PayrollService {
         { month: 'desc' },
       ],
     });
+  }
+
+  async getMySlips(userId: string, year?: number) {
+    const emp = await this.prisma.employee.findUnique({ where: { userId } });
+    if (!emp) return [];
+    return this.getSlips(emp.id, year);
   }
 
   async markAsPaid(id: string) {

@@ -8,6 +8,7 @@ import {
   Loader2, ShieldCheck, FileSignature, Timer, Activity 
 } from "lucide-react"
 import MyUpcomingShifts from "./MyUpcomingShifts"
+import EmployeeSelfServiceWidget from "@/components/EmployeeSelfServiceWidget"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -385,6 +386,7 @@ export default function CafeDashboard() {
         </TabsContent>
 
       </Tabs>
+      <EmployeeSelfServiceWidget />
       <MyUpcomingShifts />
     </div>
   )

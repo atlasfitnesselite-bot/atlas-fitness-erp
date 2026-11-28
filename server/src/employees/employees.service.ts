@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class EmployeesService {
@@ -140,10 +141,43 @@ export class EmployeesService {
         throw new ConflictException('Email already exists');
     }
 
+    let resolvedUserId = data.userId || null;
+    if (!resolvedUserId && data.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: data.email },
+        select: { id: true },
+      });
+      if (existingUser) {
+        resolvedUserId = existingUser.id;
+      } else {
+        const roleName = (data.roleName || 'RECEPTION').toUpperCase();
+        let role = await this.prisma.role.findUnique({ where: { name: roleName } });
+        if (!role) {
+          role = await this.prisma.role.create({
+            data: { name: roleName, description: `${roleName} role` },
+          });
+        }
+        const hashedPassword = await bcrypt.hash(data.password || 'Password123', 10);
+        const createdUser = await this.prisma.user.create({
+          data: {
+            name: `${data.firstName} ${data.lastName || ''}`.trim(),
+            email: data.email,
+            password: hashedPassword,
+            userRoles: { create: { roleId: role.id } },
+          },
+        });
+        resolvedUserId = createdUser.id;
+      }
+    }
+
+    const hashedPin = await bcrypt.hash(data.pin || '1234', 10);
+    const baseSalaryVal = Number(data.baseSalary || data.salaryInfo?.basicSalary || 0);
+
     const employee = await this.prisma.employee.create({
       data: {
         employeeId: data.employeeId,
-        userId: data.userId || null,
+        userId: resolvedUserId,
+        hashedPin,
         firstName: data.firstName,
         lastName: data.lastName,
         profilePicture: data.profilePicture || null,
@@ -196,6 +230,21 @@ export class EmployeesService {
           : undefined,
       },
     });
+
+    if (baseSalaryVal > 0) {
+      await this.prisma.payrollStructure.upsert({
+        where: { employeeId: employee.id },
+        update: {
+          baseSalary: baseSalaryVal,
+          ptCommissionPercentage: Number(data.ptCommissionPercentage || 0),
+        },
+        create: {
+          employeeId: employee.id,
+          baseSalary: baseSalaryVal,
+          ptCommissionPercentage: Number(data.ptCommissionPercentage || 0),
+        },
+      });
+    }
 
     await this.prisma.employeeTimeline.create({
       data: {

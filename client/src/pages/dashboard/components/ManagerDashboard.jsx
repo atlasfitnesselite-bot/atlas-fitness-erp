@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Users, Clock, AlertCircle, CheckCircle2, Loader2, Calendar, TrendingUp, Dumbbell, UserPlus, AlertTriangle } from "lucide-react"
 import { useAuthStore } from "@/store/useAuthStore"
+import EmployeeSelfServiceWidget from "@/components/EmployeeSelfServiceWidget"
 import api from '../../../lib/api';
 import { toast } from "sonner"
 import Chart from "react-apexcharts"
@@ -230,6 +231,7 @@ export default function ManagerDashboard() {
           </CardContent>
         </Card>
       </div>
+      <EmployeeSelfServiceWidget />
     </div>
   )
 }
