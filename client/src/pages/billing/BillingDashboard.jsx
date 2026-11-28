@@ -423,7 +423,7 @@ export default function BillingDashboard() {
     setEditingInvoice({
       ...invoice,
       dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : '',
-      gstRate: invoice.gstRate ?? 18,
+      gstRate: invoice.gstRate ?? 5,
       discount: invoice.discount ?? 0,
       discountType: invoice.discountType || 'AMOUNT',
       lateFee: invoice.lateFee ?? 0,
