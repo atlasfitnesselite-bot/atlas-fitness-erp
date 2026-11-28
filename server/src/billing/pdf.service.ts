@@ -76,7 +76,7 @@ export class PdfService {
         const itemY = tableTop + 30;
         const planTitle = invoice.plan?.name
           ? `Membership Plan - ${invoice.plan.name}`
-          : 'Fitness Membership / Services';
+          : invoice.notes || 'Fitness Membership / Services';
         doc.fillColor('#334155').fontSize(10).text(planTitle, 55, itemY);
         doc.text(`₹${Number(invoice.amount || 0).toFixed(2)}`, 440, itemY, {
           width: 100,
@@ -108,9 +108,13 @@ export class PdfService {
           addSummaryRow(discountLabel, `-₹${discountAmt.toFixed(2)}`);
         }
 
-        const gstRate = invoice.gstRate ?? 18;
-        addSummaryRow(`CGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.cgst || 0).toFixed(2)}`);
-        addSummaryRow(`SGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.sgst || 0).toFixed(2)}`);
+        const gstRate = invoice.gstRate ?? 5;
+        if (gstRate > 0) {
+          addSummaryRow(`CGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.cgst || 0).toFixed(2)}`);
+          addSummaryRow(`SGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.sgst || 0).toFixed(2)}`);
+        } else {
+          addSummaryRow('GST:', '0% (No GST)');
+        }
         if (invoice.lateFee > 0) {
           addSummaryRow('Late Fee:', `₹${Number(invoice.lateFee).toFixed(2)}`);
         }

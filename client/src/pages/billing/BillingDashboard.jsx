@@ -1,6 +1,7 @@
 import { CustomSelect } from '@/components/ui/custom-select';
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../lib/api';
+import InvoiceLivePreview from '../../components/InvoiceLivePreview';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -823,11 +824,13 @@ export default function BillingDashboard() {
 
       {/* Create Invoice Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Generate GST Invoice</DialogTitle>
+            <DialogTitle>Generate GST / PT Invoice</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleCreateInvoice} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+            <div className="lg:col-span-7">
+              <form onSubmit={handleCreateInvoice} className="space-y-4">
             <div className="space-y-2">
               <Label>Bill Type *</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -1063,6 +1066,36 @@ export default function BillingDashboard() {
               {creating ? 'Creating...' : 'Create Invoice'}
             </Button>
           </form>
+            </div>
+            <div className="lg:col-span-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Live PDF Preview
+              </p>
+              <InvoiceLivePreview
+                billType={form.billType}
+                member={members.find((m) => m.id === form.memberId) || null}
+                planName={plans.find((p) => p.id === form.planId)?.name || ''}
+                ptPackageName={ptPackages.find((p) => p.id === form.ptPackageId)?.name || ''}
+                trainerName={
+                  trainers.find((t) => t.id === form.trainerId)
+                    ? `${trainers.find((t) => t.id === form.trainerId).firstName}`
+                    : ''
+                }
+                amount={form.amount}
+                discount={form.discount}
+                discountType={form.discountType}
+                gstRate={form.gstRate}
+                lateFee={form.lateFee}
+                dueDate={form.dueDate}
+                status={form.status}
+                paymentMethod={form.paymentMethod}
+                memberGstNumber={form.memberGstNumber}
+                memberPanNumber={form.memberPanNumber}
+                memberAddress={form.memberAddress}
+                notes={form.notes}
+              />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
