@@ -207,9 +207,17 @@ export default function Sidebar() {
     >
       <div className="flex h-16 items-center justify-center border-b border-border px-4 flex-shrink-0">
         {sidebarOpen ? (
-          <span className="text-xl font-bold text-white truncate">Atlas Fitness Live</span>
+          <img
+            src="/atlas-logo.png"
+            alt="Atlas Fitness"
+            className="h-10 w-auto max-w-[165px] object-contain"
+          />
         ) : (
-          <span className="text-xl font-bold text-white">AF</span>
+          <img
+            src="/atlas-logo.png"
+            alt="AF"
+            className="h-7 w-auto object-contain"
+          />
         )}
       </div>
 

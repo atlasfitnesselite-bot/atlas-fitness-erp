@@ -11,7 +11,12 @@ export default function AuthLayout() {
         <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
         
         <div className="z-10 text-center max-w-md">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Atlas Fitness Live</h1>
+          <img
+            src="/atlas-logo.png"
+            alt="Atlas Fitness"
+            className="h-20 w-auto mx-auto mb-5 object-contain"
+          />
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Atlas Fitness Elite</h1>
           <p className="text-muted-foreground text-lg">The premium enterprise operating system for modern fitness organizations.</p>
         </div>
       </div>
