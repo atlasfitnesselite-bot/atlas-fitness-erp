@@ -9,10 +9,10 @@ export class EmailService {
   constructor(private readonly prisma: PrismaService) {}
 
   private resolveLogoAttachment() {
-    const logoPath = path.join(process.cwd(), 'assets', 'atlas-logo.jpg');
+    const logoPath = path.join(process.cwd(), 'assets', 'atlas-logo.png');
     if (fs.existsSync(logoPath)) {
       return {
-        filename: 'atlas-logo.jpg',
+        filename: 'atlas-logo.png',
         path: logoPath,
         cid: 'atlas-logo',
       };
@@ -51,7 +51,7 @@ export class EmailService {
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td style="vertical-align:middle;">
-                            ${hasLogo ? `<img src="cid:atlas-logo" alt="${config.companyName}" width="48" height="48" style="border-radius:8px;vertical-align:middle;margin-right:12px;background:#ffffff;padding:2px;" />` : ''}
+                            ${hasLogo ? `<img src="cid:atlas-logo" alt="${config.companyName}" style="max-height:42px;width:auto;vertical-align:middle;margin-right:12px;" />` : ''}
                             <span style="font-size:20px;font-weight:700;vertical-align:middle;letter-spacing:0.3px;">${config.companyName}</span>
                           </td>
                           <td align="right" style="vertical-align:middle;">

@@ -65,7 +65,7 @@ export default function InvoiceLivePreview({
     ? companySettings.companyLogo.startsWith('http')
       ? companySettings.companyLogo
       : `${apiBase}${companySettings.companyLogo}`
-    : '/atlas-logo.jpg';
+    : '/atlas-logo.png';
 
   return (
     <div className="bg-white text-slate-900 rounded-md border border-slate-200 shadow-sm p-5 text-xs leading-relaxed">
@@ -75,7 +75,7 @@ export default function InvoiceLivePreview({
           <img
             src={logoSrc}
             alt={companyName}
-            className="h-11 w-11 object-contain rounded shrink-0"
+            className="h-10 w-auto max-w-[120px] object-contain shrink-0"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}

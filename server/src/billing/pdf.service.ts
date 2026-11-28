@@ -29,15 +29,15 @@ export class PdfService {
           companySettings?.companyLogo
             ? path.join(process.cwd(), companySettings.companyLogo.replace(/^\//, ''))
             : null,
-          path.join(process.cwd(), 'assets', 'atlas-logo.jpg'),
+          path.join(process.cwd(), 'assets', 'atlas-logo.png'),
         ].filter(Boolean) as string[];
         const logoPath = candidatePaths.find((p) => fs.existsSync(p));
 
         const headerTop = 45;
-        const textX = logoPath ? 100 : 45;
+        const textX = logoPath ? 150 : 45;
         if (logoPath) {
           try {
-            doc.image(logoPath, 45, headerTop, { fit: [46, 46] });
+            doc.image(logoPath, 45, headerTop, { fit: [95, 38] });
           } catch {
             // ignore invalid image
           }
