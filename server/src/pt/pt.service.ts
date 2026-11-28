@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../billing/email.service';
+import { PdfService } from '../billing/pdf.service';
 import { BookSessionDto, CreateFitnessPlanDto, CreateMeasurementDto, CreateCommissionDto, CompleteSessionDto } from './dto/pt.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -9,6 +10,7 @@ export class PtService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly pdfService: PdfService,
   ) {}
 
   async getSessions() {
@@ -1365,6 +1367,7 @@ export class PtService {
       },
     });
 
+    let createdPtInvoice: any = null;
     if (data.createInvoice !== false && fee > 0) {
       const year = new Date().getFullYear();
       const prefix = `INV-${year}-`;
@@ -1376,7 +1379,7 @@ export class PtService {
       const seq = (last?.invoiceNumber ? parseInt(last.invoiceNumber.split('-')[2] || '0', 10) : 0) + 1;
       const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
 
-      await this.prisma.invoice.create({
+      createdPtInvoice = await this.prisma.invoice.create({
         data: {
           invoiceNumber,
           memberId: data.memberId,
@@ -1391,6 +1394,7 @@ export class PtService {
           status: 'PENDING',
           notes: `Personal Training: ${assignment.package.name} (${assignment.trainer?.firstName || 'Trainer'})`,
         },
+        include: { member: true, plan: true },
       });
     }
 
@@ -1434,6 +1438,22 @@ export class PtService {
       startDate: start,
       expiryDate: expiry,
     });
+
+    if (createdPtInvoice && createdPtInvoice.member?.email) {
+      this.prisma.companySettings
+        .findFirst()
+        .then((company) => this.pdfService.generateInvoicePdf(createdPtInvoice, company))
+        .then((buf) =>
+          this.emailService.sendInvoiceEmail(
+            createdPtInvoice,
+            buf,
+            `${createdPtInvoice.invoiceNumber || 'PT-Invoice'}.pdf`,
+          ),
+        )
+        .catch((err) => {
+          console.warn('Auto PT invoice PDF email skipped/failed:', err?.message || err);
+        });
+    }
 
     return { ...assignment, emailResult };
   }

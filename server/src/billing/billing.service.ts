@@ -131,6 +131,12 @@ export class BillingService {
       });
     }
 
+    if (invoice.member?.email) {
+      this.sendInvoiceEmail(invoice.id).catch((err) => {
+        console.warn('Auto invoice email skipped/failed:', err?.message || err);
+      });
+    }
+
     return invoice;
   }
 
@@ -222,7 +228,7 @@ export class BillingService {
     const newPaidAmount = (invoice.paidAmount || 0) + paymentAmt;
     const newStatus = newPaidAmount >= effectiveTotal - 0.01 ? 'PAID' : 'PARTIAL';
 
-    return this.prisma.invoice.update({
+    const updated = await this.prisma.invoice.update({
       where: { id },
       data: {
         status: newStatus,
@@ -236,6 +242,14 @@ export class BillingService {
       },
       include: { member: true, subscription: true, plan: true },
     });
+
+    if (updated.member?.email) {
+      this.sendInvoiceEmail(updated.id).catch((err) => {
+        console.warn('Auto payment receipt email skipped/failed:', err?.message || err);
+      });
+    }
+
+    return updated;
   }
 
   async deleteInvoice(id: string) {
