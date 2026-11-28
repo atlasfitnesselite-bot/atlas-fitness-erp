@@ -1021,8 +1021,7 @@ export default function BillingDashboard() {
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                 >
-                  <option value="PENDING">Pending</option>
-                  <option value="PAID">Paid</option>
+                  <option value="PENDING">Pending (Unpaid)</option>
                   <option value="OVERDUE">Overdue</option>
                 </CustomSelect>
               </div>

@@ -205,7 +205,7 @@ export class OldDbSyncService {
           memberPanNumber: inv.memberPanNumber,
           memberAddress: inv.memberAddress,
           amount: Number(inv.amount),
-          gstRate: 18,
+          gstRate: inv.gstAmount > 0 && inv.amount > 0 ? Math.round((Number(inv.gstAmount) / Number(inv.amount)) * 100) : 0,
           gstAmount: Number(inv.gstAmount || 0),
           cgst: Number(inv.cgst || 0),
           sgst: Number(inv.sgst || 0),
