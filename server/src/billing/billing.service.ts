@@ -2,7 +2,9 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { PayInvoiceDto } from './dto/pay-invoice.dto';
@@ -368,5 +370,34 @@ export class BillingService {
     const invoice = await this.getInvoiceById(id);
     const { buffer, filename } = await this.generatePdfBuffer(id);
     return this.emailService.sendInvoiceEmail(invoice, buffer, filename);
+  }
+
+  async verifyRevenuePin(userId: string, pin: string) {
+    if (!pin) throw new BadRequestException('PIN is required');
+    const emp = await this.prisma.employee.findUnique({ where: { userId } });
+    if (emp?.hashedPin) {
+      const match = await bcrypt.compare(String(pin), emp.hashedPin);
+      if (!match) throw new UnauthorizedException('Incorrect PIN');
+      return { valid: true };
+    }
+    if (String(pin) !== '0000') {
+      throw new UnauthorizedException('Incorrect PIN');
+    }
+    return { valid: true };
+  }
+
+  async changeRevenuePin(userId: string, currentPin: string, newPin: string) {
+    if (!newPin || String(newPin).length < 4) {
+      throw new BadRequestException('New PIN must be at least 4 digits');
+    }
+    await this.verifyRevenuePin(userId, currentPin);
+    const emp = await this.prisma.employee.findUnique({ where: { userId } });
+    if (!emp) throw new NotFoundException('Employee profile not found');
+    const hashedPin = await bcrypt.hash(String(newPin), 10);
+    await this.prisma.employee.update({
+      where: { id: emp.id },
+      data: { hashedPin },
+    });
+    return { success: true, message: 'PIN updated successfully' };
   }
 }

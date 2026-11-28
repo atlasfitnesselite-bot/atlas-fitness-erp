@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   Res,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
@@ -126,5 +127,21 @@ export class BillingController {
   @Delete('invoices/:id')
   deleteInvoice(@Param('id') id: string) {
     return this.billingService.deleteInvoice(id);
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Post('verify-pin')
+  verifyPin(@Req() req: { user: { id: string } }, @Body('pin') pin: string) {
+    return this.billingService.verifyRevenuePin(req.user.id, pin);
+  }
+
+  @Roles('OWNER', 'MANAGER')
+  @Post('change-pin')
+  changePin(
+    @Req() req: { user: { id: string } },
+    @Body('currentPin') currentPin: string,
+    @Body('newPin') newPin: string,
+  ) {
+    return this.billingService.changeRevenuePin(req.user.id, currentPin, newPin);
   }
 }

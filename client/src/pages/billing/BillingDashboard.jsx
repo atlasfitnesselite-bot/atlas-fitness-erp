@@ -17,6 +17,8 @@ import {
   Download,
   Mail,
   Eye,
+  EyeOff,
+  Lock,
   Trash2,
   Plus,
   CreditCard,
@@ -87,6 +89,45 @@ export default function BillingDashboard() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [syncingOld, setSyncingOld] = useState(false);
+
+  // Total Collected PIN lock
+  const [showTotalCollected, setShowTotalCollected] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinMode, setPinMode] = useState('VERIFY'); // VERIFY | CHANGE
+  const [pinInput, setPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [verifyingPin, setVerifyingPin] = useState(false);
+
+  const handleVerifyPin = async (e) => {
+    e.preventDefault();
+    setVerifyingPin(true);
+    try {
+      if (pinMode === 'CHANGE') {
+        await api.post('/api/billing/change-pin', {
+          currentPin: pinInput,
+          newPin: newPinInput,
+        });
+        toast({ title: 'PIN Updated', description: 'Your PIN has been changed successfully.' });
+        setPinMode('VERIFY');
+        setPinInput('');
+        setNewPinInput('');
+        setIsPinModalOpen(false);
+      } else {
+        await api.post('/api/billing/verify-pin', { pin: pinInput });
+        setShowTotalCollected(true);
+        setIsPinModalOpen(false);
+        setPinInput('');
+      }
+    } catch (error) {
+      toast({
+        title: 'Invalid PIN',
+        description: error.response?.data?.message || 'Incorrect PIN. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setVerifyingPin(false);
+    }
+  };
 
   const handleSyncOldDb = async () => {
     try {
@@ -501,11 +542,38 @@ export default function BillingDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Collected</CardTitle>
-            <IndianRupee className="h-4 w-4 text-green-600" />
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                title={showTotalCollected ? 'Hide Total Collected' : 'Enter PIN to view'}
+                onClick={() => {
+                  if (showTotalCollected) {
+                    setShowTotalCollected(false);
+                  } else {
+                    setPinMode('VERIFY');
+                    setPinInput('');
+                    setIsPinModalOpen(true);
+                  }
+                }}
+              >
+                {showTotalCollected ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Lock className="h-4 w-4 text-amber-500" />
+                )}
+              </Button>
+              <IndianRupee className="h-4 w-4 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Actual paid amounts across all invoices</p>
+            <div className="text-2xl font-bold">
+              {showTotalCollected ? `₹${totalRevenue.toFixed(2)}` : '₹ ••••••••'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {showTotalCollected ? 'Actual paid amounts across all invoices' : 'Click lock icon & enter PIN to view'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -1140,6 +1208,60 @@ export default function BillingDashboard() {
               </Button>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* PIN Verification / Change Dialog */}
+      <Dialog open={isPinModalOpen} onOpenChange={setIsPinModalOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-amber-500" />
+              {pinMode === 'CHANGE' ? 'Change Revenue PIN' : 'Enter PIN to View Total Collected'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleVerifyPin} className="space-y-4 pt-2">
+            <div className="space-y-1">
+              <Label>{pinMode === 'CHANGE' ? 'Current PIN' : 'Enter PIN'}</Label>
+              <Input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                autoFocus
+                required
+                placeholder="••••"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+              />
+            </div>
+            {pinMode === 'CHANGE' && (
+              <div className="space-y-1">
+                <Label>New PIN (min 4 digits)</Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={6}
+                  minLength={4}
+                  required
+                  placeholder="••••"
+                  value={newPinInput}
+                  onChange={(e) => setNewPinInput(e.target.value)}
+                />
+              </div>
+            )}
+            <Button type="submit" disabled={verifyingPin} className="w-full bg-red-600 hover:bg-red-700 text-white">
+              {verifyingPin ? 'Verifying...' : pinMode === 'CHANGE' ? 'Update PIN' : 'Unlock & View'}
+            </Button>
+            <div className="text-center">
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-foreground underline"
+                onClick={() => setPinMode(pinMode === 'CHANGE' ? 'VERIFY' : 'CHANGE')}
+              >
+                {pinMode === 'CHANGE' ? 'Back to Unlock' : 'Change PIN'}
+              </button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
