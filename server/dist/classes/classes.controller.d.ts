@@ -21,9 +21,8 @@ export declare class ClassesController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -41,6 +40,7 @@ export declare class ClassesController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {

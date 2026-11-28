@@ -10,10 +10,10 @@ export declare class SecurityController {
     } & {
         id: string;
         createdAt: Date;
+        userId: string;
+        status: string;
         ipAddress: string | null;
         userAgent: string | null;
-        status: string;
-        userId: string;
     })[]>;
     getAuditLogs(): Promise<({
         user: {

@@ -4,6 +4,11 @@ exports.CreateEmployeeDto = void 0;
 class CreateEmployeeDto {
     employeeId;
     userId;
+    password;
+    roleName;
+    baseSalary;
+    ptCommissionPercentage;
+    pin;
     firstName;
     lastName;
     profilePicture;

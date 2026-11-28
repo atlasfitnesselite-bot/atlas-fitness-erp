@@ -9,8 +9,8 @@ export declare class NotificationsService {
         notifications: {
             id: string;
             createdAt: Date;
-            status: string;
             userId: string;
+            status: string;
             type: string;
             title: string;
             message: string;
@@ -24,8 +24,8 @@ export declare class NotificationsService {
     markAsRead(notificationId: string, userId: string): Promise<{
         id: string;
         createdAt: Date;
-        status: string;
         userId: string;
+        status: string;
         type: string;
         title: string;
         message: string;
@@ -36,8 +36,8 @@ export declare class NotificationsService {
     deleteNotification(notificationId: string, userId: string): Promise<{
         id: string;
         createdAt: Date;
-        status: string;
         userId: string;
+        status: string;
         type: string;
         title: string;
         message: string;
@@ -48,8 +48,8 @@ export declare class NotificationsService {
     createNotification(dto: CreateNotificationDto): Promise<{
         id: string;
         createdAt: Date;
-        status: string;
         userId: string;
+        status: string;
         type: string;
         title: string;
         message: string;

@@ -158,9 +158,8 @@ export declare class ShiftController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -178,6 +177,7 @@ export declare class ShiftController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         shift: {
@@ -289,8 +289,8 @@ export declare class ShiftController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         approvedById: string | null;
@@ -308,8 +308,8 @@ export declare class ShiftController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         approvedById: string | null;
@@ -327,8 +327,8 @@ export declare class ShiftController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         approvedById: string | null;
@@ -346,8 +346,8 @@ export declare class ShiftController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         approvedById: string | null;
@@ -361,9 +361,9 @@ export declare class ShiftController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        days: string;
         employeeId: string | null;
         departmentId: string | null;
+        days: string;
     }>;
     createException(dto: CreateShiftExceptionDto): Promise<{
         id: string;

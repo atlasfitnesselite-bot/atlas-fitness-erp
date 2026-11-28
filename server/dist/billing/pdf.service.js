@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -12,6 +45,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PdfService = void 0;
 const common_1 = require("@nestjs/common");
 const pdfkit_1 = __importDefault(require("pdfkit"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 let PdfService = class PdfService {
     async generateInvoicePdf(invoice, companySettings) {
         return new Promise((resolve, reject) => {
@@ -21,36 +56,64 @@ let PdfService = class PdfService {
                 doc.on('data', (chunk) => chunks.push(chunk));
                 doc.on('end', () => resolve(Buffer.concat(chunks)));
                 doc.on('error', reject);
-                const companyName = companySettings?.companyName || 'Atlas Fitness';
-                const companyAddress = companySettings?.address || '';
-                const companyContact = companySettings?.companyContact || '';
-                const companyEmail = companySettings?.email || '';
-                const companyGst = companySettings?.gstNumber || '';
-                doc.fontSize(20).fillColor('#DC2626').text(companyName, { align: 'left' });
+                const companyName = companySettings?.companyName || 'Atlas Fitness Elite';
+                const companyAddress = companySettings?.address || '123 Fitness Ave, Gym City';
+                const companyContact = companySettings?.companyContact || '9876543210';
+                const companyEmail = companySettings?.email || 'info@atlasfitness.com';
+                const companyGst = companySettings?.gstNumber || '29ABCDE1234F1Z5';
+                const candidatePaths = [
+                    companySettings?.companyLogo
+                        ? path.join(process.cwd(), companySettings.companyLogo.replace(/^\//, ''))
+                        : null,
+                    path.join(process.cwd(), 'assets', 'atlas-logo.png'),
+                ].filter(Boolean);
+                const logoPath = candidatePaths.find((p) => fs.existsSync(p));
+                const headerTop = 45;
+                const textX = logoPath ? 150 : 45;
+                if (logoPath) {
+                    try {
+                        doc.image(logoPath, 45, headerTop, { fit: [95, 38] });
+                    }
+                    catch {
+                    }
+                }
+                doc.fontSize(18).fillColor('#DC2626').text(companyName, textX, headerTop, { width: 250 });
                 doc.fontSize(9).fillColor('#475569');
                 if (companyAddress)
-                    doc.text(companyAddress);
+                    doc.text(companyAddress, textX, doc.y + 2, { width: 250 });
                 if (companyContact || companyEmail) {
-                    doc.text([companyContact, companyEmail].filter(Boolean).join(' | '));
+                    doc.text([companyContact, companyEmail].filter(Boolean).join(' | '), textX, doc.y + 1, {
+                        width: 250,
+                    });
                 }
                 if (companyGst)
-                    doc.text(`GSTIN: ${companyGst}`);
-                doc.moveUp(2.5);
-                doc.fontSize(18).fillColor('#0F172A').text('TAX INVOICE', { align: 'right' });
+                    doc.text(`GSTIN: ${companyGst}`, textX, doc.y + 1, { width: 250 });
+                const leftBottomY = doc.y;
+                const isTaxInvoice = Number(invoice.gstRate ?? 0) > 0;
                 doc
-                    .fontSize(10)
+                    .fontSize(16)
+                    .fillColor('#0F172A')
+                    .text(isTaxInvoice ? 'TAX INVOICE' : 'PAYMENT RECEIPT', 320, headerTop, {
+                    width: 230,
+                    align: 'right',
+                });
+                doc
+                    .fontSize(9.5)
                     .fillColor('#334155')
-                    .text(`Invoice #: ${invoice.invoiceNumber || invoice.id.slice(0, 8).toUpperCase()}`, {
+                    .text(`Invoice #: ${invoice.invoiceNumber || invoice.id.slice(0, 8).toUpperCase()}`, 320, doc.y + 2, {
+                    width: 230,
                     align: 'right',
                 })
-                    .text(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, {
+                    .text(`Date: ${new Date(invoice.createdAt).toLocaleDateString('en-IN')}`, 320, doc.y + 1, {
+                    width: 230,
                     align: 'right',
                 })
-                    .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, {
+                    .text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-IN')}`, 320, doc.y + 1, {
+                    width: 230,
                     align: 'right',
                 })
-                    .text(`Status: ${invoice.status}`, { align: 'right' });
-                doc.moveDown(1.5);
+                    .text(`Status: ${invoice.status}`, 320, doc.y + 1, { width: 230, align: 'right' });
+                doc.y = Math.max(leftBottomY, doc.y, headerTop + 55) + 12;
                 doc.moveTo(45, doc.y).lineTo(550, doc.y).strokeColor('#CBD5E1').stroke();
                 doc.moveDown(1);
                 const memberName = invoice.member
@@ -79,7 +142,7 @@ let PdfService = class PdfService {
                 const itemY = tableTop + 30;
                 const planTitle = invoice.plan?.name
                     ? `Membership Plan - ${invoice.plan.name}`
-                    : 'Fitness Membership / Services';
+                    : invoice.notes || 'Fitness Membership / Services';
                 doc.fillColor('#334155').fontSize(10).text(planTitle, 55, itemY);
                 doc.text(`₹${Number(invoice.amount || 0).toFixed(2)}`, 440, itemY, {
                     width: 100,
@@ -104,9 +167,14 @@ let PdfService = class PdfService {
                         : invoice.discount;
                     addSummaryRow(discountLabel, `-₹${discountAmt.toFixed(2)}`);
                 }
-                const gstRate = invoice.gstRate ?? 18;
-                addSummaryRow(`CGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.cgst || 0).toFixed(2)}`);
-                addSummaryRow(`SGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.sgst || 0).toFixed(2)}`);
+                const gstRate = invoice.gstRate ?? 5;
+                if (gstRate > 0) {
+                    addSummaryRow(`CGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.cgst || 0).toFixed(2)}`);
+                    addSummaryRow(`SGST (${(gstRate / 2).toFixed(1)}%):`, `₹${Number(invoice.sgst || 0).toFixed(2)}`);
+                }
+                else {
+                    addSummaryRow('GST:', '0% (No GST)');
+                }
                 if (invoice.lateFee > 0) {
                     addSummaryRow('Late Fee:', `₹${Number(invoice.lateFee).toFixed(2)}`);
                 }

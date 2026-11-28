@@ -10,13 +10,15 @@ exports.PtModule = void 0;
 const common_1 = require("@nestjs/common");
 const pt_controller_1 = require("./pt.controller");
 const pt_service_1 = require("./pt.service");
+const email_service_1 = require("../billing/email.service");
+const pdf_service_1 = require("../billing/pdf.service");
 let PtModule = class PtModule {
 };
 exports.PtModule = PtModule;
 exports.PtModule = PtModule = __decorate([
     (0, common_1.Module)({
         controllers: [pt_controller_1.PtController],
-        providers: [pt_service_1.PtService],
+        providers: [pt_service_1.PtService, email_service_1.EmailService, pdf_service_1.PdfService],
     })
 ], PtModule);
 //# sourceMappingURL=pt.module.js.map

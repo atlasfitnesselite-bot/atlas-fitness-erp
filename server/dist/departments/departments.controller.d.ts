@@ -11,10 +11,10 @@ export declare class DepartmentsController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        managerId: string | null;
         status: string;
         description: string | null;
         code: string;
-        managerId: string | null;
     }[]>;
     getDepartmentById(id: string): Promise<{
         employeeCount: number;
@@ -25,39 +25,39 @@ export declare class DepartmentsController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        managerId: string | null;
         status: string;
         description: string | null;
         code: string;
-        managerId: string | null;
     }>;
     createDepartment(data: CreateDepartmentDto): Promise<{
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        managerId: string | null;
         status: string;
         description: string | null;
         code: string;
-        managerId: string | null;
     }>;
     updateDepartment(id: string, data: CreateDepartmentDto): Promise<{
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        managerId: string | null;
         status: string;
         description: string | null;
         code: string;
-        managerId: string | null;
     }>;
     deleteDepartment(id: string): Promise<{
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        managerId: string | null;
         status: string;
         description: string | null;
         code: string;
-        managerId: string | null;
     }>;
 }

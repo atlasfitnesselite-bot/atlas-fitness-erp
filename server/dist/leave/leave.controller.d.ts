@@ -79,9 +79,8 @@ export declare class LeaveController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -99,6 +98,7 @@ export declare class LeaveController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         leaveType: {
@@ -119,8 +119,8 @@ export declare class LeaveController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        year: number;
         employeeId: string;
+        year: number;
         leaveTypeId: string;
         allocated: number;
         used: number;
@@ -131,8 +131,8 @@ export declare class LeaveController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        year: number;
         employeeId: string;
+        year: number;
         leaveTypeId: string;
         allocated: number;
         used: number;
@@ -145,9 +145,8 @@ export declare class LeaveController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -165,6 +164,7 @@ export declare class LeaveController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         leaveType: {
@@ -187,9 +187,8 @@ export declare class LeaveController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -207,13 +206,14 @@ export declare class LeaveController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             } | null;
         } & {
             id: string;
             createdAt: Date;
-            status: string;
             managerId: string | null;
+            status: string;
             leaveRequestId: string;
             comments: string | null;
         })[];
@@ -221,8 +221,8 @@ export declare class LeaveController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         reason: string;
         leaveTypeId: string;
         fromDate: Date;
@@ -234,8 +234,8 @@ export declare class LeaveController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         reason: string;
         leaveTypeId: string;
         fromDate: Date;
@@ -255,19 +255,19 @@ export declare class LeaveController {
             name: string;
             createdAt: Date;
             updatedAt: Date;
+            managerId: string | null;
             status: string;
             description: string | null;
             code: string;
-            managerId: string | null;
         } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         status: string;
         description: string | null;
-        departmentId: string | null;
         date: Date;
     })[]>;
     createHoliday(dto: CreateHolidayDto): Promise<{
@@ -275,9 +275,9 @@ export declare class LeaveController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         status: string;
         description: string | null;
-        departmentId: string | null;
         date: Date;
     }>;
     updateHoliday(id: string, dto: UpdateHolidayDto): Promise<{
@@ -285,9 +285,9 @@ export declare class LeaveController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         status: string;
         description: string | null;
-        departmentId: string | null;
         date: Date;
     }>;
     deleteHoliday(id: string): Promise<{
@@ -295,9 +295,9 @@ export declare class LeaveController {
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        departmentId: string | null;
         status: string;
         description: string | null;
-        departmentId: string | null;
         date: Date;
     }>;
     getDashboardStats(): Promise<{

@@ -22,9 +22,8 @@ export declare class DocumentsController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -42,6 +41,7 @@ export declare class DocumentsController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -63,8 +63,6 @@ export declare class DocumentsController {
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                branch: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -75,6 +73,8 @@ export declare class DocumentsController {
                 nationality: string | null;
                 mobile: string;
                 joiningDate: Date;
+                status: string;
+                branch: string | null;
                 gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;

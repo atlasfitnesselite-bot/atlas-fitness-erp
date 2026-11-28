@@ -28,10 +28,10 @@ export declare class ProfileService {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
             designation: {
                 id: string;

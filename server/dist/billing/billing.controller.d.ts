@@ -45,8 +45,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -57,6 +55,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -130,8 +130,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -142,6 +140,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -215,8 +215,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -227,6 +225,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -300,8 +300,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -312,6 +310,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -390,8 +390,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -402,6 +400,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -481,8 +481,6 @@ export declare class BillingController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -493,6 +491,8 @@ export declare class BillingController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -581,8 +581,6 @@ export declare class BillingController {
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                branch: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -593,6 +591,8 @@ export declare class BillingController {
                 nationality: string | null;
                 mobile: string;
                 joiningDate: Date;
+                status: string;
+                branch: string | null;
                 gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;
@@ -662,6 +662,21 @@ export declare class BillingController {
         };
     }>;
     deleteInvoice(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    verifyPin(req: {
+        user: {
+            id: string;
+        };
+    }, pin: string): Promise<{
+        valid: boolean;
+    }>;
+    changePin(req: {
+        user: {
+            id: string;
+        };
+    }, currentPin: string, newPin: string): Promise<{
         success: boolean;
         message: string;
     }>;

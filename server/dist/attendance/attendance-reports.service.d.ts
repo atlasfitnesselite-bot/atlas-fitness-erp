@@ -28,9 +28,8 @@ export declare class AttendanceReportsService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -48,6 +47,7 @@ export declare class AttendanceReportsService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -56,8 +56,8 @@ export declare class AttendanceReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -82,9 +82,8 @@ export declare class AttendanceReportsService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -102,6 +101,7 @@ export declare class AttendanceReportsService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -110,8 +110,8 @@ export declare class AttendanceReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -125,9 +125,9 @@ export declare class AttendanceReportsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        employeeId: string;
         status: string;
         hours: number;
-        employeeId: string;
         attendanceId: string;
         approvedById: string | null;
     })[]>;
@@ -137,9 +137,8 @@ export declare class AttendanceReportsService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -157,6 +156,7 @@ export declare class AttendanceReportsService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -165,8 +165,8 @@ export declare class AttendanceReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -193,8 +193,8 @@ export declare class AttendanceReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -207,8 +207,8 @@ export declare class AttendanceReportsService {
     } & {
         id: string;
         createdAt: Date;
-        device: string | null;
         employeeId: string;
+        device: string | null;
         type: string;
         timestamp: Date;
         method: string;

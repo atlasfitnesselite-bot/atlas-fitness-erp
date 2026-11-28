@@ -131,8 +131,8 @@ export declare class AttendanceService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -160,10 +160,10 @@ export declare class AttendanceService {
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    managerId: string | null;
                     status: string;
                     description: string | null;
                     code: string;
-                    managerId: string | null;
                 } | null;
                 designation: {
                     id: string;
@@ -179,9 +179,8 @@ export declare class AttendanceService {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -199,6 +198,7 @@ export declare class AttendanceService {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -207,8 +207,8 @@ export declare class AttendanceService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -226,8 +226,8 @@ export declare class AttendanceService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             type: string;
             reason: string;
             attendanceId: string | null;
@@ -240,8 +240,8 @@ export declare class AttendanceService {
         logs: {
             id: string;
             createdAt: Date;
-            device: string | null;
             employeeId: string;
+            device: string | null;
             type: string;
             timestamp: Date;
             method: string;
@@ -254,8 +254,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;
@@ -281,10 +281,10 @@ export declare class AttendanceService {
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    managerId: string | null;
                     status: string;
                     description: string | null;
                     code: string;
-                    managerId: string | null;
                 } | null;
                 designation: {
                     id: string;
@@ -300,9 +300,8 @@ export declare class AttendanceService {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -320,6 +319,7 @@ export declare class AttendanceService {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -328,8 +328,8 @@ export declare class AttendanceService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -347,19 +347,18 @@ export declare class AttendanceService {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
         } & {
             id: string;
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -377,6 +376,7 @@ export declare class AttendanceService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -385,8 +385,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;
@@ -403,10 +403,10 @@ export declare class AttendanceService {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
             designation: {
                 id: string;
@@ -422,9 +422,8 @@ export declare class AttendanceService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -442,6 +441,7 @@ export declare class AttendanceService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -450,8 +450,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;
@@ -472,8 +472,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;
@@ -487,8 +487,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;
@@ -502,8 +502,8 @@ export declare class AttendanceService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;

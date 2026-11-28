@@ -45,11 +45,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PtService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("../billing/email.service");
+const pdf_service_1 = require("../billing/pdf.service");
 const bcrypt = __importStar(require("bcrypt"));
 let PtService = class PtService {
     prisma;
-    constructor(prisma) {
+    emailService;
+    pdfService;
+    constructor(prisma, emailService, pdfService) {
         this.prisma = prisma;
+        this.emailService = emailService;
+        this.pdfService = pdfService;
     }
     async getSessions() {
         return this.prisma.pTSession.findMany({
@@ -267,48 +273,503 @@ let PtService = class PtService {
             sessionsThisMonth
         };
     }
-    async getTrainerDashboard(userId) {
-        const employee = await this.prisma.employee.findUnique({ where: { userId }, include: { payrollStructure: true } });
-        if (!employee)
-            throw new common_1.NotFoundException('Employee not found');
+    PT_SLOT_MINUTES = 85;
+    toMinutes(hhmm) {
+        const [h, m] = (hhmm || '00:00').split(':').map((n) => parseInt(n, 10) || 0);
+        return h * 60 + m;
+    }
+    addMinutesToTime(hhmm, mins = this.PT_SLOT_MINUTES) {
+        const total = (this.toMinutes(hhmm) + mins) % (24 * 60);
+        const h = Math.floor(total / 60);
+        const m = total % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+    slotsOverlap(aStart, aEnd, bStart, bEnd) {
+        const a1 = this.toMinutes(aStart);
+        const a2 = this.toMinutes(aEnd);
+        const b1 = this.toMinutes(bStart);
+        const b2 = this.toMinutes(bEnd);
+        return a1 < b2 && b1 < a2;
+    }
+    getDayRange(date = new Date()) {
+        const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+        const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+        return { startOfDay, endOfDay };
+    }
+    getMonthRange(monthStr) {
         const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        const sessions = await this.prisma.pTSession.findMany({
-            where: {
-                trainerId: employee.id,
-                date: {
-                    gte: startOfMonth,
-                    lte: endOfMonth,
-                }
-            },
+        let year = now.getFullYear();
+        let month = now.getMonth() + 1;
+        if (monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
+            const [y, m] = monthStr.split('-').map((n) => parseInt(n, 10));
+            if (y > 2000 && m >= 1 && m <= 12) {
+                year = y;
+                month = m;
+            }
+        }
+        const startOfMonth = new Date(year, month - 1, 1, 0, 0, 0, 0);
+        const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+        return {
+            year,
+            month,
+            monthKey: `${year}-${String(month).padStart(2, '0')}`,
+            startOfMonth,
+            endOfMonth,
+        };
+    }
+    async getTrainerDashboard(userId, query) {
+        const employee = query?.trainerId
+            ? await this.prisma.employee.findUnique({ where: { id: query.trainerId }, include: { payrollStructure: true } })
+            : await this.prisma.employee.findUnique({ where: { userId }, include: { payrollStructure: true } });
+        if (!employee)
+            throw new common_1.NotFoundException('Trainer employee profile not found');
+        const { startOfDay, endOfDay } = this.getDayRange();
+        const { year, month, monthKey, startOfMonth, endOfMonth } = this.getMonthRange(query?.month);
+        const [todayAttendance, activeAssignments, todaySessions, monthSessions, monthAttendance, commissions] = await Promise.all([
+            this.prisma.attendance.findFirst({
+                where: {
+                    employeeId: employee.id,
+                    date: { gte: startOfDay, lte: endOfDay },
+                },
+            }),
+            this.prisma.memberPTPackage.findMany({
+                where: { trainerId: employee.id, status: 'ACTIVE' },
+                include: { member: true, package: true },
+                orderBy: [{ preferredSlotStart: 'asc' }, { createdAt: 'desc' }],
+            }),
+            this.prisma.pTSession.findMany({
+                where: {
+                    trainerId: employee.id,
+                    date: { gte: startOfDay, lte: endOfDay },
+                    status: 'COMPLETED',
+                },
+            }),
+            this.prisma.pTSession.findMany({
+                where: {
+                    trainerId: employee.id,
+                    date: { gte: startOfMonth, lte: endOfMonth },
+                },
+                include: { member: true },
+                orderBy: { date: 'desc' },
+            }),
+            this.prisma.attendance.findMany({
+                where: {
+                    employeeId: employee.id,
+                    date: { gte: startOfMonth, lte: endOfMonth },
+                },
+                orderBy: { date: 'desc' },
+            }),
+            this.prisma.trainerCommission.findMany({
+                where: {
+                    trainerId: employee.id,
+                    month,
+                    year,
+                },
+            }),
+        ]);
+        const todaySessionByMember = new Map();
+        for (const s of todaySessions) {
+            if (!todaySessionByMember.has(s.memberId)) {
+                todaySessionByMember.set(s.memberId, s);
+            }
+        }
+        const assignedClients = activeAssignments.map((a) => {
+            const doneSession = todaySessionByMember.get(a.memberId);
+            const slotStart = a.preferredSlotStart || doneSession?.startTime || null;
+            const slotEnd = a.preferredSlotEnd || (slotStart ? this.addMinutesToTime(slotStart) : null);
+            return {
+                assignmentId: a.id,
+                memberId: a.memberId,
+                memberCode: a.member.memberId,
+                memberName: `${a.member.firstName} ${a.member.lastName}`.trim(),
+                mobile: a.member.mobile,
+                packageName: a.package.name,
+                sessionsTotal: a.sessionsTotal,
+                sessionsRemaining: a.sessionsRemaining,
+                slotStart,
+                slotEnd,
+                slotLocked: Boolean(a.slotLocked),
+                todayDone: Boolean(doneSession),
+                todaySessionId: doneSession?.id || null,
+            };
         });
-        const completedSessions = sessions.filter(s => s.status === 'COMPLETED');
-        const missedSessions = sessions.filter(s => s.status === 'CANCELLED' || s.status === 'NO_SHOW');
+        const completedSessions = monthSessions.filter((s) => s.status === 'COMPLETED');
+        const missedSessions = monthSessions.filter((s) => s.status === 'CANCELLED' || s.status === 'NO_SHOW');
         let revenueGenerated = 0;
+        const clientMap = new Map();
         for (const session of completedSessions) {
+            const dur = session.duration || this.PT_SLOT_MINUTES;
+            const existing = clientMap.get(session.memberId);
+            const dateStr = new Date(session.date).toISOString().split('T')[0];
+            if (existing) {
+                existing.sessionsCount += 1;
+                existing.totalMinutes += dur;
+                existing.dates.push(dateStr);
+            }
+            else {
+                clientMap.set(session.memberId, {
+                    memberId: session.memberId,
+                    memberCode: session.member?.memberId || '',
+                    memberName: session.member
+                        ? `${session.member.firstName} ${session.member.lastName}`.trim()
+                        : 'Unknown',
+                    sessionsCount: 1,
+                    totalMinutes: dur,
+                    dates: [dateStr],
+                });
+            }
             const activePackage = await this.prisma.memberPTPackage.findFirst({
                 where: { memberId: session.memberId },
                 include: { package: true },
                 orderBy: { createdAt: 'desc' },
             });
             if (activePackage && activePackage.sessionsTotal > 0) {
-                revenueGenerated += (activePackage.package.price / activePackage.sessionsTotal);
+                revenueGenerated += activePackage.package.price / activePackage.sessionsTotal;
             }
         }
-        const commissions = await this.prisma.trainerCommission.findMany({
-            where: {
-                trainerId: employee.id,
-                month: now.getMonth() + 1,
-                year: now.getFullYear(),
-            },
-        });
         const commissionEarned = commissions.reduce((sum, c) => sum + c.amount, 0);
+        const daysPresent = monthAttendance.filter((a) => a.clockIn !== null || a.status === 'PRESENT' || a.status === 'HALF_DAY').length;
+        const totalWorkedHours = Number(monthAttendance.reduce((sum, a) => sum + (a.workingHours || 0), 0).toFixed(2));
+        const totalTrainingMinutes = completedSessions.reduce((sum, s) => sum + (s.duration || this.PT_SLOT_MINUTES), 0);
         return {
+            trainer: {
+                id: employee.id,
+                employeeId: employee.employeeId,
+                name: `${employee.firstName} ${employee.lastName}`.trim(),
+                email: employee.email,
+            },
+            todayAttendance: todayAttendance
+                ? {
+                    id: todayAttendance.id,
+                    date: todayAttendance.date,
+                    clockIn: todayAttendance.clockIn,
+                    clockOut: todayAttendance.clockOut,
+                    workingHours: todayAttendance.workingHours,
+                    status: todayAttendance.status,
+                }
+                : null,
+            assignedClients,
             completedSessions: completedSessions.length,
             missedSessions: missedSessions.length,
             revenueGenerated,
             commissionEarned,
+            monthlyReport: {
+                month: monthKey,
+                daysPresent,
+                totalWorkedHours,
+                completedSessions: completedSessions.length,
+                totalTrainingMinutes,
+                totalTrainingHours: Number((totalTrainingMinutes / 60).toFixed(2)),
+                clientBreakdown: Array.from(clientMap.values()),
+                attendanceLog: monthAttendance.map((a) => ({
+                    id: a.id,
+                    date: a.date,
+                    clockIn: a.clockIn,
+                    clockOut: a.clockOut,
+                    workingHours: a.workingHours,
+                    status: a.status,
+                })),
+            },
+        };
+    }
+    async toggleTodayDone(userId, body) {
+        const employee = body.trainerId
+            ? await this.prisma.employee.findUnique({ where: { id: body.trainerId } })
+            : await this.prisma.employee.findUnique({ where: { userId } });
+        if (!employee)
+            throw new common_1.NotFoundException('Trainer employee profile not found');
+        const { startOfDay, endOfDay } = this.getDayRange();
+        const activePkg = await this.prisma.memberPTPackage.findFirst({
+            where: { memberId: body.memberId, trainerId: employee.id, status: 'ACTIVE' },
+            orderBy: { createdAt: 'desc' },
+        });
+        if (body.done) {
+            const existing = await this.prisma.pTSession.findFirst({
+                where: {
+                    trainerId: employee.id,
+                    memberId: body.memberId,
+                    date: { gte: startOfDay, lte: endOfDay },
+                    status: 'COMPLETED',
+                },
+            });
+            if (existing) {
+                return { done: true, alreadyDone: true, session: existing };
+            }
+            const now = new Date();
+            const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const startTime = body.startTime || activePkg?.preferredSlotStart || currentHHMM;
+            const endTime = this.addMinutesToTime(startTime, this.PT_SLOT_MINUTES);
+            const session = await this.prisma.pTSession.create({
+                data: {
+                    trainerId: employee.id,
+                    memberId: body.memberId,
+                    date: now,
+                    startTime,
+                    endTime,
+                    duration: this.PT_SLOT_MINUTES,
+                    status: 'COMPLETED',
+                    notes: body.notes || 'Daily PT session completed (1h 25m)',
+                },
+            });
+            if (activePkg && activePkg.sessionsRemaining > 0) {
+                const remaining = activePkg.sessionsRemaining - 1;
+                await this.prisma.memberPTPackage.update({
+                    where: { id: activePkg.id },
+                    data: {
+                        sessionsRemaining: remaining,
+                        status: remaining <= 0 ? 'EXHAUSTED' : 'ACTIVE',
+                    },
+                });
+            }
+            return { done: true, session };
+        }
+        else {
+            const existing = await this.prisma.pTSession.findFirst({
+                where: {
+                    trainerId: employee.id,
+                    memberId: body.memberId,
+                    date: { gte: startOfDay, lte: endOfDay },
+                    status: 'COMPLETED',
+                },
+                orderBy: { createdAt: 'desc' },
+            });
+            if (existing) {
+                await this.prisma.pTSession.delete({ where: { id: existing.id } });
+                const pkgToRestore = activePkg ||
+                    (await this.prisma.memberPTPackage.findFirst({
+                        where: { memberId: body.memberId, trainerId: employee.id },
+                        orderBy: { createdAt: 'desc' },
+                    }));
+                if (pkgToRestore && pkgToRestore.sessionsRemaining < pkgToRestore.sessionsTotal) {
+                    await this.prisma.memberPTPackage.update({
+                        where: { id: pkgToRestore.id },
+                        data: {
+                            sessionsRemaining: pkgToRestore.sessionsRemaining + 1,
+                            status: 'ACTIVE',
+                        },
+                    });
+                }
+            }
+            return { done: false };
+        }
+    }
+    async updateAssignmentSlot(assignmentId, preferredSlotStart, roles = []) {
+        const existing = await this.prisma.memberPTPackage.findUnique({ where: { id: assignmentId } });
+        if (!existing)
+            throw new common_1.NotFoundException('PT assignment not found');
+        const canOverrideLock = roles.includes('OWNER') || roles.includes('MANAGER') || roles.includes('RECEPTION');
+        if (existing.slotLocked && !canOverrideLock) {
+            throw new common_1.ForbiddenException('This time slot is locked by Admin and cannot be modified by Trainer');
+        }
+        if (!preferredSlotStart) {
+            return this.prisma.memberPTPackage.update({
+                where: { id: assignmentId },
+                data: { preferredSlotStart: null, preferredSlotEnd: null },
+            });
+        }
+        const preferredSlotEnd = this.addMinutesToTime(preferredSlotStart, this.PT_SLOT_MINUTES);
+        if (existing.trainerId) {
+            const siblings = await this.prisma.memberPTPackage.findMany({
+                where: {
+                    trainerId: existing.trainerId,
+                    status: 'ACTIVE',
+                    id: { not: assignmentId },
+                    preferredSlotStart: { not: null },
+                },
+                include: { member: true },
+            });
+            for (const s of siblings) {
+                const sEnd = s.preferredSlotEnd || this.addMinutesToTime(s.preferredSlotStart);
+                if (this.slotsOverlap(preferredSlotStart, preferredSlotEnd, s.preferredSlotStart, sEnd)) {
+                    throw new common_1.ConflictException(`Time slot ${preferredSlotStart} - ${preferredSlotEnd} overlaps with ${s.member.firstName} (${s.preferredSlotStart} - ${sEnd})`);
+                }
+            }
+        }
+        return this.prisma.memberPTPackage.update({
+            where: { id: assignmentId },
+            data: { preferredSlotStart, preferredSlotEnd },
+            include: { member: true, package: true, trainer: true },
+        });
+    }
+    async getMonthlyPtReport(userId, roles, query) {
+        const { year, month, monthKey, startOfMonth, endOfMonth } = this.getMonthRange(query.month);
+        const isOwnerOrManager = roles.includes('OWNER') || roles.includes('MANAGER');
+        let trainers = [];
+        if (!isOwnerOrManager) {
+            const emp = await this.prisma.employee.findUnique({ where: { userId } });
+            if (!emp)
+                throw new common_1.NotFoundException('Trainer employee profile not found');
+            trainers = [emp];
+        }
+        else if (query.trainerId) {
+            const emp = await this.prisma.employee.findUnique({ where: { id: query.trainerId } });
+            if (!emp)
+                throw new common_1.NotFoundException('Trainer not found');
+            trainers = [emp];
+        }
+        else {
+            trainers = await this.getTrainers();
+        }
+        const reports = await Promise.all(trainers.map(async (t) => {
+            const [activeClientsCount, sessions, attendance, commissions] = await Promise.all([
+                this.prisma.memberPTPackage.count({ where: { trainerId: t.id, status: 'ACTIVE' } }),
+                this.prisma.pTSession.findMany({
+                    where: {
+                        trainerId: t.id,
+                        status: 'COMPLETED',
+                        date: { gte: startOfMonth, lte: endOfMonth },
+                    },
+                    include: { member: true },
+                    orderBy: { date: 'desc' },
+                }),
+                this.prisma.attendance.findMany({
+                    where: {
+                        employeeId: t.id,
+                        date: { gte: startOfMonth, lte: endOfMonth },
+                    },
+                    orderBy: { date: 'desc' },
+                }),
+                this.prisma.trainerCommission.findMany({
+                    where: { trainerId: t.id, month, year },
+                }),
+            ]);
+            const clientMap = new Map();
+            for (const s of sessions) {
+                const dur = s.duration || this.PT_SLOT_MINUTES;
+                const dateStr = new Date(s.date).toISOString().split('T')[0];
+                const prev = clientMap.get(s.memberId);
+                if (prev) {
+                    prev.sessionsCount += 1;
+                    prev.totalMinutes += dur;
+                    prev.dates.push(dateStr);
+                }
+                else {
+                    clientMap.set(s.memberId, {
+                        memberId: s.memberId,
+                        memberCode: s.member?.memberId || '',
+                        memberName: s.member ? `${s.member.firstName} ${s.member.lastName}`.trim() : 'Unknown',
+                        sessionsCount: 1,
+                        totalMinutes: dur,
+                        dates: [dateStr],
+                    });
+                }
+            }
+            const daysPresent = attendance.filter((a) => a.clockIn !== null || a.status === 'PRESENT' || a.status === 'HALF_DAY').length;
+            const totalWorkedHours = Number(attendance.reduce((sum, a) => sum + (a.workingHours || 0), 0).toFixed(2));
+            const totalTrainingMinutes = sessions.reduce((sum, s) => sum + (s.duration || this.PT_SLOT_MINUTES), 0);
+            return {
+                trainerId: t.id,
+                employeeCode: t.employeeId,
+                trainerName: `${t.firstName} ${t.lastName}`.trim(),
+                email: t.email,
+                mobile: t.mobile,
+                assignedClientsCount: activeClientsCount,
+                daysPresent,
+                totalWorkedHours,
+                completedSessions: sessions.length,
+                totalTrainingMinutes,
+                totalTrainingHours: Number((totalTrainingMinutes / 60).toFixed(2)),
+                commissionEarned: commissions.reduce((sum, c) => sum + c.amount, 0),
+                clientBreakdown: Array.from(clientMap.values()),
+            };
+        }));
+        return { month: monthKey, reports };
+    }
+    async toggleSlotLock(assignmentId, slotLocked) {
+        const existing = await this.prisma.memberPTPackage.findUnique({ where: { id: assignmentId } });
+        if (!existing)
+            throw new common_1.NotFoundException('PT assignment not found');
+        return this.prisma.memberPTPackage.update({
+            where: { id: assignmentId },
+            data: { slotLocked: Boolean(slotLocked) },
+            include: { member: true, package: true, trainer: true },
+        });
+    }
+    async getAdminDailyActivities(query) {
+        const targetDate = query.date ? new Date(`${query.date}T12:00:00`) : new Date();
+        const { startOfDay, endOfDay } = this.getDayRange(targetDate);
+        const dateKey = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+        const trainers = query.trainerId
+            ? await this.prisma.employee.findMany({ where: { id: query.trainerId } })
+            : await this.getTrainers();
+        const trainerIds = trainers.map((t) => t.id);
+        const [attendances, sessions, activeAssignments] = await Promise.all([
+            this.prisma.attendance.findMany({
+                where: {
+                    employeeId: { in: trainerIds },
+                    date: { gte: startOfDay, lte: endOfDay },
+                },
+                include: { employee: true },
+            }),
+            this.prisma.pTSession.findMany({
+                where: {
+                    trainerId: { in: trainerIds },
+                    date: { gte: startOfDay, lte: endOfDay },
+                },
+                include: {
+                    trainer: true,
+                    member: true,
+                },
+                orderBy: [{ startTime: 'asc' }, { createdAt: 'desc' }],
+            }),
+            this.prisma.memberPTPackage.findMany({
+                where: {
+                    trainerId: { in: trainerIds },
+                    status: 'ACTIVE',
+                },
+            }),
+        ]);
+        const attByTrainer = new Map(attendances.map((a) => [a.employeeId, a]));
+        const clientsCountByTrainer = new Map();
+        for (const a of activeAssignments) {
+            if (a.trainerId) {
+                clientsCountByTrainer.set(a.trainerId, (clientsCountByTrainer.get(a.trainerId) || 0) + 1);
+            }
+        }
+        const sessionsByTrainer = new Map();
+        for (const s of sessions) {
+            if (s.status === 'COMPLETED') {
+                sessionsByTrainer.set(s.trainerId, (sessionsByTrainer.get(s.trainerId) || 0) + 1);
+            }
+        }
+        const trainerSummary = trainers.map((t) => {
+            const att = attByTrainer.get(t.id);
+            return {
+                trainerId: t.id,
+                employeeCode: t.employeeId,
+                trainerName: `${t.firstName} ${t.lastName}`.trim(),
+                mobile: t.mobile,
+                activeClients: clientsCountByTrainer.get(t.id) || 0,
+                sessionsCompletedToday: sessionsByTrainer.get(t.id) || 0,
+                clockIn: att?.clockIn || null,
+                clockOut: att?.clockOut || null,
+                workingHours: att?.workingHours || 0,
+                attendanceStatus: att?.clockOut
+                    ? 'CHECKED_OUT'
+                    : att?.clockIn
+                        ? 'CHECKED_IN'
+                        : 'NOT_CHECKED_IN',
+            };
+        });
+        const activityLogs = sessions.map((s) => ({
+            id: s.id,
+            date: s.date,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            duration: s.duration || this.PT_SLOT_MINUTES,
+            status: s.status,
+            notes: s.notes,
+            trainerId: s.trainerId,
+            trainerName: s.trainer ? `${s.trainer.firstName} ${s.trainer.lastName}`.trim() : 'Unknown',
+            trainerCode: s.trainer?.employeeId || '',
+            memberId: s.memberId,
+            memberName: s.member ? `${s.member.firstName} ${s.member.lastName}`.trim() : 'Unknown',
+            memberCode: s.member?.memberId || '',
+        }));
+        return {
+            date: dateKey,
+            trainerSummary,
+            activityLogs,
         };
     }
     async getMemberProfile(memberId) {
@@ -510,6 +971,7 @@ let PtService = class PtService {
                 lastName: true,
                 email: true,
                 mobile: true,
+                profilePicture: true,
                 status: true,
                 designation: { select: { name: true } },
                 payrollStructure: { select: { baseSalary: true, ptCommissionPercentage: true } },
@@ -526,6 +988,7 @@ let PtService = class PtService {
             lastName: emp.lastName,
             email: emp.email,
             mobile: emp.mobile,
+            profilePicture: emp.profilePicture,
             status: emp.status,
             designation: emp.designation?.name || 'Personal Trainer',
             baseSalary: emp.payrollStructure?.baseSalary || 0,
@@ -583,6 +1046,7 @@ let PtService = class PtService {
                         lastName: data.lastName || '-',
                         email: data.email,
                         mobile: data.mobile,
+                        profilePicture: data.profilePicture || null,
                         gender: data.gender || null,
                         status: 'ACTIVE',
                         joiningDate: new Date(),
@@ -611,6 +1075,7 @@ let PtService = class PtService {
                 email: data.email ?? existing.email,
                 mobile: data.mobile ?? existing.mobile,
                 status: data.status ?? existing.status,
+                profilePicture: data.profilePicture !== undefined ? data.profilePicture : existing.profilePicture,
             },
         });
         const ops = [];
@@ -693,6 +1158,26 @@ let PtService = class PtService {
         let packageId = data.packageId;
         let sessionsTotal = Number(data.sessionsTotal || 12);
         let fee = Number(data.fee || 0);
+        let preferredSlotStart = data.preferredSlotStart || null;
+        let preferredSlotEnd = preferredSlotStart
+            ? this.addMinutesToTime(preferredSlotStart, this.PT_SLOT_MINUTES)
+            : null;
+        if (preferredSlotStart && preferredSlotEnd) {
+            const existingSlots = await this.prisma.memberPTPackage.findMany({
+                where: {
+                    trainerId: data.trainerId,
+                    status: 'ACTIVE',
+                    preferredSlotStart: { not: null },
+                },
+                include: { member: true },
+            });
+            for (const s of existingSlots) {
+                const sEnd = s.preferredSlotEnd || this.addMinutesToTime(s.preferredSlotStart);
+                if (this.slotsOverlap(preferredSlotStart, preferredSlotEnd, s.preferredSlotStart, sEnd)) {
+                    throw new common_1.ConflictException(`Time slot ${preferredSlotStart} - ${preferredSlotEnd} overlaps with ${s.member.firstName} (${s.preferredSlotStart} - ${sEnd})`);
+                }
+            }
+        }
         if (packageId) {
             const pkg = await this.prisma.pTPackage.findUnique({ where: { id: packageId } });
             if (!pkg)
@@ -723,6 +1208,9 @@ let PtService = class PtService {
                 packageId,
                 sessionsTotal,
                 sessionsRemaining: sessionsTotal,
+                preferredSlotStart,
+                preferredSlotEnd,
+                slotLocked: Boolean(data.slotLocked),
                 startDate: start,
                 expiryDate: expiry,
                 status: 'ACTIVE',
@@ -733,6 +1221,7 @@ let PtService = class PtService {
                 trainer: true,
             },
         });
+        let createdPtInvoice = null;
         if (data.createInvoice !== false && fee > 0) {
             const year = new Date().getFullYear();
             const prefix = `INV-${year}-`;
@@ -743,29 +1232,32 @@ let PtService = class PtService {
             });
             const seq = (last?.invoiceNumber ? parseInt(last.invoiceNumber.split('-')[2] || '0', 10) : 0) + 1;
             const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
-            const gstAmount = (fee * 18) / 100;
-            await this.prisma.invoice.create({
+            createdPtInvoice = await this.prisma.invoice.create({
                 data: {
                     invoiceNumber,
                     memberId: data.memberId,
                     amount: fee,
-                    gstRate: 18,
-                    gstAmount,
-                    cgst: gstAmount / 2,
-                    sgst: gstAmount / 2,
-                    totalAmount: fee + gstAmount,
+                    gstRate: 0,
+                    gstAmount: 0,
+                    cgst: 0,
+                    sgst: 0,
+                    totalAmount: fee,
                     paidAmount: 0,
                     dueDate: start,
                     status: 'PENDING',
                     notes: `Personal Training: ${assignment.package.name} (${assignment.trainer?.firstName || 'Trainer'})`,
                 },
+                include: { member: true, plan: true },
             });
         }
         const payroll = await this.prisma.payrollStructure.findUnique({
             where: { employeeId: data.trainerId },
         });
-        if (payroll && payroll.ptCommissionPercentage > 0 && fee > 0) {
-            const commissionAmt = (fee * payroll.ptCommissionPercentage) / 100;
+        const commissionPct = data.commissionPercentage !== undefined && data.commissionPercentage !== null
+            ? Number(data.commissionPercentage)
+            : payroll?.ptCommissionPercentage || 0;
+        if (commissionPct > 0 && fee > 0) {
+            const commissionAmt = (fee * commissionPct) / 100;
             const now = new Date();
             await this.prisma.trainerCommission.create({
                 data: {
@@ -778,12 +1270,40 @@ let PtService = class PtService {
                 },
             });
         }
-        return assignment;
+        const emailResult = await this.emailService.sendPtAssignmentEmail({
+            memberName: `${assignment.member.firstName} ${assignment.member.lastName !== '-' ? assignment.member.lastName : ''}`.trim(),
+            memberEmail: assignment.member.email,
+            memberCode: assignment.member.memberId,
+            trainerName: assignment.trainer
+                ? `${assignment.trainer.firstName} ${assignment.trainer.lastName !== '-' ? assignment.trainer.lastName : ''}`.trim()
+                : 'Personal Trainer',
+            trainerEmail: assignment.trainer?.email,
+            trainerMobile: assignment.trainer?.mobile,
+            packageName: assignment.package.name,
+            sessionsTotal,
+            slotStart: preferredSlotStart,
+            slotEnd: preferredSlotEnd,
+            slotLocked: Boolean(data.slotLocked),
+            startDate: start,
+            expiryDate: expiry,
+        });
+        if (createdPtInvoice && createdPtInvoice.member?.email) {
+            this.prisma.companySettings
+                .findFirst()
+                .then((company) => this.pdfService.generateInvoicePdf(createdPtInvoice, company))
+                .then((buf) => this.emailService.sendInvoiceEmail(createdPtInvoice, buf, `${createdPtInvoice.invoiceNumber || 'PT-Invoice'}.pdf`))
+                .catch((err) => {
+                console.warn('Auto PT invoice PDF email skipped/failed:', err?.message || err);
+            });
+        }
+        return { ...assignment, emailResult };
     }
 };
 exports.PtService = PtService;
 exports.PtService = PtService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService,
+        pdf_service_1.PdfService])
 ], PtService);
 //# sourceMappingURL=pt.service.js.map

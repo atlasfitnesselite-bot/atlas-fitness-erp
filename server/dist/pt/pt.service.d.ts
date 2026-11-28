@@ -1,8 +1,12 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../billing/email.service';
+import { PdfService } from '../billing/pdf.service';
 import { BookSessionDto, CreateFitnessPlanDto, CreateMeasurementDto, CreateCommissionDto, CompleteSessionDto } from './dto/pt.dto';
 export declare class PtService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly emailService;
+    private readonly pdfService;
+    constructor(prisma: PrismaService, emailService: EmailService, pdfService: PdfService);
     getSessions(): Promise<({
         member: {
             id: string;
@@ -41,8 +45,6 @@ export declare class PtService {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -53,6 +55,8 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -105,8 +109,6 @@ export declare class PtService {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -117,6 +119,8 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -134,9 +138,8 @@ export declare class PtService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -154,6 +157,7 @@ export declare class PtService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -273,11 +277,282 @@ export declare class PtService {
         performanceScore: number;
         sessionsThisMonth: number;
     }>;
-    getTrainerDashboard(userId: string): Promise<{
+    private readonly PT_SLOT_MINUTES;
+    private toMinutes;
+    private addMinutesToTime;
+    private slotsOverlap;
+    private getDayRange;
+    private getMonthRange;
+    getTrainerDashboard(userId: string, query?: {
+        trainerId?: string;
+        month?: string;
+    }): Promise<{
+        trainer: {
+            id: string;
+            employeeId: string;
+            name: string;
+            email: string;
+        };
+        todayAttendance: {
+            id: string;
+            date: Date;
+            clockIn: Date | null;
+            clockOut: Date | null;
+            workingHours: number;
+            status: string;
+        } | null;
+        assignedClients: {
+            assignmentId: string;
+            memberId: string;
+            memberCode: string;
+            memberName: string;
+            mobile: string;
+            packageName: string;
+            sessionsTotal: number;
+            sessionsRemaining: number;
+            slotStart: string | null;
+            slotEnd: string | null;
+            slotLocked: boolean;
+            todayDone: boolean;
+            todaySessionId: string | null;
+        }[];
         completedSessions: number;
         missedSessions: number;
         revenueGenerated: number;
         commissionEarned: number;
+        monthlyReport: {
+            month: string;
+            daysPresent: number;
+            totalWorkedHours: number;
+            completedSessions: number;
+            totalTrainingMinutes: number;
+            totalTrainingHours: number;
+            clientBreakdown: {
+                memberId: string;
+                memberCode: string;
+                memberName: string;
+                sessionsCount: number;
+                totalMinutes: number;
+                dates: string[];
+            }[];
+            attendanceLog: {
+                id: string;
+                date: Date;
+                clockIn: Date | null;
+                clockOut: Date | null;
+                workingHours: number;
+                status: string;
+            }[];
+        };
+    }>;
+    toggleTodayDone(userId: string, body: {
+        memberId: string;
+        done: boolean;
+        startTime?: string;
+        notes?: string;
+        trainerId?: string;
+    }): Promise<{
+        done: boolean;
+        alreadyDone: boolean;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            notes: string | null;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number | null;
+            memberId: string;
+            trainerId: string;
+            exercisesCompleted: string | null;
+            intensity: string | null;
+            clientFeedback: string | null;
+            signatureUrl: string | null;
+        };
+    } | {
+        done: boolean;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            notes: string | null;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number | null;
+            memberId: string;
+            trainerId: string;
+            exercisesCompleted: string | null;
+            intensity: string | null;
+            clientFeedback: string | null;
+            signatureUrl: string | null;
+        };
+        alreadyDone?: undefined;
+    } | {
+        done: boolean;
+        alreadyDone?: undefined;
+        session?: undefined;
+    }>;
+    updateAssignmentSlot(assignmentId: string, preferredSlotStart: string | null, roles?: string[]): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
+        expiryDate: Date;
+    }>;
+    getMonthlyPtReport(userId: string, roles: string[], query: {
+        month?: string;
+        trainerId?: string;
+    }): Promise<{
+        month: string;
+        reports: {
+            trainerId: any;
+            employeeCode: any;
+            trainerName: string;
+            email: any;
+            mobile: any;
+            assignedClientsCount: number;
+            daysPresent: number;
+            totalWorkedHours: number;
+            completedSessions: number;
+            totalTrainingMinutes: number;
+            totalTrainingHours: number;
+            commissionEarned: number;
+            clientBreakdown: {
+                memberId: string;
+                memberCode: string;
+                memberName: string;
+                sessionsCount: number;
+                totalMinutes: number;
+                dates: string[];
+            }[];
+        }[];
+    }>;
+    toggleSlotLock(assignmentId: string, slotLocked: boolean): Promise<{
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            status: string;
+            branch: string | null;
+            gstNumber: string | null;
+            aadhaarNumber: string | null;
+            panNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
+        };
+        trainer: {
+            id: string;
+            email: string;
+            createdAt: Date;
+            updatedAt: Date;
+            employeeId: string;
+            userId: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string | null;
+            departmentId: string | null;
+            designationId: string | null;
+            employmentTypeId: string | null;
+            joiningDate: Date;
+            probationEnd: Date | null;
+            confirmationDate: Date | null;
+            managerId: string | null;
+            workLocation: string | null;
+            status: string;
+            hashedPin: string | null;
+        } | null;
+        package: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            price: number;
+            numberOfSessions: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
+        expiryDate: Date;
+    }>;
+    getAdminDailyActivities(query: {
+        date?: string;
+        trainerId?: string;
+    }): Promise<{
+        date: string;
+        trainerSummary: {
+            trainerId: string;
+            employeeCode: string;
+            trainerName: string;
+            mobile: string | null;
+            activeClients: number;
+            sessionsCompletedToday: number;
+            clockIn: Date | null;
+            clockOut: Date | null;
+            workingHours: number;
+            attendanceStatus: string;
+        }[];
+        activityLogs: {
+            id: string;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number;
+            status: string;
+            notes: string | null;
+            trainerId: string;
+            trainerName: string;
+            trainerCode: string;
+            memberId: string;
+            memberName: string;
+            memberCode: string;
+        }[];
     }>;
     getMemberProfile(memberId: string): Promise<{
         member: {
@@ -298,8 +573,6 @@ export declare class PtService {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -310,6 +583,8 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -328,9 +603,8 @@ export declare class PtService {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -348,6 +622,7 @@ export declare class PtService {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             } | null;
             package: {
@@ -369,6 +644,9 @@ export declare class PtService {
             packageId: string;
             sessionsTotal: number;
             sessionsRemaining: number;
+            preferredSlotStart: string | null;
+            preferredSlotEnd: string | null;
+            slotLocked: boolean;
             expiryDate: Date;
         })[];
         fitnessPlans: ({
@@ -377,9 +655,8 @@ export declare class PtService {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -397,6 +674,7 @@ export declare class PtService {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -446,9 +724,8 @@ export declare class PtService {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -466,6 +743,7 @@ export declare class PtService {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -644,6 +922,7 @@ export declare class PtService {
         lastName: string;
         email: string;
         mobile: string | null;
+        profilePicture: string | null;
         status: string;
         designation: string;
         baseSalary: number;
@@ -663,14 +942,14 @@ export declare class PtService {
         baseSalary?: number;
         ptCommissionPercentage?: number;
         gender?: string;
+        profilePicture?: string;
     }): Promise<{
         id: string;
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -688,6 +967,7 @@ export declare class PtService {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     } | null>;
     updateTrainer(id: string, data: {
@@ -698,14 +978,14 @@ export declare class PtService {
         status?: string;
         baseSalary?: number;
         ptCommissionPercentage?: number;
+        profilePicture?: string;
     }): Promise<{
         id: string;
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -723,6 +1003,7 @@ export declare class PtService {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
     deleteTrainer(id: string): Promise<{
@@ -794,6 +1075,9 @@ export declare class PtService {
         packageId: string;
         sessionsTotal: number;
         sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
         expiryDate: Date;
     })[]>;
     assignTrainerToMember(data: {
@@ -805,14 +1089,19 @@ export declare class PtService {
         startDate?: string;
         expiryDate?: string;
         createInvoice?: boolean;
+        preferredSlotStart?: string;
+        slotLocked?: boolean;
+        commissionPercentage?: number;
     }): Promise<{
+        emailResult: {
+            sent: boolean;
+            reason?: string;
+        };
         member: {
             id: string;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -823,6 +1112,8 @@ export declare class PtService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -840,9 +1131,8 @@ export declare class PtService {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -860,6 +1150,7 @@ export declare class PtService {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         } | null;
         package: {
@@ -870,7 +1161,6 @@ export declare class PtService {
             price: number;
             numberOfSessions: number;
         };
-    } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -881,6 +1171,9 @@ export declare class PtService {
         packageId: string;
         sessionsTotal: number;
         sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
         expiryDate: Date;
     }>;
 }

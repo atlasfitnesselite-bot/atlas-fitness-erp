@@ -28,6 +28,7 @@ export declare class AuthController {
             id: string;
             email: string;
             name: string | undefined;
+            avatar: string | null;
             roles: string[];
         };
     }>;

@@ -47,6 +47,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BillingService = void 0;
 const common_1 = require("@nestjs/common");
+const bcrypt = __importStar(require("bcrypt"));
 const prisma_service_1 = require("../prisma/prisma.service");
 const pdf_service_1 = require("./pdf.service");
 const email_service_1 = require("./email.service");
@@ -63,7 +64,7 @@ let BillingService = class BillingService {
     }
     calculateInvoiceTotals(params) {
         const amount = Number(params.amount || 0);
-        const gstRate = params.gstRate ?? 18;
+        const gstRate = params.gstRate ?? 5;
         const discount = Number(params.discount || 0);
         const lateFee = Number(params.lateFee || 0);
         let discountVal = 0;
@@ -108,7 +109,7 @@ let BillingService = class BillingService {
             paidAmount = totals.totalAmount;
         }
         const invoiceNumber = await this.generateInvoiceNumber();
-        return this.prisma.invoice.create({
+        const invoice = await this.prisma.invoice.create({
             data: {
                 invoiceNumber,
                 memberId: data.memberId,
@@ -135,6 +136,27 @@ let BillingService = class BillingService {
             },
             include: { member: true, subscription: true, plan: true },
         });
+        if (data.trainerId && Number(data.commissionPercentage || 0) > 0 && totals.totalAmount > 0) {
+            const pct = Number(data.commissionPercentage);
+            const commissionAmt = (totals.totalAmount * pct) / 100;
+            const now = new Date();
+            await this.prisma.trainerCommission.create({
+                data: {
+                    trainerId: data.trainerId,
+                    sourceId: invoice.id,
+                    amount: commissionAmt,
+                    status: 'PENDING',
+                    month: now.getMonth() + 1,
+                    year: now.getFullYear(),
+                },
+            });
+        }
+        if (invoice.member?.email) {
+            this.sendInvoiceEmail(invoice.id).catch((err) => {
+                console.warn('Auto invoice email skipped/failed:', err?.message || err);
+            });
+        }
+        return invoice;
     }
     async getInvoices() {
         return this.prisma.invoice.findMany({
@@ -212,7 +234,7 @@ let BillingService = class BillingService {
             : remaining;
         const newPaidAmount = (invoice.paidAmount || 0) + paymentAmt;
         const newStatus = newPaidAmount >= effectiveTotal - 0.01 ? 'PAID' : 'PARTIAL';
-        return this.prisma.invoice.update({
+        const updated = await this.prisma.invoice.update({
             where: { id },
             data: {
                 status: newStatus,
@@ -225,6 +247,12 @@ let BillingService = class BillingService {
             },
             include: { member: true, subscription: true, plan: true },
         });
+        if (updated.member?.email) {
+            this.sendInvoiceEmail(updated.id).catch((err) => {
+                console.warn('Auto payment receipt email skipped/failed:', err?.message || err);
+            });
+        }
+        return updated;
     }
     async deleteInvoice(id) {
         await this.getInvoiceById(id);
@@ -328,6 +356,36 @@ let BillingService = class BillingService {
         const invoice = await this.getInvoiceById(id);
         const { buffer, filename } = await this.generatePdfBuffer(id);
         return this.emailService.sendInvoiceEmail(invoice, buffer, filename);
+    }
+    async verifyRevenuePin(userId, pin) {
+        if (!pin)
+            throw new common_1.BadRequestException('PIN is required');
+        const emp = await this.prisma.employee.findUnique({ where: { userId } });
+        if (emp?.hashedPin) {
+            const match = await bcrypt.compare(String(pin), emp.hashedPin);
+            if (!match)
+                throw new common_1.UnauthorizedException('Incorrect PIN');
+            return { valid: true };
+        }
+        if (String(pin) !== '0000') {
+            throw new common_1.UnauthorizedException('Incorrect PIN');
+        }
+        return { valid: true };
+    }
+    async changeRevenuePin(userId, currentPin, newPin) {
+        if (!newPin || String(newPin).length < 4) {
+            throw new common_1.BadRequestException('New PIN must be at least 4 digits');
+        }
+        await this.verifyRevenuePin(userId, currentPin);
+        const emp = await this.prisma.employee.findUnique({ where: { userId } });
+        if (!emp)
+            throw new common_1.NotFoundException('Employee profile not found');
+        const hashedPin = await bcrypt.hash(String(newPin), 10);
+        await this.prisma.employee.update({
+            where: { id: emp.id },
+            data: { hashedPin },
+        });
+        return { success: true, message: 'PIN updated successfully' };
     }
 };
 exports.BillingService = BillingService;

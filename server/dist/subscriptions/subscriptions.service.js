@@ -21,7 +21,9 @@ let SubscriptionsService = class SubscriptionsService {
         return this.prisma.membershipPlan.create({ data });
     }
     async getPlans() {
-        return this.prisma.membershipPlan.findMany();
+        return this.prisma.membershipPlan.findMany({
+            orderBy: [{ durationInMonths: 'asc' }, { price: 'asc' }],
+        });
     }
     async getPlanById(id) {
         const plan = await this.prisma.membershipPlan.findUnique({ where: { id } });

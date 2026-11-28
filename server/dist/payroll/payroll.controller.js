@@ -45,6 +45,9 @@ let PayrollController = class PayrollController {
     async updateSlip(id, body) {
         return this.payrollService.updateSlip(id, body.bonuses || 0, body.otherPenalties || 0);
     }
+    async getMySlips(req, year) {
+        return this.payrollService.getMySlips(req.user.id, year ? parseInt(year, 10) : undefined);
+    }
     async getSlips(employeeId, year) {
         return this.payrollService.getSlips(employeeId, year ? parseInt(year, 10) : undefined);
     }
@@ -110,6 +113,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], PayrollController.prototype, "updateSlip", null);
+__decorate([
+    (0, common_1.Get)('slips/me'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('year')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], PayrollController.prototype, "getMySlips", null);
 __decorate([
     (0, common_1.Get)('slips/employee/:employeeId'),
     __param(0, (0, common_1.Param)('employeeId')),

@@ -75,8 +75,6 @@ export declare class PtController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -87,6 +85,8 @@ export declare class PtController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -104,9 +104,8 @@ export declare class PtController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -124,6 +123,7 @@ export declare class PtController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -251,11 +251,149 @@ export declare class PtController {
         user?: {
             id?: string;
         };
-    }): Promise<{
+    }, trainerId?: string, month?: string): Promise<{
+        trainer: {
+            id: string;
+            employeeId: string;
+            name: string;
+            email: string;
+        };
+        todayAttendance: {
+            id: string;
+            date: Date;
+            clockIn: Date | null;
+            clockOut: Date | null;
+            workingHours: number;
+            status: string;
+        } | null;
+        assignedClients: {
+            assignmentId: string;
+            memberId: string;
+            memberCode: string;
+            memberName: string;
+            mobile: string;
+            packageName: string;
+            sessionsTotal: number;
+            sessionsRemaining: number;
+            slotStart: string | null;
+            slotEnd: string | null;
+            slotLocked: boolean;
+            todayDone: boolean;
+            todaySessionId: string | null;
+        }[];
         completedSessions: number;
         missedSessions: number;
         revenueGenerated: number;
         commissionEarned: number;
+        monthlyReport: {
+            month: string;
+            daysPresent: number;
+            totalWorkedHours: number;
+            completedSessions: number;
+            totalTrainingMinutes: number;
+            totalTrainingHours: number;
+            clientBreakdown: {
+                memberId: string;
+                memberCode: string;
+                memberName: string;
+                sessionsCount: number;
+                totalMinutes: number;
+                dates: string[];
+            }[];
+            attendanceLog: {
+                id: string;
+                date: Date;
+                clockIn: Date | null;
+                clockOut: Date | null;
+                workingHours: number;
+                status: string;
+            }[];
+        };
+    }>;
+    toggleTodayDone(req: {
+        user?: {
+            id?: string;
+        };
+    }, body: {
+        memberId: string;
+        done: boolean;
+        startTime?: string;
+        notes?: string;
+        trainerId?: string;
+    }): Promise<{
+        done: boolean;
+        alreadyDone: boolean;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            notes: string | null;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number | null;
+            memberId: string;
+            trainerId: string;
+            exercisesCompleted: string | null;
+            intensity: string | null;
+            clientFeedback: string | null;
+            signatureUrl: string | null;
+        };
+    } | {
+        done: boolean;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            notes: string | null;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number | null;
+            memberId: string;
+            trainerId: string;
+            exercisesCompleted: string | null;
+            intensity: string | null;
+            clientFeedback: string | null;
+            signatureUrl: string | null;
+        };
+        alreadyDone?: undefined;
+    } | {
+        done: boolean;
+        alreadyDone?: undefined;
+        session?: undefined;
+    }>;
+    getMonthlyPtReport(req: {
+        user?: {
+            id?: string;
+            roles?: string[];
+        };
+    }, month?: string, trainerId?: string): Promise<{
+        month: string;
+        reports: {
+            trainerId: any;
+            employeeCode: any;
+            trainerName: string;
+            email: any;
+            mobile: any;
+            assignedClientsCount: number;
+            daysPresent: number;
+            totalWorkedHours: number;
+            completedSessions: number;
+            totalTrainingMinutes: number;
+            totalTrainingHours: number;
+            commissionEarned: number;
+            clientBreakdown: {
+                memberId: string;
+                memberCode: string;
+                memberName: string;
+                sessionsCount: number;
+                totalMinutes: number;
+                dates: string[];
+            }[];
+        }[];
     }>;
     getMemberProfile(memberId: string): Promise<{
         member: {
@@ -276,8 +414,6 @@ export declare class PtController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -288,6 +424,8 @@ export declare class PtController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -306,9 +444,8 @@ export declare class PtController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -326,6 +463,7 @@ export declare class PtController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             } | null;
             package: {
@@ -347,6 +485,9 @@ export declare class PtController {
             packageId: string;
             sessionsTotal: number;
             sessionsRemaining: number;
+            preferredSlotStart: string | null;
+            preferredSlotEnd: string | null;
+            slotLocked: boolean;
             expiryDate: Date;
         })[];
         fitnessPlans: ({
@@ -355,9 +496,8 @@ export declare class PtController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -375,6 +515,7 @@ export declare class PtController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -424,9 +565,8 @@ export declare class PtController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -444,6 +584,7 @@ export declare class PtController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -622,6 +763,7 @@ export declare class PtController {
         lastName: string;
         email: string;
         mobile: string | null;
+        profilePicture: string | null;
         status: string;
         designation: string;
         baseSalary: number;
@@ -637,9 +779,8 @@ export declare class PtController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -657,6 +798,7 @@ export declare class PtController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     } | null>;
     updateTrainer(id: string, body: any): Promise<{
@@ -664,9 +806,8 @@ export declare class PtController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -684,6 +825,7 @@ export declare class PtController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
     deleteTrainer(id: string): Promise<{
@@ -751,16 +893,21 @@ export declare class PtController {
         packageId: string;
         sessionsTotal: number;
         sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
         expiryDate: Date;
     })[]>;
     assignTrainerToMember(body: any): Promise<{
+        emailResult: {
+            sent: boolean;
+            reason?: string;
+        };
         member: {
             id: string;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -771,6 +918,8 @@ export declare class PtController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -788,9 +937,8 @@ export declare class PtController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -808,6 +956,107 @@ export declare class PtController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
+            hashedPin: string | null;
+        } | null;
+        package: {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            price: number;
+            numberOfSessions: number;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
+        expiryDate: Date;
+    }>;
+    updateAssignmentSlot(req: {
+        user?: {
+            roles?: string[];
+        };
+    }, id: string, preferredSlotStart: string | null): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: string;
+        startDate: Date;
+        memberId: string;
+        trainerId: string | null;
+        packageId: string;
+        sessionsTotal: number;
+        sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
+        expiryDate: Date;
+    }>;
+    toggleSlotLock(id: string, slotLocked: boolean): Promise<{
+        member: {
+            id: string;
+            email: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string;
+            joiningDate: Date;
+            status: string;
+            branch: string | null;
+            gstNumber: string | null;
+            aadhaarNumber: string | null;
+            panNumber: string | null;
+            memberId: string;
+            accessCardId: string | null;
+            occupation: string | null;
+            altMobile: string | null;
+            passportNumber: string | null;
+            height: string | null;
+            weight: string | null;
+            workoutType: string | null;
+        };
+        trainer: {
+            id: string;
+            email: string;
+            createdAt: Date;
+            updatedAt: Date;
+            employeeId: string;
+            userId: string | null;
+            firstName: string;
+            lastName: string;
+            profilePicture: string | null;
+            gender: string | null;
+            dateOfBirth: Date | null;
+            bloodGroup: string | null;
+            maritalStatus: string | null;
+            nationality: string | null;
+            mobile: string | null;
+            departmentId: string | null;
+            designationId: string | null;
+            employmentTypeId: string | null;
+            joiningDate: Date;
+            probationEnd: Date | null;
+            confirmationDate: Date | null;
+            managerId: string | null;
+            workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         } | null;
         package: {
@@ -829,6 +1078,39 @@ export declare class PtController {
         packageId: string;
         sessionsTotal: number;
         sessionsRemaining: number;
+        preferredSlotStart: string | null;
+        preferredSlotEnd: string | null;
+        slotLocked: boolean;
         expiryDate: Date;
+    }>;
+    getAdminDailyActivities(date?: string, trainerId?: string): Promise<{
+        date: string;
+        trainerSummary: {
+            trainerId: string;
+            employeeCode: string;
+            trainerName: string;
+            mobile: string | null;
+            activeClients: number;
+            sessionsCompletedToday: number;
+            clockIn: Date | null;
+            clockOut: Date | null;
+            workingHours: number;
+            attendanceStatus: string;
+        }[];
+        activityLogs: {
+            id: string;
+            date: Date;
+            startTime: string;
+            endTime: string;
+            duration: number;
+            status: string;
+            notes: string | null;
+            trainerId: string;
+            trainerName: string;
+            trainerCode: string;
+            memberId: string;
+            memberName: string;
+            memberCode: string;
+        }[];
     }>;
 }

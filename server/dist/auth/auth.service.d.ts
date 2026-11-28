@@ -4,6 +4,9 @@ interface LoginUser {
     id: string;
     email: string;
     name?: string;
+    employee?: {
+        profilePicture?: string | null;
+    } | null;
     userRoles?: {
         role: {
             name: string;
@@ -38,6 +41,7 @@ export declare class AuthService {
             id: string;
             email: string;
             name: string | undefined;
+            avatar: string | null;
             roles: string[];
         };
     };

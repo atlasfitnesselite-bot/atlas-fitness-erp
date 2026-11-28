@@ -14,10 +14,10 @@ export declare class EmployeesController {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
             designation: {
                 id: string;
@@ -47,9 +47,8 @@ export declare class EmployeesController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -67,6 +66,7 @@ export declare class EmployeesController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         })[];
     }>;
@@ -89,9 +89,8 @@ export declare class EmployeesController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -109,6 +108,7 @@ export declare class EmployeesController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
     updateEmployee(id: string, data: CreateEmployeeDto): Promise<{
@@ -116,9 +116,8 @@ export declare class EmployeesController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -136,6 +135,7 @@ export declare class EmployeesController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
     deleteEmployee(id: string): Promise<{
@@ -143,9 +143,8 @@ export declare class EmployeesController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -163,6 +162,7 @@ export declare class EmployeesController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
     bulkDelete(body: {
@@ -195,8 +195,8 @@ export declare class EmployeesController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -234,8 +234,8 @@ export declare class EmployeesController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        year: number;
         employeeId: string;
+        year: number;
         leaveTypeId: string;
         allocated: number;
         used: number;
@@ -338,10 +338,10 @@ export declare class EmployeesController {
             name: string;
             createdAt: Date;
             updatedAt: Date;
+            managerId: string | null;
             status: string;
             description: string | null;
             code: string;
-            managerId: string | null;
         } | null;
         designation: {
             id: string;
@@ -433,8 +433,8 @@ export declare class EmployeesController {
         timeline: {
             id: string;
             createdAt: Date;
-            description: string;
             employeeId: string;
+            description: string;
             event: string;
         }[];
         govDocs: {
@@ -465,9 +465,8 @@ export declare class EmployeesController {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -485,6 +484,7 @@ export declare class EmployeesController {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     }>;
 }

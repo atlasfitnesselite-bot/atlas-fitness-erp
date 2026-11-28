@@ -79,8 +79,6 @@ export declare class SubscriptionsService {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -91,6 +89,8 @@ export declare class SubscriptionsService {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;

@@ -13,8 +13,8 @@ export declare class NotificationsController {
         notifications: {
             id: string;
             createdAt: Date;
-            status: string;
             userId: string;
+            status: string;
             type: string;
             title: string;
             message: string;
@@ -49,8 +49,8 @@ export declare class NotificationsController {
     }, id: string): Promise<{
         id: string;
         createdAt: Date;
-        status: string;
         userId: string;
+        status: string;
         type: string;
         title: string;
         message: string;
@@ -73,8 +73,8 @@ export declare class NotificationsController {
     }, id: string): Promise<{
         id: string;
         createdAt: Date;
-        status: string;
         userId: string;
+        status: string;
         type: string;
         title: string;
         message: string;

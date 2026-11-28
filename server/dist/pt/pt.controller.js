@@ -65,10 +65,20 @@ let PtController = class PtController {
             throw new common_1.UnauthorizedException();
         return this.ptService.getTrainerStats(req.user.id);
     }
-    async getTrainerDashboard(req) {
+    async getTrainerDashboard(req, trainerId, month) {
         if (!req.user || !req.user.id)
             throw new common_1.UnauthorizedException();
-        return this.ptService.getTrainerDashboard(req.user.id);
+        return this.ptService.getTrainerDashboard(req.user.id, { trainerId, month });
+    }
+    async toggleTodayDone(req, body) {
+        if (!req.user || !req.user.id)
+            throw new common_1.UnauthorizedException();
+        return this.ptService.toggleTodayDone(req.user.id, body);
+    }
+    async getMonthlyPtReport(req, month, trainerId) {
+        if (!req.user || !req.user.id)
+            throw new common_1.UnauthorizedException();
+        return this.ptService.getMonthlyPtReport(req.user.id, req.user.roles || [], { month, trainerId });
     }
     async getMemberProfile(memberId) {
         return this.ptService.getMemberProfile(memberId);
@@ -123,6 +133,15 @@ let PtController = class PtController {
     }
     assignTrainerToMember(body) {
         return this.ptService.assignTrainerToMember(body);
+    }
+    updateAssignmentSlot(req, id, preferredSlotStart) {
+        return this.ptService.updateAssignmentSlot(id, preferredSlotStart, req.user?.roles || []);
+    }
+    toggleSlotLock(id, slotLocked) {
+        return this.ptService.toggleSlotLock(id, slotLocked);
+    }
+    getAdminDailyActivities(date, trainerId) {
+        return this.ptService.getAdminDailyActivities({ date, trainerId });
     }
 };
 exports.PtController = PtController;
@@ -233,10 +252,33 @@ __decorate([
     (0, roles_decorator_1.Roles)('TRAINER', 'MANAGER', 'OWNER'),
     (0, common_1.Get)('trainer/dashboard'),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('trainerId')),
+    __param(2, (0, common_1.Query)('month')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], PtController.prototype, "getTrainerDashboard", null);
+__decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('TRAINER', 'MANAGER', 'OWNER'),
+    (0, common_1.Post)('trainer/today-done'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], PtController.prototype, "toggleTodayDone", null);
+__decorate([
+    (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER'),
+    (0, common_1.Get)('reports/monthly'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('month')),
+    __param(2, (0, common_1.Query)('trainerId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, String]),
+    __metadata("design:returntype", Promise)
+], PtController.prototype, "getMonthlyPtReport", null);
 __decorate([
     (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'TRAINER'),
     (0, common_1.Get)('members/:memberId/profile'),
@@ -381,6 +423,34 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PtController.prototype, "assignTrainerToMember", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION', 'TRAINER'),
+    (0, common_1.Put)('assignments/:id/slot'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)('preferredSlotStart')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "updateAssignmentSlot", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION'),
+    (0, common_1.Put)('assignments/:id/lock'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('slotLocked')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Boolean]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "toggleSlotLock", null);
+__decorate([
+    (0, roles_decorator_1.Roles)('OWNER', 'MANAGER', 'RECEPTION'),
+    (0, common_1.Get)('admin/daily-activities'),
+    __param(0, (0, common_1.Query)('date')),
+    __param(1, (0, common_1.Query)('trainerId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], PtController.prototype, "getAdminDailyActivities", null);
 exports.PtController = PtController = __decorate([
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt'), roles_guard_1.RolesGuard),
     (0, common_1.Controller)('pt'),

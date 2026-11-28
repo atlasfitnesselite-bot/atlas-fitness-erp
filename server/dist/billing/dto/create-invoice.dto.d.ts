@@ -15,4 +15,6 @@ export declare class CreateInvoiceDto {
     paymentMethod?: string;
     dueDate: string;
     status: string;
+    trainerId?: string;
+    commissionPercentage?: number;
 }

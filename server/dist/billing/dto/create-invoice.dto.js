@@ -28,6 +28,8 @@ class CreateInvoiceDto {
     paymentMethod;
     dueDate;
     status;
+    trainerId;
+    commissionPercentage;
 }
 exports.CreateInvoiceDto = CreateInvoiceDto;
 __decorate([
@@ -115,4 +117,15 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateInvoiceDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateInvoiceDto.prototype, "trainerId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(0),
+    __metadata("design:type", Number)
+], CreateInvoiceDto.prototype, "commissionPercentage", void 0);
 //# sourceMappingURL=create-invoice.dto.js.map

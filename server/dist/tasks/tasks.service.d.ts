@@ -7,9 +7,8 @@ export declare class TasksService {
         email: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
-        userId: string | null;
         employeeId: string;
+        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -27,6 +26,7 @@ export declare class TasksService {
         confirmationDate: Date | null;
         managerId: string | null;
         workLocation: string | null;
+        status: string;
         hashedPin: string | null;
     } | null>;
     getTasks(filters: {
@@ -37,8 +37,8 @@ export declare class TasksService {
     }): Promise<({
         assignee: {
             id: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
         } | null;

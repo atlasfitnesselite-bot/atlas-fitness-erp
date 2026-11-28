@@ -42,19 +42,18 @@ export declare class AttendanceController {
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    managerId: string | null;
                     status: string;
                     description: string | null;
                     code: string;
-                    managerId: string | null;
                 } | null;
             } & {
                 id: string;
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -72,6 +71,7 @@ export declare class AttendanceController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -80,8 +80,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -103,9 +103,8 @@ export declare class AttendanceController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -123,14 +122,15 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        year: number;
         employeeId: string;
+        year: number;
         lateMinutes: number;
         month: number;
         workingDays: number;
@@ -152,9 +152,8 @@ export declare class AttendanceController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -172,6 +171,7 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -180,8 +180,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -206,9 +206,8 @@ export declare class AttendanceController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -226,6 +225,7 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -234,8 +234,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -249,9 +249,9 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        employeeId: string;
         status: string;
         hours: number;
-        employeeId: string;
         attendanceId: string;
         approvedById: string | null;
     })[]>;
@@ -261,9 +261,8 @@ export declare class AttendanceController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -281,6 +280,7 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
         attendance: {
@@ -289,8 +289,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -317,8 +317,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -331,8 +331,8 @@ export declare class AttendanceController {
     } & {
         id: string;
         createdAt: Date;
-        device: string | null;
         employeeId: string;
+        device: string | null;
         type: string;
         timestamp: Date;
         method: string;
@@ -438,8 +438,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -459,10 +459,10 @@ export declare class AttendanceController {
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    managerId: string | null;
                     status: string;
                     description: string | null;
                     code: string;
-                    managerId: string | null;
                 } | null;
                 designation: {
                     id: string;
@@ -478,9 +478,8 @@ export declare class AttendanceController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -498,6 +497,7 @@ export declare class AttendanceController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -506,8 +506,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -536,10 +536,10 @@ export declare class AttendanceController {
                     name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    managerId: string | null;
                     status: string;
                     description: string | null;
                     code: string;
-                    managerId: string | null;
                 } | null;
                 designation: {
                     id: string;
@@ -555,9 +555,8 @@ export declare class AttendanceController {
                 email: string;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                userId: string | null;
                 employeeId: string;
+                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -575,6 +574,7 @@ export declare class AttendanceController {
                 confirmationDate: Date | null;
                 managerId: string | null;
                 workLocation: string | null;
+                status: string;
                 hashedPin: string | null;
             };
         } & {
@@ -583,8 +583,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             date: Date;
             clockIn: Date | null;
             clockOut: Date | null;
@@ -602,19 +602,18 @@ export declare class AttendanceController {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
         } & {
             id: string;
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -632,6 +631,7 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -640,8 +640,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;
@@ -658,10 +658,10 @@ export declare class AttendanceController {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
             designation: {
                 id: string;
@@ -677,9 +677,8 @@ export declare class AttendanceController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -697,6 +696,7 @@ export declare class AttendanceController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         };
     } & {
@@ -705,8 +705,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;
@@ -761,8 +761,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;
@@ -780,8 +780,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;
@@ -799,8 +799,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         type: string;
         reason: string;
         attendanceId: string | null;
@@ -815,8 +815,8 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             employeeId: string;
+            status: string;
             type: string;
             reason: string;
             attendanceId: string | null;
@@ -829,8 +829,8 @@ export declare class AttendanceController {
         logs: {
             id: string;
             createdAt: Date;
-            device: string | null;
             employeeId: string;
+            device: string | null;
             type: string;
             timestamp: Date;
             method: string;
@@ -843,8 +843,8 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: string;
         employeeId: string;
+        status: string;
         date: Date;
         clockIn: Date | null;
         clockOut: Date | null;

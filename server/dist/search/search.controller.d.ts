@@ -8,8 +8,6 @@ export declare class SearchController {
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            branch: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -20,6 +18,8 @@ export declare class SearchController {
             nationality: string | null;
             mobile: string;
             joiningDate: Date;
+            status: string;
+            branch: string | null;
             gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
@@ -37,9 +37,8 @@ export declare class SearchController {
             email: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
-            userId: string | null;
             employeeId: string;
+            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -57,6 +56,7 @@ export declare class SearchController {
             confirmationDate: Date | null;
             managerId: string | null;
             workLocation: string | null;
+            status: string;
             hashedPin: string | null;
         }[];
         invoices: ({
@@ -65,8 +65,6 @@ export declare class SearchController {
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                status: string;
-                branch: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -77,6 +75,8 @@ export declare class SearchController {
                 nationality: string | null;
                 mobile: string;
                 joiningDate: Date;
+                status: string;
+                branch: string | null;
                 gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;

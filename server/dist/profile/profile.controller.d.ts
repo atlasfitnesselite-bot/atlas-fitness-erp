@@ -34,10 +34,10 @@ export declare class ProfileController {
                 name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                managerId: string | null;
                 status: string;
                 description: string | null;
                 code: string;
-                managerId: string | null;
             } | null;
             designation: {
                 id: string;
