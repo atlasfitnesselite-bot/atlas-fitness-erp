@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Save, Upload, User, MapPin, Phone, HeartPulse } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PhotoUploader from '@/components/PhotoUploader';
 
 const MemberRegistration = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const MemberRegistration = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    profilePicture: '',
     gender: '',
     dateOfBirth: '',
     bloodGroup: '',
@@ -297,6 +299,13 @@ const MemberRegistration = () => {
             <div className="space-y-2">
               <Label htmlFor="occupation">Occupation</Label>
               <Input id="occupation" name="occupation" value={formData.occupation} onChange={handleChange} />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3 pt-2">
+              <PhotoUploader
+                label="Member Photo (Camera or File — Auto-Compressed)"
+                value={formData.profilePicture}
+                onChange={(val) => setFormData((prev) => ({ ...prev, profilePicture: val }))}
+              />
             </div>
           </CardContent>
         </Card>

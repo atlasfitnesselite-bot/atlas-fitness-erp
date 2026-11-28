@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import EmployeeImport from "./EmployeeImport"
+import PhotoUploader from "@/components/PhotoUploader"
 
 export default function EmployeeList() {
   const navigate = useNavigate()
@@ -66,6 +67,7 @@ export default function EmployeeList() {
   const [roleName, setRoleName] = useState("RECEPTION")
   const [empPassword, setEmpPassword] = useState("Password123")
   const [baseSalary, setBaseSalary] = useState("")
+  const [profilePicture, setProfilePicture] = useState("")
   
   // Extra Models
   const [departments, setDepartments] = useState([])
@@ -229,6 +231,7 @@ export default function EmployeeList() {
       roleName,
       password: empPassword || undefined,
       baseSalary: baseSalary ? parseFloat(baseSalary) : undefined,
+      profilePicture: profilePicture || undefined,
     }
 
     try {
@@ -464,6 +467,9 @@ export default function EmployeeList() {
               </div>
 
               <div className="grid gap-2">
+                <PhotoUploader label="Employee Photo (Camera or File)" value={profilePicture} onChange={setProfilePicture} />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="roleName">Login Role *</Label>
                 <CustomSelect id="roleName" value={roleName} onChange={(e) => setRoleName(e.target.value)} className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus-visible:outline-none">
                   <option value="RECEPTION">RECEPTION</option>
@@ -548,4 +554,5 @@ export default function EmployeeList() {
     </div>
   )
 }
+
 

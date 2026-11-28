@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CustomSelect } from '@/components/ui/custom-select';
 import { useToast } from '@/hooks/use-toast';
+import PhotoUploader from '@/components/PhotoUploader';
 import { Dumbbell, UserPlus, Users, Package, Calendar, Trash2, Link2, Pencil, CheckCircle2, AlertTriangle, Loader2, FileSpreadsheet, Download, Clock, Lock, Unlock } from 'lucide-react';
 import { PT_PRESET_SLOTS, formatSlotRange } from '../../lib/ptSlots';
 
@@ -31,6 +32,7 @@ export default function PersonalTrainersHub() {
     password: 'Password123',
     baseSalary: '',
     ptCommissionPercentage: '',
+    profilePicture: '',
   });
 
   const [isAssignOpen, setIsAssignOpen] = useState(false);
@@ -876,6 +878,11 @@ export default function PersonalTrainersHub() {
             <DialogTitle>Add Personal Trainer</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddTrainer} className="space-y-3">
+            <PhotoUploader
+              label="Trainer Photo (Camera or File)"
+              value={trainerForm.profilePicture}
+              onChange={(val) => setTrainerForm({ ...trainerForm, profilePicture: val })}
+            />
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>First Name *</Label>

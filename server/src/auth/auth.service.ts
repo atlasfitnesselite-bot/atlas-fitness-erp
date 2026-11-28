@@ -7,6 +7,7 @@ interface LoginUser {
   id: string;
   email: string;
   name?: string;
+  employee?: { profilePicture?: string | null } | null;
   userRoles?: { role: { name: string } }[];
 }
 
@@ -28,6 +29,7 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
+        employee: { select: { profilePicture: true } },
         userRoles: {
           include: {
             role: true,
@@ -60,6 +62,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        avatar: user.employee?.profilePicture || null,
         roles,
       },
     };

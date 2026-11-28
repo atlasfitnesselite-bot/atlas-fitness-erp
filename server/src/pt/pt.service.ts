@@ -1051,6 +1051,7 @@ export class PtService {
         lastName: true,
         email: true,
         mobile: true,
+        profilePicture: true,
         status: true,
         designation: { select: { name: true } },
         payrollStructure: { select: { baseSalary: true, ptCommissionPercentage: true } },
@@ -1068,6 +1069,7 @@ export class PtService {
       lastName: emp.lastName,
       email: emp.email,
       mobile: emp.mobile,
+      profilePicture: emp.profilePicture,
       status: emp.status,
       designation: emp.designation?.name || 'Personal Trainer',
       baseSalary: emp.payrollStructure?.baseSalary || 0,
@@ -1089,6 +1091,7 @@ export class PtService {
     baseSalary?: number;
     ptCommissionPercentage?: number;
     gender?: string;
+    profilePicture?: string;
   }) {
     const [existingUser, existingEmp, existingRole, existingTrainers, hashedPassword] =
       await Promise.all([
@@ -1141,6 +1144,7 @@ export class PtService {
             lastName: data.lastName || '-',
             email: data.email,
             mobile: data.mobile,
+            profilePicture: data.profilePicture || null,
             gender: data.gender || null,
             status: 'ACTIVE',
             joiningDate: new Date(),
@@ -1169,6 +1173,7 @@ export class PtService {
       status?: string;
       baseSalary?: number;
       ptCommissionPercentage?: number;
+      profilePicture?: string;
     },
   ) {
     const existing = await this.prisma.employee.findUnique({ where: { id } });
@@ -1182,6 +1187,7 @@ export class PtService {
         email: data.email ?? existing.email,
         mobile: data.mobile ?? existing.mobile,
         status: data.status ?? existing.status,
+        profilePicture: data.profilePicture !== undefined ? data.profilePicture : existing.profilePicture,
       },
     });
 

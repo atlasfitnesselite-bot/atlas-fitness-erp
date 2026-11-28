@@ -150,10 +150,17 @@ const MemberProfile = () => {
               </Badge>
               
               <div className="w-full mt-6 space-y-4">
-                <div className="flex items-center gap-3 text-sm bg-muted/30 p-2 rounded-md">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span>{member.mobile}</span>
-                </div>
+                <a
+                  href={`tel:${member.mobile}`}
+                  className="flex items-center justify-between gap-3 text-sm bg-muted/30 hover:bg-primary/10 p-2 rounded-md transition-colors group"
+                  title="Click to Call"
+                >
+                  <span className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span className="font-medium group-hover:text-primary">{member.mobile}</span>
+                  </span>
+                  <span className="text-[11px] font-semibold text-primary">Call</span>
+                </a>
                 {member.email && (
                   <div className="flex items-center gap-3 text-sm bg-muted/30 p-2 rounded-md">
                     <Mail className="h-4 w-4 text-primary" />
