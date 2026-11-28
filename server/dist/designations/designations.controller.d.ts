@@ -8,9 +8,9 @@ export declare class DesignationsController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         level: string | null;
@@ -21,36 +21,36 @@ export declare class DesignationsController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         level: string | null;
     }>;
     createDesignation(data: CreateDesignationDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         level: string | null;
     }>;
     updateDesignation(id: string, data: CreateDesignationDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         level: string | null;
     }>;
     deleteDesignation(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         level: string | null;

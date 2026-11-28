@@ -42,6 +42,7 @@ export declare class PtService {
     getSessionsByTrainer(trainerId: string): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -57,7 +58,6 @@ export declare class PtService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -106,6 +106,7 @@ export declare class PtService {
     getFitnessPlans(memberId?: string): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -121,7 +122,6 @@ export declare class PtService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -136,10 +136,10 @@ export declare class PtService {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -443,6 +443,7 @@ export declare class PtService {
     toggleSlotLock(assignmentId: string, slotLocked: boolean): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -458,7 +459,6 @@ export declare class PtService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -473,10 +473,10 @@ export declare class PtService {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -499,9 +499,9 @@ export declare class PtService {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };
@@ -570,6 +570,7 @@ export declare class PtService {
             } | null;
         } & {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -585,7 +586,6 @@ export declare class PtService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -601,10 +601,10 @@ export declare class PtService {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -627,9 +627,9 @@ export declare class PtService {
             } | null;
             package: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 price: number;
                 numberOfSessions: number;
             };
@@ -653,10 +653,10 @@ export declare class PtService {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -722,10 +722,10 @@ export declare class PtService {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -946,10 +946,10 @@ export declare class PtService {
     }): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -982,10 +982,10 @@ export declare class PtService {
     }): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -1016,9 +1016,9 @@ export declare class PtService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     })[]>;
@@ -1028,17 +1028,17 @@ export declare class PtService {
         price: number;
     }): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     }>;
     deletePtPackage(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     }>;
@@ -1058,9 +1058,9 @@ export declare class PtService {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };
@@ -1099,6 +1099,7 @@ export declare class PtService {
         };
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -1114,7 +1115,6 @@ export declare class PtService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -1129,10 +1129,10 @@ export declare class PtService {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -1155,9 +1155,9 @@ export declare class PtService {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };

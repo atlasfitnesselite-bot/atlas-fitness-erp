@@ -15,9 +15,9 @@ export declare class DepartmentsService {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -29,9 +29,9 @@ export declare class DepartmentsService {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -39,9 +39,9 @@ export declare class DepartmentsService {
     }>;
     createDepartment(data: CreateDepartmentDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -49,9 +49,9 @@ export declare class DepartmentsService {
     }>;
     updateDepartment(id: string, data: CreateDepartmentDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -59,9 +59,9 @@ export declare class DepartmentsService {
     }>;
     deleteDepartment(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;

@@ -6,10 +6,10 @@ export declare class SubscriptionsController {
     constructor(subscriptionsService: SubscriptionsService);
     createPlan(createMembershipPlanDto: CreateMembershipPlanDto): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -17,10 +17,10 @@ export declare class SubscriptionsController {
     }>;
     getPlans(): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -28,10 +28,10 @@ export declare class SubscriptionsController {
     }[]>;
     getPlanById(id: string): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -39,10 +39,10 @@ export declare class SubscriptionsController {
     }>;
     updatePlan(id: string, updateDto: Partial<CreateMembershipPlanDto>): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -50,10 +50,10 @@ export declare class SubscriptionsController {
     }>;
     deletePlan(id: string): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -76,6 +76,7 @@ export declare class SubscriptionsController {
     getSubscriptions(): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -91,7 +92,6 @@ export declare class SubscriptionsController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -105,10 +105,10 @@ export declare class SubscriptionsController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;

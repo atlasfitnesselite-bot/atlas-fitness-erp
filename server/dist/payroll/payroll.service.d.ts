@@ -60,10 +60,10 @@ export declare class PayrollService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;

@@ -39,9 +39,9 @@ export declare class AttendanceController {
             employee: {
                 department: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     managerId: string | null;
                     status: string;
                     description: string | null;
@@ -50,10 +50,10 @@ export declare class AttendanceController {
             } & {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -101,10 +101,10 @@ export declare class AttendanceController {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -150,10 +150,10 @@ export declare class AttendanceController {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -204,10 +204,10 @@ export declare class AttendanceController {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -259,10 +259,10 @@ export declare class AttendanceController {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -456,9 +456,9 @@ export declare class AttendanceController {
             employee: {
                 department: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     managerId: string | null;
                     status: string;
                     description: string | null;
@@ -466,9 +466,9 @@ export declare class AttendanceController {
                 } | null;
                 designation: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     status: string;
                     description: string | null;
                     level: string | null;
@@ -476,10 +476,10 @@ export declare class AttendanceController {
             } & {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -533,9 +533,9 @@ export declare class AttendanceController {
             employee: {
                 department: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     managerId: string | null;
                     status: string;
                     description: string | null;
@@ -543,9 +543,9 @@ export declare class AttendanceController {
                 } | null;
                 designation: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     status: string;
                     description: string | null;
                     level: string | null;
@@ -553,10 +553,10 @@ export declare class AttendanceController {
             } & {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -599,9 +599,9 @@ export declare class AttendanceController {
         employee: {
             department: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 managerId: string | null;
                 status: string;
                 description: string | null;
@@ -610,10 +610,10 @@ export declare class AttendanceController {
         } & {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -655,9 +655,9 @@ export declare class AttendanceController {
         employee: {
             department: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 managerId: string | null;
                 status: string;
                 description: string | null;
@@ -665,9 +665,9 @@ export declare class AttendanceController {
             } | null;
             designation: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 status: string;
                 description: string | null;
                 level: string | null;
@@ -675,10 +675,10 @@ export declare class AttendanceController {
         } & {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -718,10 +718,10 @@ export declare class AttendanceController {
     })[]>;
     getSettings(): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         timezone: string;
         dateFormat: string;
+        createdAt: Date;
+        updatedAt: Date;
         breakDuration: number;
         lateThreshold: number;
         minWorkingHours: number;
@@ -735,10 +735,10 @@ export declare class AttendanceController {
     }>;
     updateSettings(data: UpdateSettingsDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         timezone: string;
         dateFormat: string;
+        createdAt: Date;
+        updatedAt: Date;
         breakDuration: number;
         lateThreshold: number;
         minWorkingHours: number;
@@ -761,10 +761,10 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
@@ -780,10 +780,10 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
@@ -799,10 +799,10 @@ export declare class AttendanceController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         attendanceId: string | null;
         requestedById: string;
         approvedById: string | null;
@@ -815,10 +815,10 @@ export declare class AttendanceController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            reason: string;
             employeeId: string;
             status: string;
             type: string;
-            reason: string;
             attendanceId: string | null;
             requestedById: string;
             approvedById: string | null;

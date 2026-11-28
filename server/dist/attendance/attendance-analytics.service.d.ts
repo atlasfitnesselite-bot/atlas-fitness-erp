@@ -29,9 +29,9 @@ export declare class AttendanceAnalyticsService {
             employee: {
                 department: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     managerId: string | null;
                     status: string;
                     description: string | null;
@@ -40,10 +40,10 @@ export declare class AttendanceAnalyticsService {
             } & {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -112,10 +112,10 @@ export declare class AttendanceAnalyticsService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;

@@ -9,13 +9,13 @@ export declare class MembersService {
     create(createMemberDto: CreateMemberDto, userId: string): Promise<{
         emergencyContacts: {
             id: string;
+            address: string | null;
             email: string | null;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             mobile: string;
             notes: string | null;
-            address: string | null;
             relationship: string;
             memberId: string;
             altMobile: string | null;
@@ -110,6 +110,7 @@ export declare class MembersService {
         } | null;
     } & {
         id: string;
+        gstNumber: string | null;
         email: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -125,7 +126,6 @@ export declare class MembersService {
         joiningDate: Date;
         status: string;
         branch: string | null;
-        gstNumber: string | null;
         aadhaarNumber: string | null;
         panNumber: string | null;
         memberId: string;
@@ -149,6 +149,7 @@ export declare class MembersService {
     }): Promise<{
         data: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -164,7 +165,6 @@ export declare class MembersService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -186,13 +186,13 @@ export declare class MembersService {
     findOne(id: string): Promise<{
         emergencyContacts: {
             id: string;
+            address: string | null;
             email: string | null;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             mobile: string;
             notes: string | null;
-            address: string | null;
             relationship: string;
             memberId: string;
             altMobile: string | null;
@@ -288,10 +288,10 @@ export declare class MembersService {
         subscriptions: ({
             plan: {
                 id: string;
-                name: string;
-                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
+                isActive: boolean;
                 description: string | null;
                 price: number;
                 gstRate: number;
@@ -329,6 +329,7 @@ export declare class MembersService {
         }[];
     } & {
         id: string;
+        gstNumber: string | null;
         email: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -344,7 +345,6 @@ export declare class MembersService {
         joiningDate: Date;
         status: string;
         branch: string | null;
-        gstNumber: string | null;
         aadhaarNumber: string | null;
         panNumber: string | null;
         memberId: string;
@@ -358,6 +358,7 @@ export declare class MembersService {
     }>;
     update(id: string, updateMemberDto: UpdateMemberDto, userId: string): Promise<{
         id: string;
+        gstNumber: string | null;
         email: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -373,7 +374,6 @@ export declare class MembersService {
         joiningDate: Date;
         status: string;
         branch: string | null;
-        gstNumber: string | null;
         aadhaarNumber: string | null;
         panNumber: string | null;
         memberId: string;
@@ -387,6 +387,7 @@ export declare class MembersService {
     }>;
     remove(id: string, _userId?: string): Promise<{
         id: string;
+        gstNumber: string | null;
         email: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -402,7 +403,6 @@ export declare class MembersService {
         joiningDate: Date;
         status: string;
         branch: string | null;
-        gstNumber: string | null;
         aadhaarNumber: string | null;
         panNumber: string | null;
         memberId: string;
@@ -500,6 +500,7 @@ export declare class MembersService {
     }>;
     issueAccessCard(id: string, accessCardId: string): Promise<{
         id: string;
+        gstNumber: string | null;
         email: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -515,7 +516,6 @@ export declare class MembersService {
         joiningDate: Date;
         status: string;
         branch: string | null;
-        gstNumber: string | null;
         aadhaarNumber: string | null;
         panNumber: string | null;
         memberId: string;

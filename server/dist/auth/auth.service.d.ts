@@ -1,5 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../billing/email.service';
 interface LoginUser {
     id: string;
     email: string;
@@ -22,18 +23,19 @@ interface RegisterDto {
 export declare class AuthService {
     private prisma;
     private jwtService;
-    constructor(prisma: PrismaService, jwtService: JwtService);
+    private emailService;
+    constructor(prisma: PrismaService, jwtService: JwtService, emailService: EmailService);
     validateUser(email: string, pass: string): Promise<any>;
     findUserByEmail(email: string): Promise<{
         id: string;
         email: string;
-        password: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
+        password: string;
         isActive: boolean;
         resetToken: string | null;
         resetTokenExpiry: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     } | null>;
     login(user: LoginUser): {
         access_token: string;
@@ -49,19 +51,19 @@ export declare class AuthService {
     register(data: RegisterDto): Promise<{
         id: string;
         email: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         isActive: boolean;
         resetToken: string | null;
         resetTokenExpiry: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     launchKiosk(deviceCode: string): Promise<{
         access_token: string;
         device: {
             id: string;
-            name: string;
             createdAt: Date;
+            name: string;
             status: string;
             code: string;
             lastActive: Date | null;

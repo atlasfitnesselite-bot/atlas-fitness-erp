@@ -10,9 +10,9 @@ export declare class EquipmentService {
         location?: string;
     }): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -29,9 +29,9 @@ export declare class EquipmentService {
     }[]>;
     createEquipment(data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -48,9 +48,9 @@ export declare class EquipmentService {
     }>;
     updateEquipment(id: string, data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;

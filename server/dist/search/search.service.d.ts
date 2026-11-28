@@ -5,6 +5,7 @@ export declare class SearchService {
     globalSearch(query: string): Promise<{
         members: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -20,7 +21,6 @@ export declare class SearchService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -35,10 +35,10 @@ export declare class SearchService {
         employees: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -62,6 +62,7 @@ export declare class SearchService {
         invoices: ({
             member: {
                 id: string;
+                gstNumber: string | null;
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
@@ -77,7 +78,6 @@ export declare class SearchService {
                 joiningDate: Date;
                 status: string;
                 branch: string | null;
-                gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;
                 memberId: string;
@@ -121,9 +121,9 @@ export declare class SearchService {
         })[];
         equipment: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             notes: string | null;
             category: string;
@@ -171,16 +171,16 @@ export declare class SearchService {
             docType: string;
             title: string;
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            version: number;
             employeeId: string;
             category: string;
             fileName: string;
             fileUrl: string;
             fileSize: number;
             mimeType: string;
-            version: number;
         } | {
             docType: string;
             id: string;

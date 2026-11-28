@@ -22,9 +22,9 @@ export declare class CleaningController {
         })[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     })[]>;
     createArea(data: {
@@ -32,9 +32,9 @@ export declare class CleaningController {
         description?: string;
     }): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     }>;
     getChecklists(date?: string, areaId?: string, status?: string, assignedTo?: string): Promise<({
@@ -51,9 +51,9 @@ export declare class CleaningController {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
         assignee: {
@@ -92,9 +92,9 @@ export declare class CleaningController {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
         assignee: {
@@ -128,9 +128,9 @@ export declare class CleaningController {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
     } & {

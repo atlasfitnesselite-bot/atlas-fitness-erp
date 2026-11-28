@@ -72,6 +72,7 @@ export declare class PtController {
     getFitnessPlans(memberId?: string): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -87,7 +88,6 @@ export declare class PtController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -102,10 +102,10 @@ export declare class PtController {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -411,6 +411,7 @@ export declare class PtController {
             } | null;
         } & {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -426,7 +427,6 @@ export declare class PtController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -442,10 +442,10 @@ export declare class PtController {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -468,9 +468,9 @@ export declare class PtController {
             } | null;
             package: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 price: number;
                 numberOfSessions: number;
             };
@@ -494,10 +494,10 @@ export declare class PtController {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -563,10 +563,10 @@ export declare class PtController {
             trainer: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -777,10 +777,10 @@ export declare class PtController {
     createTrainer(body: any): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -804,10 +804,10 @@ export declare class PtController {
     updateTrainer(id: string, body: any): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -838,25 +838,25 @@ export declare class PtController {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     })[]>;
     createPtPackage(body: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     }>;
     deletePtPackage(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         price: number;
         numberOfSessions: number;
     }>;
@@ -876,9 +876,9 @@ export declare class PtController {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };
@@ -905,6 +905,7 @@ export declare class PtController {
         };
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -920,7 +921,6 @@ export declare class PtController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -935,10 +935,10 @@ export declare class PtController {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -961,9 +961,9 @@ export declare class PtController {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };
@@ -1005,6 +1005,7 @@ export declare class PtController {
     toggleSlotLock(id: string, slotLocked: boolean): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -1020,7 +1021,6 @@ export declare class PtController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -1035,10 +1035,10 @@ export declare class PtController {
         trainer: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -1061,9 +1061,9 @@ export declare class PtController {
         } | null;
         package: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             price: number;
             numberOfSessions: number;
         };

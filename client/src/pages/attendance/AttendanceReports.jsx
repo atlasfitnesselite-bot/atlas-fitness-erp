@@ -9,6 +9,7 @@ export default function AttendanceReports() {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -34,11 +35,39 @@ export default function AttendanceReports() {
   }, [token])
 
   const filteredRecords = records.filter(record => {
+    const matchesStatus = statusFilter === 'ALL' || record.status === statusFilter
+    if (!matchesStatus) return false
     if (!searchQuery) return true
     const searchLower = searchQuery.toLowerCase()
     const employeeName = `${record.employee?.firstName || ''} ${record.employee?.lastName || ''}`.toLowerCase()
     return employeeName.includes(searchLower) || (record.status && record.status.toLowerCase().includes(searchLower))
   })
+
+  const handleExportCsv = () => {
+    if (filteredRecords.length === 0) {
+      toast.error('No records to export')
+      return
+    }
+    const headers = ['Employee', 'Employee ID', 'Date', 'Status', 'Clock In', 'Clock Out', 'Working Hours']
+    const rows = filteredRecords.map((r) => [
+      `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.trim(),
+      r.employee?.employeeId || '',
+      new Date(r.date).toLocaleDateString('en-IN'),
+      r.status || 'UNKNOWN',
+      r.clockIn ? new Date(r.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
+      r.clockOut ? new Date(r.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
+      r.workingHours ? Number(r.workingHours).toFixed(2) : '0',
+    ])
+    const csv = [headers, ...rows].map((row) => row.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `attendance-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Attendance CSV exported')
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -58,11 +87,22 @@ export default function AttendanceReports() {
           <p className="text-muted-foreground dark:text-muted-foreground">View and export employee attendance data</p>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg hover:bg-background dark:hover:bg-slate-700 text-slate-700 dark:text-foreground transition-colors">
-            <Filter className="w-4 h-4" />
-            <span>Filter</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 bg-card dark:bg-slate-800 border border-border dark:border-slate-700 rounded-lg text-sm text-foreground"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="PRESENT">Present</option>
+            <option value="ABSENT">Absent</option>
+            <option value="LATE">Late</option>
+            <option value="HALF_DAY">Half Day</option>
+          </select>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+          >
             <Download className="w-4 h-4" />
             <span>Export Data</span>
           </button>

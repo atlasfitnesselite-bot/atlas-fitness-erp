@@ -20,9 +20,9 @@ export declare class ChatController {
         }[];
     } & {
         id: string;
-        name: string | null;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
         type: string;
     })[]>;
     getMessages(roomId: string, req: any): Promise<{
@@ -47,9 +47,9 @@ export declare class ChatController {
         }[];
     } & {
         id: string;
-        name: string | null;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
         type: string;
     }>;
     sendMessage(roomId: string, body: {

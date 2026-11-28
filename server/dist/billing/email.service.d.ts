@@ -38,4 +38,11 @@ export declare class EmailService {
         sent: boolean;
         reason?: string;
     }>;
+    sendPasswordResetEmail(toEmail: string, name: string, resetUrl: string): Promise<{
+        sent: boolean;
+        reason?: undefined;
+    } | {
+        sent: boolean;
+        reason: any;
+    }>;
 }

@@ -17,7 +17,8 @@ declare class ForgotPasswordDto {
 }
 declare class ResetPasswordDto {
     token: string;
-    newPassword: string;
+    newPassword?: string;
+    password?: string;
 }
 export declare class AuthController {
     private authService;
@@ -35,12 +36,12 @@ export declare class AuthController {
     register(body: RegisterDto): Promise<{
         id: string;
         email: string;
+        createdAt: Date;
+        updatedAt: Date;
         name: string;
         isActive: boolean;
         resetToken: string | null;
         resetTokenExpiry: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     logout(req: {
         user?: {
@@ -55,8 +56,8 @@ export declare class AuthController {
         access_token: string;
         device: {
             id: string;
-            name: string;
             createdAt: Date;
+            name: string;
             status: string;
             code: string;
             lastActive: Date | null;

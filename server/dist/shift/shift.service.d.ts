@@ -16,9 +16,9 @@ export declare class ShiftService {
         };
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -53,9 +53,9 @@ export declare class ShiftService {
         })[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -73,9 +73,9 @@ export declare class ShiftService {
     }>;
     create(dto: CreateShiftDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -93,9 +93,9 @@ export declare class ShiftService {
     }>;
     update(id: string, dto: UpdateShiftDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -144,10 +144,10 @@ export declare class ShiftService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -170,9 +170,9 @@ export declare class ShiftService {
         };
         shift: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;
@@ -203,9 +203,9 @@ export declare class ShiftService {
     getAssignmentsByEmployee(employeeId: string): Promise<({
         shift: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;
@@ -232,9 +232,9 @@ export declare class ShiftService {
     })[]>;
     getRotations(): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         startDate: Date;
         frequency: string;
@@ -245,9 +245,9 @@ export declare class ShiftService {
     }[]>;
     createRotation(dto: CreateShiftRotationDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         startDate: Date;
         frequency: string;
@@ -280,10 +280,10 @@ export declare class ShiftService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         approvedById: string | null;
         requestedShiftId: string | null;
         currentShiftId: string | null;
@@ -295,10 +295,10 @@ export declare class ShiftService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         approvedById: string | null;
         requestedShiftId: string | null;
         currentShiftId: string | null;
@@ -310,10 +310,10 @@ export declare class ShiftService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         approvedById: string | null;
         requestedShiftId: string | null;
         currentShiftId: string | null;
@@ -325,10 +325,10 @@ export declare class ShiftService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
         type: string;
-        reason: string;
         approvedById: string | null;
         requestedShiftId: string | null;
         currentShiftId: string | null;
@@ -347,9 +347,9 @@ export declare class ShiftService {
     createException(dto: CreateShiftExceptionDto): Promise<{
         id: string;
         createdAt: Date;
+        reason: string;
         employeeId: string | null;
         type: string;
-        reason: string;
         date: Date;
         shiftId: string | null;
     }>;

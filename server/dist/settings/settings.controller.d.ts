@@ -5,15 +5,12 @@ export declare class SettingsController {
     constructor(settingsService: SettingsService);
     getCompanySettings(): Promise<{
         id: string;
-        email: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
         gstNumber: string | null;
         address: string | null;
+        email: string | null;
         emailNotifications: boolean;
         razorpayKeyId: string | null;
         razorpayKeySecret: string | null;
@@ -23,6 +20,9 @@ export declare class SettingsController {
         smtpPass: string | null;
         timezone: string;
         dateFormat: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
     } | {
         companyName: string;
         timezone: string;
@@ -38,15 +38,12 @@ export declare class SettingsController {
         };
     }, dto: UpdateCompanySettingsDto): Promise<{
         id: string;
-        email: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         companyName: string;
         companyLogo: string | null;
         companyContact: string | null;
         gstNumber: string | null;
         address: string | null;
+        email: string | null;
         emailNotifications: boolean;
         razorpayKeyId: string | null;
         razorpayKeySecret: string | null;
@@ -56,6 +53,9 @@ export declare class SettingsController {
         smtpPass: string | null;
         timezone: string;
         dateFormat: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getThemeSettings(req: {
         user: {
@@ -65,9 +65,9 @@ export declare class SettingsController {
         };
     }): Promise<{
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         primaryColor: string;
         secondaryColor: string;
         mode: string;
@@ -80,9 +80,9 @@ export declare class SettingsController {
         };
     }, dto: UpdateThemeSettingsDto): Promise<{
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         primaryColor: string;
         secondaryColor: string;
         mode: string;
@@ -104,9 +104,9 @@ export declare class SettingsController {
         })[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     })[]>;
     updateRolePermissions(id: string, dto: UpdateRolePermissionsDto): Promise<({
@@ -126,9 +126,9 @@ export declare class SettingsController {
         })[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     }) | null>;
 }

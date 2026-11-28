@@ -46,13 +46,16 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("../billing/email.service");
 const bcrypt = __importStar(require("bcrypt"));
 let AuthService = class AuthService {
     prisma;
     jwtService;
-    constructor(prisma, jwtService) {
+    emailService;
+    constructor(prisma, jwtService, emailService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
     async validateUser(email, pass) {
         const user = await this.prisma.user.findUnique({
@@ -203,10 +206,17 @@ let AuthService = class AuthService {
             where: { id: user.id },
             data: { resetToken, resetTokenExpiry },
         });
+        const baseUrl = (process.env.CORS_ORIGIN || 'https://atlas-fitness-erp.vercel.app')
+            .split(',')[0]
+            .trim()
+            .replace(/\/$/, '');
+        const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+        await this.emailService.sendPasswordResetEmail(user.email, user.name, resetUrl);
         return { success: true, message: 'Reset link sent' };
     }
     async resetPassword(data) {
-        const { token, newPassword } = data;
+        const token = data?.token;
+        const newPassword = data?.newPassword || data?.password;
         if (!token || !newPassword) {
             throw new common_1.ConflictException('Token and new password are required');
         }
@@ -235,6 +245,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        email_service_1.EmailService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

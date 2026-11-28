@@ -20,9 +20,9 @@ export declare class ChatService {
         }[];
     } & {
         id: string;
-        name: string | null;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
         type: string;
     })[]>;
     isParticipant(roomId: string, userId: string): Promise<boolean>;
@@ -44,9 +44,9 @@ export declare class ChatService {
         }[];
     } & {
         id: string;
-        name: string | null;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
         type: string;
     }>;
     sendMessage(roomId: string, senderId: string, content: string, type: string): Promise<{

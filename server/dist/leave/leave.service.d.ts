@@ -7,9 +7,9 @@ export declare class LeaveService {
     private seedDefaultLeaveTypes;
     getLeaveTypes(): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -21,9 +21,9 @@ export declare class LeaveService {
     }[]>;
     getLeaveTypeById(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -35,9 +35,9 @@ export declare class LeaveService {
     }>;
     createLeaveType(dto: CreateLeaveTypeDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -49,9 +49,9 @@ export declare class LeaveService {
     }>;
     updateLeaveType(id: string, dto: UpdateLeaveTypeDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -63,9 +63,9 @@ export declare class LeaveService {
     }>;
     deleteLeaveType(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
         code: string;
@@ -79,10 +79,10 @@ export declare class LeaveService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -105,9 +105,9 @@ export declare class LeaveService {
         };
         leaveType: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;
@@ -145,10 +145,10 @@ export declare class LeaveService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -171,9 +171,9 @@ export declare class LeaveService {
         };
         leaveType: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;
@@ -187,10 +187,10 @@ export declare class LeaveService {
             manager: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -223,9 +223,9 @@ export declare class LeaveService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
-        reason: string;
         leaveTypeId: string;
         fromDate: Date;
         toDate: Date;
@@ -236,9 +236,9 @@ export declare class LeaveService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        reason: string;
         employeeId: string;
         status: string;
-        reason: string;
         leaveTypeId: string;
         fromDate: Date;
         toDate: Date;
@@ -254,9 +254,9 @@ export declare class LeaveService {
     getHolidays(year?: number): Promise<({
         department: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             managerId: string | null;
             status: string;
             description: string | null;
@@ -264,9 +264,9 @@ export declare class LeaveService {
         } | null;
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         departmentId: string | null;
         status: string;
         description: string | null;
@@ -274,9 +274,9 @@ export declare class LeaveService {
     })[]>;
     createHoliday(dto: CreateHolidayDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         departmentId: string | null;
         status: string;
         description: string | null;
@@ -284,9 +284,9 @@ export declare class LeaveService {
     }>;
     updateHoliday(id: string, dto: UpdateHolidayDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         departmentId: string | null;
         status: string;
         description: string | null;
@@ -294,9 +294,9 @@ export declare class LeaveService {
     }>;
     deleteHoliday(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         departmentId: string | null;
         status: string;
         description: string | null;

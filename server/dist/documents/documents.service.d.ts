@@ -20,10 +20,10 @@ export declare class DocumentsService {
             employee: {
                 id: string;
                 email: string;
+                userId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 employeeId: string;
-                userId: string | null;
                 firstName: string;
                 lastName: string;
                 profilePicture: string | null;
@@ -46,20 +46,21 @@ export declare class DocumentsService {
             };
         } & {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            version: number;
             employeeId: string;
             category: string;
             fileName: string;
             fileUrl: string;
             fileSize: number;
             mimeType: string;
-            version: number;
         })[];
         memberDocs: ({
             member: {
                 id: string;
+                gstNumber: string | null;
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
@@ -75,7 +76,6 @@ export declare class DocumentsService {
                 joiningDate: Date;
                 status: string;
                 branch: string | null;
-                gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;
                 memberId: string;
@@ -124,16 +124,16 @@ export declare class DocumentsService {
         description?: string;
     }): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        version: number;
         employeeId: string;
         category: string;
         fileName: string;
         fileUrl: string;
         fileSize: number;
         mimeType: string;
-        version: number;
     } | {
         id: string;
         createdAt: Date;
@@ -160,16 +160,16 @@ export declare class DocumentsService {
     }>;
     deleteDocument(id: string, type: 'COMPANY' | 'EMPLOYEE' | 'MEMBER'): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        version: number;
         employeeId: string;
         category: string;
         fileName: string;
         fileUrl: string;
         fileSize: number;
         mimeType: string;
-        version: number;
     } | {
         id: string;
         createdAt: Date;

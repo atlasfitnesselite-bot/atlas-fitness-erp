@@ -8,9 +8,9 @@ export declare class EmploymentTypesController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
     }[]>;
@@ -20,33 +20,33 @@ export declare class EmploymentTypesController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
     }>;
     createEmploymentType(data: CreateEmploymentTypeDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
     }>;
     updateEmploymentType(id: string, data: CreateEmploymentTypeDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
     }>;
     deleteEmploymentType(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         description: string | null;
     }>;

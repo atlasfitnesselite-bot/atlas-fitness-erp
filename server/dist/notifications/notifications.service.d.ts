@@ -8,8 +8,8 @@ export declare class NotificationsService {
     getUserNotifications(userId: string, page?: number, limit?: number, status?: string): Promise<{
         notifications: {
             id: string;
-            createdAt: Date;
             userId: string;
+            createdAt: Date;
             status: string;
             type: string;
             title: string;
@@ -23,8 +23,8 @@ export declare class NotificationsService {
     }>;
     markAsRead(notificationId: string, userId: string): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         type: string;
         title: string;
@@ -35,8 +35,8 @@ export declare class NotificationsService {
     }>;
     deleteNotification(notificationId: string, userId: string): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         type: string;
         title: string;
@@ -47,8 +47,8 @@ export declare class NotificationsService {
     }>;
     createNotification(dto: CreateNotificationDto): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         type: string;
         title: string;

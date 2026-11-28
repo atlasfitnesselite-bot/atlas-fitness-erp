@@ -22,9 +22,9 @@ export declare class EmployeesService {
         items: ({
             department: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 managerId: string | null;
                 status: string;
                 description: string | null;
@@ -32,18 +32,18 @@ export declare class EmployeesService {
             } | null;
             designation: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 status: string;
                 description: string | null;
                 level: string | null;
             } | null;
             employmentType: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 status: string;
                 description: string | null;
             } | null;
@@ -56,10 +56,10 @@ export declare class EmployeesService {
         } & {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -84,9 +84,9 @@ export declare class EmployeesService {
     getEmployeeById(id: string): Promise<{
         department: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             managerId: string | null;
             status: string;
             description: string | null;
@@ -94,18 +94,18 @@ export declare class EmployeesService {
         } | null;
         designation: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             level: string | null;
         } | null;
         employmentType: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
         } | null;
@@ -121,13 +121,13 @@ export declare class EmployeesService {
         } | null;
         emergencyContacts: {
             id: string;
+            address: string | null;
             email: string | null;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             employeeId: string;
             mobile: string;
-            address: string | null;
             relationship: string;
         }[];
         manager: {
@@ -150,16 +150,16 @@ export declare class EmployeesService {
         }[];
         documents: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            version: number;
             employeeId: string;
             category: string;
             fileName: string;
             fileUrl: string;
             fileSize: number;
             mimeType: string;
-            version: number;
         }[];
         notes: {
             id: string;
@@ -173,10 +173,10 @@ export declare class EmployeesService {
         statusHistory: {
             id: string;
             createdAt: Date;
+            reason: string | null;
             employeeId: string;
             oldStatus: string | null;
             newStatus: string;
-            reason: string | null;
             changedById: string | null;
         }[];
         timeline: {
@@ -212,10 +212,10 @@ export declare class EmployeesService {
     } & {
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -239,10 +239,10 @@ export declare class EmployeesService {
     createEmployee(data: CreateEmployeeDto): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -266,10 +266,10 @@ export declare class EmployeesService {
     updateEmployee(id: string, data: CreateEmployeeDto): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -293,10 +293,10 @@ export declare class EmployeesService {
     deleteEmployee(id: string): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -339,29 +339,29 @@ export declare class EmployeesService {
     }>;
     getEmployeeDocuments(employeeId: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        version: number;
         employeeId: string;
         category: string;
         fileName: string;
         fileUrl: string;
         fileSize: number;
         mimeType: string;
-        version: number;
     }[]>;
     addEmployeeDocument(employeeId: string, name: string, fileName: string, fileUrl: string, fileSize: number, mimeType: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        version: number;
         employeeId: string;
         category: string;
         fileName: string;
         fileUrl: string;
         fileSize: number;
         mimeType: string;
-        version: number;
     }>;
     deleteEmployeeDocument(employeeId: string, documentId: string): Promise<{
         success: boolean;
@@ -410,9 +410,9 @@ export declare class EmployeesService {
     getEmployeeLeaveBalance(id: string): Promise<({
         leaveType: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;
@@ -437,9 +437,9 @@ export declare class EmployeesService {
     getEmployeeShifts(id: string): Promise<({
         shift: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             status: string;
             description: string | null;
             code: string;

@@ -452,4 +452,49 @@ export class EmailService {
       return { sent: false, reason: err?.message || 'Failed to send email' };
     }
   }
+
+  async sendPasswordResetEmail(toEmail: string, name: string, resetUrl: string) {
+    const config = await this.getTransporterAndSender();
+    if (!config) {
+      return { sent: false, reason: 'SMTP settings not configured' };
+    }
+
+    const bodyHtml = `
+      <p style="margin:0 0 14px 0;font-size:15px;">Hello <strong>${name || 'User'}</strong>,</p>
+      <p style="margin:0 0 18px 0;font-size:14px;color:#475569;line-height:1.6;">
+        We received a request to reset your <strong>${config.companyName}</strong> account password. Click the button below to set a new password (this link expires in 1 hour):
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${resetUrl}" style="display:inline-block;background-color:#dc2626;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 24px;border-radius:6px;font-size:14px;">
+          Reset Password
+        </a>
+      </div>
+      <p style="margin:0;font-size:12px;color:#64748b;word-break:break-all;">
+        If the button doesn&apos;t work, copy and paste this link into your browser:<br />
+        <a href="${resetUrl}" style="color:#dc2626;">${resetUrl}</a>
+      </p>
+    `;
+
+    const logo = this.resolveLogoAttachment();
+    try {
+      await config.transporter.sendMail({
+        from: `"${config.companyName}" <${config.from}>`,
+        to: toEmail,
+        subject: `Password Reset Request - ${config.companyName}`,
+        text: `Hello ${name || 'User'},\n\nReset your ${config.companyName} password using this link (valid for 1 hour):\n${resetUrl}\n\nIf you did not request this, please ignore this email.`,
+        html: this.wrapHtmlLayout(
+          'Password Reset',
+          'Secure Account Password Recovery',
+          bodyHtml,
+          config,
+          Boolean(logo),
+        ),
+        attachments: logo ? [logo] : [],
+      });
+      return { sent: true };
+    } catch (err: any) {
+      console.error('Password reset email failed:', err);
+      return { sent: false, reason: err?.message };
+    }
+  }
 }

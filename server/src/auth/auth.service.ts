@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../billing/email.service';
 import * as bcrypt from 'bcrypt';
 
 interface LoginUser {
@@ -23,6 +24,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -199,11 +201,19 @@ export class AuthService {
       data: { resetToken, resetTokenExpiry },
     });
 
+    const baseUrl = (process.env.CORS_ORIGIN || 'https://atlas-fitness-erp.vercel.app')
+      .split(',')[0]
+      .trim()
+      .replace(/\/$/, '');
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+    await this.emailService.sendPasswordResetEmail(user.email, user.name, resetUrl);
+
     return { success: true, message: 'Reset link sent' };
   }
 
   async resetPassword(data: any) {
-    const { token, newPassword } = data;
+    const token = data?.token;
+    const newPassword = data?.newPassword || data?.password;
     if (!token || !newPassword) {
       throw new ConflictException('Token and new password are required');
     }

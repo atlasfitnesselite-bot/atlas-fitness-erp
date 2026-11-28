@@ -22,9 +22,9 @@ export declare class CleaningService {
         })[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     })[]>;
     createArea(data: {
@@ -32,9 +32,9 @@ export declare class CleaningService {
         description?: string;
     }): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
     }>;
     getChecklists(filters: {
@@ -56,9 +56,9 @@ export declare class CleaningService {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
         assignee: {
@@ -97,9 +97,9 @@ export declare class CleaningService {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
         assignee: {
@@ -134,9 +134,9 @@ export declare class CleaningService {
         }[];
         area: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
         };
     } & {

@@ -5,10 +5,10 @@ export declare class TasksService {
     getEmployeeByUserId(userId: string): Promise<{
         id: string;
         email: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
         employeeId: string;
-        userId: string | null;
         firstName: string;
         lastName: string;
         profilePicture: string | null;
@@ -37,8 +37,8 @@ export declare class TasksService {
     }): Promise<({
         assignee: {
             id: string;
-            employeeId: string;
             userId: string | null;
+            employeeId: string;
             firstName: string;
             lastName: string;
         } | null;

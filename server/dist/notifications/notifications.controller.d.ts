@@ -12,8 +12,8 @@ export declare class NotificationsController {
     }, page?: string, limit?: string, status?: string): Promise<{
         notifications: {
             id: string;
-            createdAt: Date;
             userId: string;
+            createdAt: Date;
             status: string;
             type: string;
             title: string;
@@ -48,8 +48,8 @@ export declare class NotificationsController {
         };
     }, id: string): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         type: string;
         title: string;
@@ -72,8 +72,8 @@ export declare class NotificationsController {
         };
     }, id: string): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         type: string;
         title: string;

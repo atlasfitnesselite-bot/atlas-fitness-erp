@@ -16,9 +16,9 @@ export declare class CafeService {
         }[];
     } & {
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
         category: string;
         price: number;
@@ -31,9 +31,9 @@ export declare class CafeService {
     })[]>;
     createMenuItem(data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
         category: string;
         price: number;
@@ -46,9 +46,9 @@ export declare class CafeService {
     }>;
     updateMenuItem(id: string, data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         description: string | null;
         category: string;
         price: number;
@@ -62,9 +62,9 @@ export declare class CafeService {
     getInventoryTransactions(): Promise<({
         item: {
             id: string;
-            name: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
             description: string | null;
             category: string;
             price: number;
@@ -100,36 +100,36 @@ export declare class CafeService {
     }>;
     getSuppliers(): Promise<{
         id: string;
+        address: string | null;
         email: string | null;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
-        address: string | null;
         category: string | null;
         contactName: string | null;
         phone: string | null;
     }[]>;
     createSupplier(data: any): Promise<{
         id: string;
+        address: string | null;
         email: string | null;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
-        address: string | null;
         category: string | null;
         contactName: string | null;
         phone: string | null;
     }>;
     updateSupplier(id: string, data: any): Promise<{
         id: string;
+        address: string | null;
         email: string | null;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
-        address: string | null;
         category: string | null;
         contactName: string | null;
         phone: string | null;
@@ -137,6 +137,7 @@ export declare class CafeService {
     getOrders(): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -152,7 +153,6 @@ export declare class CafeService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -167,9 +167,9 @@ export declare class CafeService {
         items: ({
             item: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 description: string | null;
                 category: string;
                 price: number;
@@ -218,6 +218,7 @@ export declare class CafeService {
     getOrderById(id: string): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -233,7 +234,6 @@ export declare class CafeService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -248,9 +248,9 @@ export declare class CafeService {
         items: ({
             item: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 description: string | null;
                 category: string;
                 price: number;
@@ -304,6 +304,7 @@ export declare class CafeService {
     }): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -319,7 +320,6 @@ export declare class CafeService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -334,9 +334,9 @@ export declare class CafeService {
         items: ({
             item: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 description: string | null;
                 category: string;
                 price: number;
@@ -397,6 +397,7 @@ export declare class CafeService {
         order: {
             member: {
                 id: string;
+                gstNumber: string | null;
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
@@ -412,7 +413,6 @@ export declare class CafeService {
                 joiningDate: Date;
                 status: string;
                 branch: string | null;
-                gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;
                 memberId: string;
@@ -427,9 +427,9 @@ export declare class CafeService {
             items: ({
                 item: {
                     id: string;
-                    name: string;
                     createdAt: Date;
                     updatedAt: Date;
+                    name: string;
                     description: string | null;
                     category: string;
                     price: number;

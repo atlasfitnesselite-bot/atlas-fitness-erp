@@ -42,6 +42,7 @@ export declare class BillingController {
     createInvoice(createInvoiceDto: CreateInvoiceDto): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -57,7 +58,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -71,10 +71,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -127,6 +127,7 @@ export declare class BillingController {
     getInvoices(): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -142,7 +143,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -156,10 +156,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -212,6 +212,7 @@ export declare class BillingController {
     getInvoiceById(id: string): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -227,7 +228,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -241,10 +241,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -297,6 +297,7 @@ export declare class BillingController {
     updateInvoice(id: string, updateDto: Partial<CreateInvoiceDto>): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -312,7 +313,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -326,10 +326,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -387,6 +387,7 @@ export declare class BillingController {
     payInvoice(id: string, payInvoiceDto: PayInvoiceDto): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -402,7 +403,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -416,10 +416,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -478,6 +478,7 @@ export declare class BillingController {
     }): Promise<{
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -493,7 +494,6 @@ export declare class BillingController {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -507,10 +507,10 @@ export declare class BillingController {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;
@@ -578,6 +578,7 @@ export declare class BillingController {
         invoice: {
             member: {
                 id: string;
+                gstNumber: string | null;
                 email: string | null;
                 createdAt: Date;
                 updatedAt: Date;
@@ -593,7 +594,6 @@ export declare class BillingController {
                 joiningDate: Date;
                 status: string;
                 branch: string | null;
-                gstNumber: string | null;
                 aadhaarNumber: string | null;
                 panNumber: string | null;
                 memberId: string;
@@ -607,10 +607,10 @@ export declare class BillingController {
             };
             plan: {
                 id: string;
-                name: string;
-                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
+                isActive: boolean;
                 description: string | null;
                 price: number;
                 gstRate: number;

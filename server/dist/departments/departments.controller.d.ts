@@ -8,9 +8,9 @@ export declare class DepartmentsController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -22,9 +22,9 @@ export declare class DepartmentsController {
             employees: number;
         };
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -32,9 +32,9 @@ export declare class DepartmentsController {
     }>;
     createDepartment(data: CreateDepartmentDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -42,9 +42,9 @@ export declare class DepartmentsController {
     }>;
     updateDepartment(id: string, data: CreateDepartmentDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;
@@ -52,9 +52,9 @@ export declare class DepartmentsController {
     }>;
     deleteDepartment(id: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         managerId: string | null;
         status: string;
         description: string | null;

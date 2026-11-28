@@ -6,10 +6,10 @@ export declare class SubscriptionsService {
     constructor(prisma: PrismaService);
     createPlan(data: CreateMembershipPlanDto): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -17,10 +17,10 @@ export declare class SubscriptionsService {
     }>;
     getPlans(): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -28,10 +28,10 @@ export declare class SubscriptionsService {
     }[]>;
     getPlanById(id: string): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -39,10 +39,10 @@ export declare class SubscriptionsService {
     }>;
     updatePlan(id: string, data: Partial<CreateMembershipPlanDto>): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -50,10 +50,10 @@ export declare class SubscriptionsService {
     }>;
     deletePlan(id: string): Promise<{
         id: string;
-        name: string;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        isActive: boolean;
         description: string | null;
         price: number;
         gstRate: number;
@@ -76,6 +76,7 @@ export declare class SubscriptionsService {
     getSubscriptions(): Promise<({
         member: {
             id: string;
+            gstNumber: string | null;
             email: string | null;
             createdAt: Date;
             updatedAt: Date;
@@ -91,7 +92,6 @@ export declare class SubscriptionsService {
             joiningDate: Date;
             status: string;
             branch: string | null;
-            gstNumber: string | null;
             aadhaarNumber: string | null;
             panNumber: string | null;
             memberId: string;
@@ -105,10 +105,10 @@ export declare class SubscriptionsService {
         };
         plan: {
             id: string;
-            name: string;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            name: string;
+            isActive: boolean;
             description: string | null;
             price: number;
             gstRate: number;

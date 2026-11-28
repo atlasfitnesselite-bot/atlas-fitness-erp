@@ -4,8 +4,8 @@ export declare class AttendanceReportsService {
     constructor(prisma: PrismaService);
     generateReport(type: string, format: string, generatedBy: string, metadata?: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
+        name: string;
         status: string;
         type: string;
         fileUrl: string | null;
@@ -14,8 +14,8 @@ export declare class AttendanceReportsService {
     }>;
     getReports(): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
+        name: string;
         status: string;
         type: string;
         fileUrl: string | null;
@@ -26,10 +26,10 @@ export declare class AttendanceReportsService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -80,10 +80,10 @@ export declare class AttendanceReportsService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;
@@ -135,10 +135,10 @@ export declare class AttendanceReportsService {
         employee: {
             id: string;
             email: string;
+            userId: string | null;
             createdAt: Date;
             updatedAt: Date;
             employeeId: string;
-            userId: string | null;
             firstName: string;
             lastName: string;
             profilePicture: string | null;

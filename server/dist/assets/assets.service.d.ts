@@ -5,9 +5,9 @@ export declare class AssetsService {
     constructor(prisma: PrismaService);
     findAll(): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -19,9 +19,9 @@ export declare class AssetsService {
     }[]>;
     create(createAssetDto: CreateAssetDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -33,9 +33,9 @@ export declare class AssetsService {
     }>;
     updateMaintenance(id: string, updateMaintenanceDto: UpdateMaintenanceDto): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;

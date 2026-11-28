@@ -6,18 +6,18 @@ export declare class ProfileService {
     getProfile(userId: string): Promise<{
         themeSettings: {
             id: string;
+            userId: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             primaryColor: string;
             secondaryColor: string;
             mode: string;
         } | null;
         userPreferences: {
             id: string;
+            userId: string;
             createdAt: Date;
             updatedAt: Date;
-            userId: string;
             language: string;
             emailAlerts: boolean;
             pushAlerts: boolean;
@@ -25,9 +25,9 @@ export declare class ProfileService {
         employee: {
             department: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 managerId: string | null;
                 status: string;
                 description: string | null;
@@ -35,9 +35,9 @@ export declare class ProfileService {
             } | null;
             designation: {
                 id: string;
-                name: string;
                 createdAt: Date;
                 updatedAt: Date;
+                name: string;
                 status: string;
                 description: string | null;
                 level: string | null;
@@ -46,17 +46,17 @@ export declare class ProfileService {
         } | null;
         id: string;
         email: string;
+        createdAt: Date;
         name: string;
         isActive: boolean;
-        createdAt: Date;
         userRoles: ({
             role: {
                 name: string;
             };
         } & {
             id: string;
-            createdAt: Date;
             userId: string;
+            createdAt: Date;
             roleId: string;
         })[];
     }>;
@@ -70,9 +70,9 @@ export declare class ProfileService {
     }>;
     updatePreferences(userId: string, dto: UpdatePreferencesDto): Promise<{
         id: string;
+        userId: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         language: string;
         emailAlerts: boolean;
         pushAlerts: boolean;

@@ -57,9 +57,15 @@ class ResetPasswordDto {
   @IsNotEmpty()
   token: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(8)
-  newPassword: string;
+  @MinLength(6)
+  newPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
 }
 
 @Controller('auth')

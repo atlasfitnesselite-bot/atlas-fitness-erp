@@ -9,8 +9,8 @@ export declare class SecurityController {
         };
     } & {
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         status: string;
         ipAddress: string | null;
         userAgent: string | null;
@@ -22,8 +22,8 @@ export declare class SecurityController {
         } | null;
     } & {
         id: string;
-        createdAt: Date;
         userId: string | null;
+        createdAt: Date;
         action: string;
         resource: string;
         details: string | null;

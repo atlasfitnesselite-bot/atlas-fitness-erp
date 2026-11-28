@@ -4,9 +4,9 @@ export declare class EquipmentController {
     constructor(equipmentService: EquipmentService);
     getEquipment(category?: string, status?: string, location?: string): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -23,9 +23,9 @@ export declare class EquipmentController {
     }[]>;
     createEquipment(data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;
@@ -42,9 +42,9 @@ export declare class EquipmentController {
     }>;
     updateEquipment(id: string, data: any): Promise<{
         id: string;
-        name: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
         status: string;
         notes: string | null;
         category: string;

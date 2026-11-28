@@ -9,8 +9,8 @@ export declare class TasksController {
     }): Promise<({
         assignee: {
             id: string;
-            employeeId: string;
             userId: string | null;
+            employeeId: string;
             firstName: string;
             lastName: string;
         } | null;
@@ -38,8 +38,8 @@ export declare class TasksController {
     getTasks(status?: string, priority?: string, assignedTo?: string, category?: string): Promise<({
         assignee: {
             id: string;
-            employeeId: string;
             userId: string | null;
+            employeeId: string;
             firstName: string;
             lastName: string;
         } | null;
