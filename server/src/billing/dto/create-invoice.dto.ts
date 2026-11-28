@@ -69,4 +69,13 @@ export class CreateInvoiceDto {
   @IsNotEmpty()
   @IsString()
   status: string; // PAID, PENDING, OVERDUE, PARTIAL
+
+  @IsOptional()
+  @IsString()
+  trainerId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  commissionPercentage?: number;
 }

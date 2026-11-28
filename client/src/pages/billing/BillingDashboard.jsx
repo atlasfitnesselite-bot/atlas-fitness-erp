@@ -44,6 +44,7 @@ export default function BillingDashboard() {
   const [members, setMembers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [ptPackages, setPtPackages] = useState([]);
+  const [trainers, setTrainers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -63,6 +64,8 @@ export default function BillingDashboard() {
     memberId: '',
     planId: '',
     ptPackageId: '',
+    trainerId: '',
+    commissionPercentage: '',
     amount: '',
     gstRate: '5',
     discount: '0',
@@ -115,11 +118,12 @@ export default function BillingDashboard() {
   const fetchAll = async () => {
     try {
       setLoading(true);
-      const [invRes, memRes, planRes, ptPkgRes] = await Promise.allSettled([
+      const [invRes, memRes, planRes, ptPkgRes, trRes] = await Promise.allSettled([
         api.get('/api/billing/invoices'),
         api.get('/api/members?limit=500'),
         api.get('/api/subscriptions/plans'),
         api.get('/api/pt/packages'),
+        api.get('/api/pt/trainers'),
       ]);
 
       if (invRes.status === 'fulfilled') {
@@ -139,6 +143,10 @@ export default function BillingDashboard() {
       if (ptPkgRes.status === 'fulfilled') {
         const list = ptPkgRes.value.data?.data || ptPkgRes.value.data || [];
         setPtPackages(Array.isArray(list) ? list : []);
+      }
+      if (trRes.status === 'fulfilled') {
+        const list = trRes.value.data?.data || trRes.value.data || [];
+        setTrainers(Array.isArray(list) ? list : []);
       }
     } catch (error) {
       toast({
@@ -225,6 +233,11 @@ export default function BillingDashboard() {
         notes:
           form.notes ||
           (form.billType === 'PT' ? 'Personal Training Fee (No GST)' : undefined),
+        trainerId: form.billType === 'PT' ? form.trainerId || undefined : undefined,
+        commissionPercentage:
+          form.billType === 'PT' && form.commissionPercentage !== ''
+            ? parseFloat(form.commissionPercentage)
+            : undefined,
       });
       toast({ title: 'Success', description: 'Invoice generated successfully' });
       setIsCreateOpen(false);
@@ -819,6 +832,55 @@ export default function BillingDashboard() {
                 </div>
               )}
             </div>
+
+            {form.billType === 'PT' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-md border border-border/60 bg-muted/20 p-3">
+                <div className="space-y-1">
+                  <Label>Personal Trainer (for Commission)</Label>
+                  <CustomSelect
+                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    value={form.trainerId}
+                    onChange={(e) => {
+                      const tId = e.target.value;
+                      const t = trainers.find((tr) => tr.id === tId);
+                      setForm({
+                        ...form,
+                        trainerId: tId,
+                        commissionPercentage:
+                          t?.payrollStructure?.ptCommissionPercentage !== undefined &&
+                          t?.payrollStructure?.ptCommissionPercentage !== null
+                            ? String(t.payrollStructure.ptCommissionPercentage)
+                            : form.commissionPercentage,
+                      });
+                    }}
+                  >
+                    <option value="">Select Trainer (Optional)</option>
+                    {trainers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.firstName} {t.lastName !== '-' ? t.lastName : ''} ({t.employeeId})
+                      </option>
+                    ))}
+                  </CustomSelect>
+                </div>
+                <div className="space-y-1">
+                  <Label>PT Commission (%)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="100"
+                    placeholder="e.g. 40"
+                    value={form.commissionPercentage}
+                    onChange={(e) => setForm({ ...form, commissionPercentage: e.target.value })}
+                  />
+                  {Number(form.amount || 0) > 0 && Number(form.commissionPercentage || 0) > 0 && (
+                    <p className="text-[11px] text-emerald-500">
+                      Trainer Commission: ₹{((Number(form.amount) * Number(form.commissionPercentage)) / 100).toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="space-y-1">

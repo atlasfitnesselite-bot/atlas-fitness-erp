@@ -85,7 +85,7 @@ export class BillingService {
 
     const invoiceNumber = await this.generateInvoiceNumber();
 
-    return this.prisma.invoice.create({
+    const invoice = await this.prisma.invoice.create({
       data: {
         invoiceNumber,
         memberId: data.memberId,
@@ -112,6 +112,24 @@ export class BillingService {
       },
       include: { member: true, subscription: true, plan: true },
     });
+
+    if (data.trainerId && Number(data.commissionPercentage || 0) > 0 && totals.totalAmount > 0) {
+      const pct = Number(data.commissionPercentage);
+      const commissionAmt = (totals.totalAmount * pct) / 100;
+      const now = new Date();
+      await this.prisma.trainerCommission.create({
+        data: {
+          trainerId: data.trainerId,
+          sourceId: invoice.id,
+          amount: commissionAmt,
+          status: 'PENDING',
+          month: now.getMonth() + 1,
+          year: now.getFullYear(),
+        },
+      });
+    }
+
+    return invoice;
   }
 
   async getInvoices() {

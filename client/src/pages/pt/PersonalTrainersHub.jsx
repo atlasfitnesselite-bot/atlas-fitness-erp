@@ -42,6 +42,7 @@ export default function PersonalTrainersHub() {
     fee: '',
     preferredSlotStart: '',
     slotLocked: false,
+    commissionPercentage: '',
     startDate: new Date().toISOString().split('T')[0],
     expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
     createInvoice: true,
@@ -338,6 +339,10 @@ export default function PersonalTrainersHub() {
         ...assignForm,
         sessionsTotal: parseInt(assignForm.sessionsTotal, 10) || 12,
         fee: parseFloat(assignForm.fee) || 0,
+        commissionPercentage:
+          assignForm.commissionPercentage !== ''
+            ? parseFloat(assignForm.commissionPercentage)
+            : undefined,
       });
       setIsAssignOpen(false);
       const emailInfo = res.data?.emailResult?.sent
@@ -930,7 +935,24 @@ export default function PersonalTrainersHub() {
             </div>
             <div>
               <Label>Personal Trainer *</Label>
-              <CustomSelect className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm" value={assignForm.trainerId} onChange={(e) => setAssignForm({ ...assignForm, trainerId: e.target.value })} required>
+              <CustomSelect
+                className="flex h-10 w-full rounded-md border border-border bg-card px-3 text-sm"
+                value={assignForm.trainerId}
+                onChange={(e) => {
+                  const tId = e.target.value;
+                  const t = trainers.find((tr) => tr.id === tId);
+                  setAssignForm({
+                    ...assignForm,
+                    trainerId: tId,
+                    commissionPercentage:
+                      t?.payrollStructure?.ptCommissionPercentage !== undefined &&
+                      t?.payrollStructure?.ptCommissionPercentage !== null
+                        ? String(t.payrollStructure.ptCommissionPercentage)
+                        : assignForm.commissionPercentage,
+                  });
+                }}
+                required
+              >
                 <option value="">Select Trainer</option>
                 {trainers.map((t) => (
                   <option key={t.id} value={t.id}>{t.firstName} {t.lastName !== '-' ? t.lastName : ''} ({t.employeeId})</option>
@@ -976,6 +998,23 @@ export default function PersonalTrainersHub() {
               <div>
                 <Label>PT Fee (₹)</Label>
                 <Input type="number" step="0.01" value={assignForm.fee} onChange={(e) => setAssignForm({ ...assignForm, fee: e.target.value })} placeholder="0" />
+              </div>
+              <div>
+                <Label>Trainer Commission (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  value={assignForm.commissionPercentage}
+                  onChange={(e) => setAssignForm({ ...assignForm, commissionPercentage: e.target.value })}
+                  placeholder="e.g. 40"
+                />
+                {Number(assignForm.fee || 0) > 0 && Number(assignForm.commissionPercentage || 0) > 0 && (
+                  <p className="text-[11px] text-emerald-500 mt-1">
+                    Commission: ₹{((Number(assignForm.fee) * Number(assignForm.commissionPercentage)) / 100).toFixed(2)}
+                  </p>
+                )}
               </div>
               <div>
                 <Label>Start Date</Label>

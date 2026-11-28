@@ -1286,6 +1286,7 @@ export class PtService {
     createInvoice?: boolean;
     preferredSlotStart?: string;
     slotLocked?: boolean;
+    commissionPercentage?: number;
   }) {
     let packageId = data.packageId;
     let sessionsTotal = Number(data.sessionsTotal || 12);
@@ -1387,12 +1388,16 @@ export class PtService {
       });
     }
 
-    // Auto-calculate trainer commission if PayrollStructure has ptCommissionPercentage
+    // Auto-calculate trainer commission from explicit commissionPercentage or PayrollStructure
     const payroll = await this.prisma.payrollStructure.findUnique({
       where: { employeeId: data.trainerId },
     });
-    if (payroll && payroll.ptCommissionPercentage > 0 && fee > 0) {
-      const commissionAmt = (fee * payroll.ptCommissionPercentage) / 100;
+    const commissionPct =
+      data.commissionPercentage !== undefined && data.commissionPercentage !== null
+        ? Number(data.commissionPercentage)
+        : payroll?.ptCommissionPercentage || 0;
+    if (commissionPct > 0 && fee > 0) {
+      const commissionAmt = (fee * commissionPct) / 100;
       const now = new Date();
       await this.prisma.trainerCommission.create({
         data: {
